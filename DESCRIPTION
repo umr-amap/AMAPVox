@@ -1,18 +1,20 @@
 Package: AMAPVox
 Type: Package
-Title: LiDAR data voxelisation package
+Title: LiDAR Data Voxelisation Package
 Version: 0.1.0
 Authors@R: c(
   person("Grégoire", "Vincent", email="gregoire.vincent@ird.fr", role=c("aut")),
   person("Julien", "Heurtebize", email="julienhtbe@gmail.com", role=c("aut")),
 	person("Philippe", "Verley", email="philippe.verley@ird.fr", role = c("aut", "cre"))
   )
-Description: AMAPVox is a LiDAR point cloud voxelisation software that aims
-    at estimating leaf area through several theoretical/numerical approaches.
+Description: Set of R functions for reading, manipulating and writing voxel
+    spaces. Voxel spaces are read from text-based output files of the AMAPVox software.
+    AMAPVox is a LiDAR point cloud voxelisation software that aims at estimating
+    leaf area through several theoretical/numerical approaches.
 License: CeCILL
 Encoding: UTF-8
 LazyData: true
-URL: https://www.amapvox.org, https://github.com/umr-amap/AMAPVox
+URL: http://www.amapvox.org, https://github.com/umr-amap/AMAPVox
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 

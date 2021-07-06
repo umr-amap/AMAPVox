@@ -5,7 +5,7 @@ bibentry(
   pages = "254-266",
   issn = "0034-4257",
   url = "https://www.sciencedirect.com/science/article/pii/S003442571730233X",
-  doi = "https://doi.org/10.1016/j.rse.2017.05.034",
+  doi = "10.1016/j.rse.2017.05.034",
   language = "en",
   journal = "Remote Sensing of Environment",
   author = c(

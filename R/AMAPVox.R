@@ -2,7 +2,7 @@
 #'
 #' The package provides a a set of R functions for reading, manipulating
 #' and writing voxel spaces. Voxel spaces are read from text-based output files
-#' of the AMAPVox software.
+#' of the \url{http://www.amapvox.org}{AMAPVox software}.
 #'
 #' As of version 0.1, available functions are limited and rudimentary, basically
 #' read/write voxel space. With time the package will include functions to
@@ -16,13 +16,13 @@
 #'     Lavalley, C., & Dauzat, J. (2017). Mapping plant area index of tropical
 #'     evergreen forest by airborne laser scanning. A cross-validation study
 #'     using LAI2200 optical sensor. Remote Sensing of Environment, 198, 254-266.
-#'     \url{https://doi.org/10.1016/j.rse.2017.05.034}
+#'     \doi{10.1016/j.rse.2017.05.034}
 #'   }
 #'   \item{
 #'   Up-to-date description of PAD/LAD estimators implemented in AMAPVox:\cr
 #'     VINCENT, Gregoire; PIMONT, François; VERLEY, Philippe, 2021,
 #'     "A note on PAD/LAD estimators implemented in AMAPVox 1.7",
-#'     \url{https://doi.org/10.23708/1AJNMP}, DataSuds, V1
+#'     \doi{10.23708/1AJNMP}, DataSuds, V1
 #'   }
 #' }
 #'

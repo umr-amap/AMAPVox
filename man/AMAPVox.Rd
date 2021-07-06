@@ -6,9 +6,9 @@
 \alias{AMAPVox-package}
 \title{AMAPVox package}
 \description{
-The AMAPVox package provides a a set of R functions for reading, manipulating
+The package provides a a set of R functions for reading, manipulating
 and writing voxel spaces. Voxel spaces are read from text-based output files
-of the AMAPVox software.
+of the \url{http://www.amapvox.org}{AMAPVox software}.
 }
 \details{
 As of version 0.1, available functions are limited and rudimentary, basically
@@ -19,18 +19,18 @@ launch full GUI tool from R and a set of useful pre/post-processing functions.
 
 \itemize{
 \item{
-Research paper firt describing AMAPVox:\cr
+Research paper first describing AMAPVox:\cr
 Vincent, G., Antin, C., Laurans, M., Heurtebize, J., Durrieu, S.,
 Lavalley, C., & Dauzat, J. (2017). Mapping plant area index of tropical
 evergreen forest by airborne laser scanning. A cross-validation study
 using LAI2200 optical sensor. Remote Sensing of Environment, 198, 254-266.
-\url{https://doi.org/10.1016/j.rse.2017.05.034}
+\doi{10.1016/j.rse.2017.05.034}
 }
 \item{
 Up-to-date description of PAD/LAD estimators implemented in AMAPVox:\cr
 VINCENT, Gregoire; PIMONT, François; VERLEY, Philippe, 2021,
 "A note on PAD/LAD estimators implemented in AMAPVox 1.7",
-\url{https://doi.org/10.23708/1AJNMP}, DataSuds, V1
+\doi{10.23708/1AJNMP}, DataSuds, V1
 }
 }
 }
@@ -43,7 +43,7 @@ VINCENT, Gregoire; PIMONT, François; VERLEY, Philippe, 2021,
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://www.amavox.org}
+  \item \url{http://www.amapvox.org}
   \item \url{https://github.com/umr-amap/AMAPVox}
 }
 

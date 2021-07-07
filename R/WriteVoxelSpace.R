@@ -2,7 +2,8 @@
 #'
 #' @docType methods
 #' @rdname writeVoxelSpace
-#' @description write a voxel file out of a \code{\link{VoxelSpace-class}} object.
+#' @description write a voxel file out of a \code{\link{VoxelSpace-class}}
+#'   object.
 #' @param voxelSpace the object of class VoxelSpace to write
 #' @param outputFile The path where to write the voxel file.
 #' @include AMAPVoxClasses.R
@@ -15,9 +16,19 @@ writeVoxelSpace <- function(voxelSpace, outputFile){
   # write header
   conn <- file(outputFile, open="w")
   writeLines("VOXEL SPACE", conn)
-  writeLines(paste0("#", paste(names(voxelSpace@header@parameters), voxelSpace@header@parameters, sep=":")), conn)
+  writeLines(paste0("#",
+                    paste(names(voxelSpace@header@parameters),
+                          voxelSpace@header@parameters, sep=":")),
+             conn)
   close(conn)
 
   # write voxels
-  utils::write.table(voxelSpace@voxels, outputFile, row.names=F, col.names=T, na="NaN",sep=" ", append=T, quote=F)
+  utils::write.table(voxelSpace@voxels,
+                     outputFile,
+                     row.names=FALSE,
+                     col.names=TRUE,
+                     na="NaN",
+                     sep=" ",
+                     append=TRUE,
+                     quote=FALSE)
 }

@@ -2,11 +2,12 @@
 ## given a string "numeric separator numeric separator numeric ..." this
 ## function will test for several separators for splitting and returns the one
 ## with highest occurrence.
-.guessSeparator = function(str){
-  SEPARATORS = c(space = " " , equal = "=", semicolon = ";",
+.guessSeparator <- function(str){
+  SEPARATORS <- c(space = " " , equal = "=", semicolon = ";",
                  coma = ",", colon = ":", tab = "\t")
-  guess = which.min(nchar(lapply(stringr::str_split(str,SEPARATORS), "[", i = 1)))
-  separator = SEPARATORS[guess]
+  guess <- which.min(
+    nchar(lapply(stringr::str_split(str,SEPARATORS), "[", i = 1)))
+  separator <- SEPARATORS[guess]
 
   return(separator)
 }
@@ -16,8 +17,11 @@
 ## Accepted formats: {[( numeric separator numeric separator numeric ... )]}
 ##     leading and trailing brackets are removed
 ##     guess separator between numeric values and split
-.parseNumericVector = function(str) {
-  vec <- as.numeric(unlist(stringr::str_split(stringr::str_squish(stringr::str_remove_all(str, "[\\(\\)\\[\\]\\{\\}]")), .guessSeparator(str))))
+.parseNumericVector <- function(str) {
+  vec <- as.numeric(unlist(
+    stringr::str_split(
+      stringr::str_squish(stringr::str_remove_all(str, "[\\(\\)\\[\\]\\{\\}]")),
+      .guessSeparator(str))))
   if (length(vec) == 1) vec <- rep(vec, 3)
   names(vec) <- c("x", "y", "z")
   return(vec)
@@ -27,39 +31,43 @@
 #'
 #' @docType methods
 #' @rdname readVoxelSpace
-#' @description read a voxel file and cast it into a \code{\link{VoxelSpace-class}} object.
+#' @description read a voxel file and cast it into a
+#'   \code{\link{VoxelSpace-class}} object.
 #' @param f The path of the voxel file.
 #' @include AMAPVoxClasses.R
 #' @seealso \code{\link{writeVoxelSpace}}
 #' @export
 readVoxelSpace <- function(f){
 
-  vox=new(Class=("VoxelSpace"))
+  vox <- new(Class=("VoxelSpace"))
 
   #lecture du header
   conn <- file(f, open="r")
 
   # check 1st line VOXEL FILE
   firstLine <- readLines(conn, n=1)
-  stopifnot(!is.na(stringr::str_match(stringr::str_trim(firstLine), "^VOXEL SPACE$")))
+  stopifnot(
+    !is.na(stringr::str_match(stringr::str_trim(firstLine), "^VOXEL SPACE$")))
 
   # set file slot
   vox@file <- f
 
   # loop over header
   parameters <- NULL
-  nLineHeader = 0
+  nLineHeader <- 0
   while ( TRUE ) {
     # read next line
-    line = stringr::str_squish(readLines(conn, n = 1))
-    nLineHeader = nLineHeader + 1;
+    line <- stringr::str_squish(readLines(conn, n = 1))
+    nLineHeader <- nLineHeader + 1
     # check if line starts with hash
     if ( stringr::str_starts(line, "#") ) {
       # parse header line
       # may be several parameters on same line, separated by hash
       lineSplit <- stringr::str_squish(stringr::str_split(line, "#")[[1]][-1])
       # split key:value
-      lineParam <- sapply(lineSplit, function(p) unlist(stringr::str_split(p, ":")))
+      lineParam <- vapply(lineSplit,
+                          function(p) unlist(stringr::str_split(p, ":")),
+                          character(2))
       colnames(lineParam) <- as.character(lineParam[1,])
       parameters <- c(parameters, lineParam[-1,])
     } else {
@@ -74,7 +82,7 @@ readVoxelSpace <- function(f){
   # number of lines
   vox@header@nline <- as.integer(nLineHeader)
   # column names
-  columnNames = unlist(stringr::str_split(line, " "))
+  columnNames <- unlist(stringr::str_split(line, " "))
   vox@header@columnNames <- columnNames
   # min corner
   vox@header@mincorner <- .parseNumericVector(parameters["min_corner"])
@@ -88,8 +96,7 @@ readVoxelSpace <- function(f){
   vox@header@parameters <- parameters
 
   #lecture des voxels
-  #instance@voxels= read.table(file, header=T,skip=5)
-  vox@voxels = data.table::fread(f, header = T, skip = nLineHeader)
+  vox@voxels <- data.table::fread(f, header = TRUE, skip = nLineHeader)
 
   return (vox)
 }
@@ -99,7 +106,13 @@ showVoxelSpace <- function(voxelSpace) {
 
   cat(class(voxelSpace)[1],'\n')
   cat("  file",  voxelSpace@file, sep='\t', '\n')
-  writeLines(paste0("  ", paste(names(voxelSpace@header@parameters), voxelSpace@header@parameters, sep='\t')))
-  cat("  output variables", paste(voxelSpace@header@columnNames, collapse=", "), '\n', sep='\t')
+  writeLines(paste0("  ",
+                    paste(names(voxelSpace@header@parameters),
+                          voxelSpace@header@parameters,
+                          sep='\t')))
+  cat("  output variables",
+      paste(voxelSpace@header@columnNames, collapse=", "),
+      '\n',
+      sep='\t')
   show(voxelSpace@voxels)
 }

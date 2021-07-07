@@ -14,7 +14,8 @@ getParameter(object, what)
 \S4method{getParameter}{VoxelSpace,character}(object, what)
 }
 \arguments{
-\item{object}{either the \code{\link{VoxelSpace-class}} object or the associated \code{\link{VoxHeader-class}}}
+\item{object}{either the \code{\link{VoxelSpace-class}} object or the
+associated \code{\link{VoxHeader-class}}}
 
 \item{what}{the name of the parameter}
 }
@@ -27,7 +28,8 @@ Gets a parameter from the VoxelSpace header.
 \examples{
 \dontrun{
 # load a voxel file
-vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vox <- readVoxelSpace(
+ system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 # retrieve 'min_corner' parameter
 getParameter(vox, "min_corner")
 }

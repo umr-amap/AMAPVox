@@ -27,13 +27,14 @@ the x, y, z coordinates of the voxel center.
 }
 \description{
 Gets the x, y, z coordinates of the voxel center. If the voxel
-parameter is missing, it returns the positions of all the voxels in
-the voxel space.
+parameter is missing, it returns the positions of all the voxels in the
+voxel space.
 }
 \examples{
 \dontrun{
 # load a voxel file
-vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vox <- readVoxelSpace(
+ system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 
 # get position of voxel(i=0, j=0, k=0)
 getPosition(vox, c(0, 0, 0))

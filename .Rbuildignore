@@ -1,3 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 git.log
+^cran-comments\.md$
+^README\.md$

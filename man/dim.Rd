@@ -16,7 +16,8 @@
 \value{
 the number of voxels in the voxel space.
 
-the number of voxels nx, ny, nz of a \code{\link{VoxelSpace-class}} along x, y, z axis.
+the number of voxels nx, ny, nz of a \code{\link{VoxelSpace-class}}
+along x, y, z axis.
 }
 \description{
 Get the number of voxels in the voxel space.

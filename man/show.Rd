@@ -14,5 +14,6 @@
 show returns an invisible NULL.
 }
 \description{
-Display the \code{\link{VoxelSpace-class}} object main characteristics.
+Display the \code{\link{VoxelSpace-class}} object main
+characteristics.
 }

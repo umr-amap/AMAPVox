@@ -13,7 +13,8 @@ writeVoxelSpace(voxelSpace, outputFile)
 \item{outputFile}{The path where to write the voxel file.}
 }
 \description{
-write a voxel file out of a \code{\link{VoxelSpace-class}} object.
+write a voxel file out of a \code{\link{VoxelSpace-class}}
+object.
 }
 \seealso{
 \code{\link{readVoxelSpace}}

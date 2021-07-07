@@ -14,8 +14,10 @@ getMaxCorner(voxelSpace)
 \item{voxelSpace}{the \code{\link{VoxelSpace-class}} object.}
 }
 \value{
-the x, y, z coordinates of the voxel space top right corner, as a numerical vector.
+the x, y, z coordinates of the voxel space top right corner, as a
+numerical vector.
 }
 \description{
-Gets the x, y, z coordinates of the voxel space top right corner.
+Gets the x, y, z coordinates of the voxel space top right
+corner.
 }

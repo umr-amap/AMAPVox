@@ -8,19 +8,24 @@
 An object of class VoxHeader
 }
 \description{
-Class containing metadata that are read in the header of the VoxelSpace file.
+Class containing metadata that are read in the header of the
+VoxelSpace file.
 }
 \section{Fields}{
 
 \describe{
-\item{\code{mincorner}}{the (x, y, z) coordinates of the bottom left corner of the voxel space}
+\item{\code{mincorner}}{the (x, y, z) coordinates of the bottom left corner of the
+voxel space}
 
-\item{\code{maxcorner}}{the (x, y, z) coordinates of the top right corner of the voxel space}
+\item{\code{maxcorner}}{the (x, y, z) coordinates of the top right corner of the
+voxel space}
 
 \item{\code{split}}{(nx, ny, nz) the number of voxels along x, y & z axis}
 
 \item{\code{resolution}}{(x, y, z) the elemental voxel size}
 
-\item{\code{columnNames}}{the names of the output variables in the voxel space. Column names of the data.table in the \code{\link{VoxelSpace-class}} object.}
+\item{\code{columnNames}}{the names of the output variables in the voxel space.
+Column names of the data.table in the \code{\link{VoxelSpace-class}}
+object.}
 }}
 

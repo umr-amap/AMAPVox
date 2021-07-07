@@ -11,7 +11,8 @@ readVoxelSpace(f)
 \item{f}{The path of the voxel file.}
 }
 \description{
-read a voxel file and cast it into a \code{\link{VoxelSpace-class}} object.
+read a voxel file and cast it into a
+\code{\link{VoxelSpace-class}} object.
 }
 \seealso{
 \code{\link{writeVoxelSpace}}

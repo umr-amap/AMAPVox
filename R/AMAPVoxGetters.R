@@ -1,7 +1,10 @@
 #' @rdname getParameter
 setMethod("getParameter", signature(object="VoxHeader", what="character"),
           function(object, what) {
-            #stopifnot(sum(!is.na(str_match(names(vox@header@parameters), paste0("^", what, "$")))) == 1)
+            stopifnot(
+              sum(!is.na(str_match(
+                names(object@header@parameters),
+                paste0("^", what, "$")))) == 1)
             return ( object@parameters[what] )
           })
 
@@ -33,13 +36,17 @@ setMethod("getResolution", "VoxelSpace",
 setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="vector"),
           function(voxelSpace, voxel) {
 
-            stopifnot(length(voxel) == 3) # 3 coordinates i, j, k
-            stopifnot(as.integer(voxel) == voxel) # i, j, k must be integers
-            stopifnot(all((voxel >= 0) & (voxel < voxelSpace@header@split))) # check i, j, k ranges
+            # 3 coordinates i, j, k
+            stopifnot(length(voxel) == 3)
+            # i, j, k must be integers
+            stopifnot(as.integer(voxel) == voxel)
+            # check i, j, k ranges
+            stopifnot(all((voxel >= 0) & (voxel < voxelSpace@header@split)))
 
             position <- vector(mode="numeric", length=3)
             names(position) <- c("x", "y", "z")
-            position <- voxelSpace@header@mincorner + voxel * voxelSpace@header@resolution
+            position <- voxelSpace@header@mincorner
+                        + voxel * voxelSpace@header@resolution
             return ( position )
           })
 
@@ -47,9 +54,11 @@ setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="vector"),
 setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="list"),
           function(voxelSpace, voxel) {
 
-            stopifnot(all(c("i", "j", "k") %in% colnames(voxelSpace@voxels))) # ensure existence of i, j, k
+            # ensure existence of i, j, k
+            stopifnot(all(c("i", "j", "k") %in% colnames(voxelSpace@voxels)))
 
-            return ( callGeneric(voxelSpace, unlist(voxel[ , c("i", "j", "k")])) )
+            return (
+              callGeneric(voxelSpace, unlist(voxel[ , c("i", "j", "k")])) )
           })
 
 #' @rdname getPosition
@@ -57,7 +66,8 @@ setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="missing"),
           function(voxelSpace, voxel) {
 
             return ( voxelSpace@header@mincorner
-                     + voxelSpace@voxels[, c("i", "j", "k")] * voxelSpace@header@resolution )
+                     + voxelSpace@voxels[, c("i", "j", "k")]
+                     * voxelSpace@header@resolution )
           })
 
 

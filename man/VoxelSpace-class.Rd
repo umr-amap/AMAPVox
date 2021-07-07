@@ -8,14 +8,17 @@
 An object of class VoxelSpace.
 }
 \description{
-Class that holds the state variables of every voxel of the voxel space in a \code{\link{data.table}}, plus metadata from the voxel space header.
+Class that holds the state variables of every voxel of the voxel
+space in a \code{\link{data.table}}, plus metadata from the voxel space
+header.
 }
 \section{Fields}{
 
 \describe{
 \item{\code{file}}{the path of the voxel file (.vox).}
 
-\item{\code{header}}{the \code{\link{VoxHeader-class}} object associated to this voxel file.}
+\item{\code{header}}{the \code{\link{VoxHeader-class}} object associated to this
+voxel file.}
 
 \item{\code{voxels}}{the voxels hold in a data.table.}
 }}

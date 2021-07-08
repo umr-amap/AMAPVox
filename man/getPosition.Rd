@@ -31,7 +31,6 @@ parameter is missing, it returns the positions of all the voxels in the
 voxel space.
 }
 \examples{
-\dontrun{
 # load a voxel file
 vox <- readVoxelSpace(
  system.file("extdata", "als_sample.vox", package = "AMAPVox"))
@@ -44,5 +43,4 @@ getPosition(vox, vox@voxels[1,])
 
 # get positions of every voxel
 getPosition(vox)
-}
 }

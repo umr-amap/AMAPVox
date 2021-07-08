@@ -17,3 +17,10 @@ show returns an invisible NULL.
 Display the \code{\link{VoxelSpace-class}} object main
 characteristics.
 }
+\examples{
+# load a voxel file
+vox <- readVoxelSpace(
+           system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+# show VoxelSpace object
+show(vox)
+}

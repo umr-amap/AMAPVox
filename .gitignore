@@ -40,3 +40,7 @@ vignettes/*.pdf
 
 # git log file
 git.log
+
+# CRAN release
+CRAN-RELEASE
+

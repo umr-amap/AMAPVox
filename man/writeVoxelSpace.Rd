@@ -16,6 +16,16 @@ writeVoxelSpace(voxelSpace, outputFile)
 write a voxel file out of a \code{\link{VoxelSpace-class}}
 object.
 }
+\examples{
+\dontrun{
+# load a voxel file
+vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+# set max PAD to 5
+vox@voxels[, PadBVTotal:=max(PadBVTotal, 5, na.rm = TRUE)]
+# write updated voxel file
+writeVoxelSpace(vox, tempfile("pattern"="amapvox_", fileext=".vox"))
+}
+}
 \seealso{
 \code{\link{readVoxelSpace}}
 }

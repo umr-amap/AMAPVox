@@ -36,6 +36,9 @@
 #' @param f The path of the voxel file.
 #' @include AMAPVoxClasses.R
 #' @seealso \code{\link{writeVoxelSpace}}
+#' @examples
+#' # load a voxel file
+#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 #' @export
 readVoxelSpace <- function(f){
 

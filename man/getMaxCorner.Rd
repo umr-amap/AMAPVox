@@ -21,3 +21,9 @@ numerical vector.
 Gets the x, y, z coordinates of the voxel space top right
 corner.
 }
+\examples{
+# load a voxel file
+vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+# retrieve 'max_corner' parameter
+getMaxCorner(vox)
+}

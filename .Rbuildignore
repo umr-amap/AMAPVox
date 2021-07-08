@@ -2,4 +2,6 @@
 ^\.Rproj\.user$
 git.log
 ^cran-comments\.md$
+^LICENSE$
 ^README\.md$
+^CRAN-RELEASE$

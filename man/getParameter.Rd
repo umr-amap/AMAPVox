@@ -26,13 +26,10 @@ the parameter as a \code{character}
 Gets a parameter from the VoxelSpace header.
 }
 \examples{
-\dontrun{
 # load a voxel file
-vox <- readVoxelSpace(
- system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 # retrieve 'min_corner' parameter
 getParameter(vox, "min_corner")
-}
 }
 \seealso{
 \code{\link{VoxHeader-class}}, \code{\link{VoxelSpace-class}};

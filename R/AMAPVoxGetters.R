@@ -3,7 +3,7 @@ setMethod("getParameter", signature(object="VoxHeader", what="character"),
           function(object, what) {
             stopifnot(
               sum(!is.na(str_match(
-                names(object@header@parameters),
+                names(object@parameters),
                 paste0("^", what, "$")))) == 1)
             return ( object@parameters[what] )
           })

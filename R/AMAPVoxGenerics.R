@@ -8,6 +8,12 @@
 #' @return show returns an invisible NULL.
 #' @param object a \code{\link{VoxelSpace-class}} object.
 #' @include AMAPVoxClasses.R
+#' @examples
+#' # load a voxel file
+#' vox <- readVoxelSpace(
+#'            system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' # show VoxelSpace object
+#' show(vox)
 #' @export
 setMethod ("show",
            signature(object = "VoxelSpace"),
@@ -69,13 +75,10 @@ is.VoxelSpace <- function (x) is(x, "VoxelSpace")
 #' @include AMAPVoxClasses.R
 #' @seealso \code{\link{VoxHeader-class}}, \code{\link{VoxelSpace-class}};
 #' @examples
-#' \dontrun{
 #' # load a voxel file
-#' vox <- readVoxelSpace(
-#'  system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 #' # retrieve 'min_corner' parameter
 #' getParameter(vox, "min_corner")
-#' }
 #' @export
 setGeneric("getParameter",
            function(object, what){standardGeneric ("getParameter")})
@@ -89,6 +92,11 @@ setGeneric("getParameter",
 #' @param voxelSpace the \code{\link{VoxelSpace-class}} object.
 #' @return the x, y, z coordinates of the voxel space bottom left corner, as a
 #'   numerical vector.
+#' @examples
+#' # load a voxel file
+#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' # retrieve 'min_corner' parameter
+#' getMinCorner(vox)
 #' @export
 setGeneric("getMinCorner",
            function(voxelSpace){standardGeneric ("getMinCorner")})
@@ -102,6 +110,11 @@ setGeneric("getMinCorner",
 #' @param voxelSpace the \code{\link{VoxelSpace-class}} object.
 #' @return the x, y, z coordinates of the voxel space top right corner, as a
 #'   numerical vector.
+#' @examples
+#' # load a voxel file
+#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' # retrieve 'max_corner' parameter
+#' getMaxCorner(vox)
 #' @export
 setGeneric("getMaxCorner",
            function(voxelSpace){standardGeneric ("getMaxCorner")})
@@ -113,6 +126,12 @@ setGeneric("getMaxCorner",
 #' @description Gets the elemental size of a voxel (dx, dy, dz) in meter.
 #' @param voxelSpace the \code{\link{VoxelSpace-class}} object.
 #' @return the size of the voxel in meter, as a numerical vector.
+#' @examples
+#' # load a voxel file
+#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' # retrieve 'resolution' parameter
+#' getResolution(vox)
+#' @export
 #' @export
 setGeneric("getResolution",
            function(voxelSpace){standardGeneric ("getResolution")})
@@ -129,7 +148,6 @@ setGeneric("getResolution",
 #'   from the VoxelSpace data.table.
 #' @return the x, y, z coordinates of the voxel center.
 #' @examples
-#' \dontrun{
 #' # load a voxel file
 #' vox <- readVoxelSpace(
 #'  system.file("extdata", "als_sample.vox", package = "AMAPVox"))
@@ -142,7 +160,6 @@ setGeneric("getResolution",
 #'
 #' # get positions of every voxel
 #' getPosition(vox)
-#' }
 #' @export
 setGeneric("getPosition",
            function(voxelSpace, voxel){standardGeneric ("getPosition")})

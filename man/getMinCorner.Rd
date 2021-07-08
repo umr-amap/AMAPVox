@@ -21,3 +21,9 @@ numerical vector.
 Gets the x, y, z coordinates of the voxel space bottom left
 corner.
 }
+\examples{
+# load a voxel file
+vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+# retrieve 'min_corner' parameter
+getMinCorner(vox)
+}

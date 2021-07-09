@@ -14,7 +14,12 @@ To cite 'AMAPVox', please use citation(“AMAPVox”).
 
 ## Installation
 
-AMAPVox package is not yet available on CRAN.
+Install from CRAN:
+
+``` r
+install.packages("AMAPVox")
+```
+
 Install the latest version from Github:
 
 ``` r

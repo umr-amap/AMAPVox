@@ -38,36 +38,42 @@ setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="vector"),
 
             # 3 coordinates i, j, k
             stopifnot(length(voxel) == 3)
-            # i, j, k must be integers
+            # i, j, k must be positive integers
             stopifnot(as.integer(voxel) == voxel)
+            stopifnot(all(voxel >=0))
             # check i, j, k ranges
             stopifnot(all((voxel >= 0) & (voxel < voxelSpace@header@split)))
 
-            position <- vector(mode="numeric", length=3)
-            names(position) <- c("x", "y", "z")
-            position <- voxelSpace@header@mincorner
-                        + voxel * voxelSpace@header@resolution
-            return ( position )
+            return (
+              callGeneric(voxelSpace, data.table::data.table(i=voxel[1], j=voxel[2], k=voxel[3])))
           })
 
 #' @rdname getPosition
-setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="list"),
+setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="data.table"),
           function(voxelSpace, voxel) {
 
             # ensure existence of i, j, k
-            stopifnot(all(c("i", "j", "k") %in% colnames(voxelSpace@voxels)))
+            stopifnot(all(c("i", "j", "k") %in% colnames(voxel)))
 
-            return (
-              callGeneric(voxelSpace, unlist(voxel[ , c("i", "j", "k")])) )
+            # extract i, j, k
+            pos <- voxel[, .(i, j, k)]
+            # min corner and resolution as local variables
+            minc <- voxelSpace@header@mincorner
+            res <- voxelSpace@header@resolution
+            # function for calculating the position
+            calcPos <- function(index, coord) minc[coord] + index * res[coord]
+            # compute x, y, z
+            pos <- pos[, x:=calcPos(i, "x")][, y:=calcPos(j, "y")][, z:=calcPos(k, "z")][, .(x, y, z)]
+            # return positions as data.table
+            return ( pos )
           })
 
 #' @rdname getPosition
 setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="missing"),
           function(voxelSpace, voxel) {
 
-            return ( voxelSpace@header@mincorner
-                     + voxelSpace@voxels[, c("i", "j", "k")]
-                     * voxelSpace@header@resolution )
+            return (
+              callGeneric(voxelSpace, voxelSpace@voxels[ , c("i", "j", "k")]))
           })
 
 

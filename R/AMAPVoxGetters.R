@@ -56,14 +56,15 @@ setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="data.table"),
             stopifnot(all(c("i", "j", "k") %in% colnames(voxel)))
 
             # extract i, j, k
-            pos <- voxel[, .(i, j, k)]
+            pos <- voxel[, c("i", "j", "k")]
             # min corner and resolution as local variables
             minc <- voxelSpace@header@mincorner
             res <- voxelSpace@header@resolution
             # function for calculating the position
             calcPos <- function(index, coord) minc[coord] + index * res[coord]
             # compute x, y, z
-            pos <- pos[, x:=calcPos(i, "x")][, y:=calcPos(j, "y")][, z:=calcPos(k, "z")][, .(x, y, z)]
+            i = j = k = x = y = z = NULL # due to NSE notes in R CMD check
+            pos <- pos[, x:=calcPos(i, "x")][, y:=calcPos(j, "y")][, z:=calcPos(k, "z")][, c("x", "y", "z")]
             # return positions as data.table
             return ( pos )
           })

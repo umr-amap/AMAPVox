@@ -29,6 +29,6 @@
 #'
 #' @importFrom methods callGeneric is new show
 #' @importFrom utils write.table
-#' @importFrom data.table data.table fread
+#' @importFrom data.table data.table fread :=
 #' @importFrom stringr str_match str_trim str_squish str_starts str_split str_remove_all
 "_PACKAGE"

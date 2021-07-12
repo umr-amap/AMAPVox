@@ -4,7 +4,7 @@
 \name{getPosition}
 \alias{getPosition}
 \alias{getPosition,VoxelSpace,vector-method}
-\alias{getPosition,VoxelSpace,list-method}
+\alias{getPosition,VoxelSpace,data.table-method}
 \alias{getPosition,VoxelSpace,missing-method}
 \title{Gets the x, y, z coordinates of a given voxel.}
 \usage{
@@ -12,7 +12,7 @@ getPosition(voxelSpace, voxel)
 
 \S4method{getPosition}{VoxelSpace,vector}(voxelSpace, voxel)
 
-\S4method{getPosition}{VoxelSpace,list}(voxelSpace, voxel)
+\S4method{getPosition}{VoxelSpace,data.table}(voxelSpace, voxel)
 
 \S4method{getPosition}{VoxelSpace,missing}(voxelSpace, voxel)
 }
@@ -32,14 +32,13 @@ voxel space.
 }
 \examples{
 # load a voxel file
-vox <- readVoxelSpace(
- system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 
 # get position of voxel(i=0, j=0, k=0)
 getPosition(vox, c(0, 0, 0))
 
-# get position of 1st voxel in the data.table
-getPosition(vox, vox@voxels[1,])
+# get position of voxels 1 to 10 in the data.table
+getPosition(vox, vox@voxels[1:10,])
 
 # get positions of every voxel
 getPosition(vox)

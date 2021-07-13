@@ -31,4 +31,10 @@
 #' @importFrom utils write.table
 #' @importFrom data.table data.table fread :=
 #' @importFrom stringr str_match str_trim str_squish str_starts str_split str_remove_all
+#' @importFrom rgl par3d plot3d bgplot3d
+#' @importFrom fields image.plot
+#' @importFrom rgl par3d plot3d bgplot3d
+#' @importFrom fields image.plot
+#' @importFrom grDevices hcl.colors
+#' @importFrom graphics par plot.new title
 "_PACKAGE"

@@ -6,12 +6,12 @@
 \alias{getMinCorner,VoxelSpace-method}
 \title{Gets the x, y, z coordinates of the voxel space bottom left corner.}
 \usage{
-getMinCorner(voxelSpace)
+getMinCorner(vxsp)
 
-\S4method{getMinCorner}{VoxelSpace}(voxelSpace)
+\S4method{getMinCorner}{VoxelSpace}(vxsp)
 }
 \arguments{
-\item{voxelSpace}{the \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{the \code{\link{VoxelSpace-class}} object.}
 }
 \value{
 the x, y, z coordinates of the voxel space bottom left corner, as a
@@ -23,7 +23,7 @@ corner.
 }
 \examples{
 # load a voxel file
-vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 # retrieve 'min_corner' parameter
-getMinCorner(vox)
+getMinCorner(vxsp)
 }

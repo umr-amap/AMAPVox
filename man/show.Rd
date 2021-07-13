@@ -19,8 +19,8 @@ characteristics.
 }
 \examples{
 # load a voxel file
-vox <- readVoxelSpace(
+vxsp <- readVoxelSpace(
            system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 # show VoxelSpace object
-show(vox)
+show(vxsp)
 }

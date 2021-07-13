@@ -5,12 +5,12 @@
 \alias{writeVoxelSpace}
 \title{Write a voxel file}
 \usage{
-writeVoxelSpace(voxelSpace, outputFile)
+writeVoxelSpace(vxsp, f)
 }
 \arguments{
-\item{voxelSpace}{the object of class VoxelSpace to write}
+\item{vxsp}{the object of class VoxelSpace to write}
 
-\item{outputFile}{The path where to write the voxel file.}
+\item{f}{a character string naming a file.}
 }
 \description{
 write a voxel file out of a \code{\link{VoxelSpace-class}}
@@ -19,11 +19,11 @@ object.
 \examples{
 \dontrun{
 # load a voxel file
-vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 # set max PAD to 5
-vox@voxels[, PadBVTotal:=max(PadBVTotal, 5, na.rm = TRUE)]
-# write updated voxel file
-writeVoxelSpace(vox, tempfile("pattern"="amapvox_", fileext=".vox"))
+vxsp@voxels[, PadBVTotal:=sapply(PadBVTotal, min, 5)]
+# write updated voxel file in temporary file
+writeVoxelSpace(vxsp, tempfile("pattern"="amapvox_", fileext=".vox"))
 }
 }
 \seealso{

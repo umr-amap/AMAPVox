@@ -1,65 +1,66 @@
 #' @rdname getParameter
-setMethod("getParameter", signature(object="VoxHeader", what="character"),
-          function(object, what) {
+setMethod("getParameter", signature(vxsp="VoxelSpace", what="character"),
+          function(vxsp, what) {
             stopifnot(
               sum(!is.na(str_match(
-                names(object@parameters),
+                names(vxsp@parameters),
                 paste0("^", what, "$")))) == 1)
-            return ( object@parameters[what] )
+            return ( vxsp@parameters[what] )
           })
 
 #' @rdname getParameter
-setMethod("getParameter", signature(object="VoxelSpace", what="character"),
-          function(object, what) {
-            return ( callGeneric(object@header, what) )
+setMethod("getParameter", signature(vxsp="VoxelSpace", what="missing"),
+          function(vxsp, what) {
+
+            return ( vxsp@parameters )
           })
 
 #' @rdname getMinCorner
 setMethod("getMinCorner", "VoxelSpace",
-          function(voxelSpace) {
-            return ( voxelSpace@header@mincorner )
+          function(vxsp) {
+            return ( vxsp@parameters$mincorner )
           })
 
 #' @rdname getMaxCorner
 setMethod("getMaxCorner", "VoxelSpace",
-          function(voxelSpace) {
-            return ( voxelSpace@header@maxcorner )
+          function(vxsp) {
+            return ( vxsp@parameters$maxcorner )
           })
 
 #' @rdname getResolution
 setMethod("getResolution", "VoxelSpace",
-          function(voxelSpace) {
-            return ( voxelSpace@header@resolution )
+          function(vxsp) {
+            return ( vxsp@parameters$resolution )
           })
 
 #' @rdname getPosition
-setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="vector"),
-          function(voxelSpace, voxel) {
+setMethod("getPosition", signature(vxsp="VoxelSpace", vx="vector"),
+          function(vxsp, vx) {
 
             # 3 coordinates i, j, k
-            stopifnot(length(voxel) == 3)
+            stopifnot(length(vx) == 3)
             # i, j, k must be positive integers
-            stopifnot(as.integer(voxel) == voxel)
-            stopifnot(all(voxel >=0))
+            stopifnot(as.integer(vx) == vx)
+            stopifnot(all(vx >=0))
             # check i, j, k ranges
-            stopifnot(all((voxel >= 0) & (voxel < voxelSpace@header@split)))
+            stopifnot(all((vx >= 0) & (vx < vxsp@parameters$split)))
 
             return (
-              callGeneric(voxelSpace, data.table::data.table(i=voxel[1], j=voxel[2], k=voxel[3])))
+              callGeneric(vxsp, data.table::data.table(i=vx[1], j=vx[2], k=vx[3])))
           })
 
 #' @rdname getPosition
-setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="data.table"),
-          function(voxelSpace, voxel) {
+setMethod("getPosition", signature(vxsp="VoxelSpace", vx="data.table"),
+          function(vxsp, vx) {
 
             # ensure existence of i, j, k
-            stopifnot(all(c("i", "j", "k") %in% colnames(voxel)))
+            stopifnot(all(c("i", "j", "k") %in% colnames(vx)))
 
             # extract i, j, k
-            pos <- voxel[, c("i", "j", "k")]
+            pos <- vx[, c("i", "j", "k")]
             # min corner and resolution as local variables
-            minc <- voxelSpace@header@mincorner
-            res <- voxelSpace@header@resolution
+            minc <- vxsp@parameters$mincorner
+            res <- vxsp@parameters$resolution
             # function for calculating the position
             calcPos <- function(index, coord) minc[coord] + index * res[coord]
             # compute x, y, z
@@ -70,11 +71,11 @@ setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="data.table"),
           })
 
 #' @rdname getPosition
-setMethod("getPosition", signature(voxelSpace="VoxelSpace", voxel="missing"),
-          function(voxelSpace, voxel) {
+setMethod("getPosition", signature(vxsp="VoxelSpace", vx="missing"),
+          function(vxsp, vx) {
 
             return (
-              callGeneric(voxelSpace, voxelSpace@voxels[ , c("i", "j", "k")]))
+              callGeneric(vxsp, vxsp@voxels[ , c("i", "j", "k")]))
           })
 
 

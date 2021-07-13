@@ -10,10 +10,10 @@
 #' @include AMAPVoxClasses.R
 #' @examples
 #' # load a voxel file
-#' vox <- readVoxelSpace(
+#' vxsp <- readVoxelSpace(
 #'            system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 #' # show VoxelSpace object
-#' show(vox)
+#' show(vxsp)
 #' @export
 setMethod ("show",
            signature(object = "VoxelSpace"),
@@ -38,7 +38,7 @@ print.VoxelSpace <- function(x, ...) showVoxelSpace(x, ...)
 #' @param x a \code{\link{VoxelSpace-class}} object.
 #' @include AMAPVoxClasses.R
 #' @export
-length.VoxelSpace <- function(x) return (prod(x@header@split))
+length.VoxelSpace <- function(x) return (prod(x@parameters$split))
 
 #' Dimensions of the VoxelSpace
 #'
@@ -50,7 +50,7 @@ length.VoxelSpace <- function(x) return (prod(x@header@split))
 #' @param x a \code{\link{VoxelSpace-class}} object.
 #' @include AMAPVoxClasses.R
 #' @export
-dim.VoxelSpace <- function(x) return (x@header@split)
+dim.VoxelSpace <- function(x) return (x@parameters$split)
 
 #' Tests for objects of class VoxelSpace
 #'
@@ -68,20 +68,23 @@ is.VoxelSpace <- function (x) is(x, "VoxelSpace")
 #' @docType methods
 #' @rdname getParameter
 #' @description Gets a parameter from the VoxelSpace header.
-#' @param object either the \code{\link{VoxelSpace-class}} object or the
-#'   associated \code{\link{VoxHeader-class}}
-#' @param what the name of the parameter
+#' @param vxsp the \code{\link{VoxelSpace-class}} object
+#' @param what the name of the parameter. If missing returns all parameters.
 #' @return the parameter as a \code{character}
 #' @include AMAPVoxClasses.R
-#' @seealso \code{\link{VoxHeader-class}}, \code{\link{VoxelSpace-class}};
+#' @seealso \code{\link{VoxelSpace-class}};
 #' @examples
 #' # load a voxel file
-#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
-#' # retrieve 'min_corner' parameter
-#' getParameter(vox, "min_corner")
+#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' # show parameters name
+#' names(getParameter(vxsp))
+#' # retrieve 'mincorner' parameter
+#' getParameter(vxsp, "mincorner")
+#' # all parameters
+#' getParameter(vxsp)
 #' @export
 setGeneric("getParameter",
-           function(object, what){standardGeneric ("getParameter")})
+           function(vxsp, what){standardGeneric ("getParameter")})
 
 #' Gets the x, y, z coordinates of the voxel space bottom left corner.
 #'
@@ -89,17 +92,17 @@ setGeneric("getParameter",
 #' @rdname getMinCorner
 #' @description Gets the x, y, z coordinates of the voxel space bottom left
 #'   corner.
-#' @param voxelSpace the \code{\link{VoxelSpace-class}} object.
+#' @param vxsp the \code{\link{VoxelSpace-class}} object.
 #' @return the x, y, z coordinates of the voxel space bottom left corner, as a
 #'   numerical vector.
 #' @examples
 #' # load a voxel file
-#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 #' # retrieve 'min_corner' parameter
-#' getMinCorner(vox)
+#' getMinCorner(vxsp)
 #' @export
 setGeneric("getMinCorner",
-           function(voxelSpace){standardGeneric ("getMinCorner")})
+           function(vxsp){standardGeneric ("getMinCorner")})
 
 #' Gets the x, y, z coordinates of the voxel space top right corner.
 #'
@@ -107,34 +110,34 @@ setGeneric("getMinCorner",
 #' @rdname getMaxCorner
 #' @description Gets the x, y, z coordinates of the voxel space top right
 #'   corner.
-#' @param voxelSpace the \code{\link{VoxelSpace-class}} object.
+#' @param vxsp the \code{\link{VoxelSpace-class}} object.
 #' @return the x, y, z coordinates of the voxel space top right corner, as a
 #'   numerical vector.
 #' @examples
 #' # load a voxel file
-#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 #' # retrieve 'max_corner' parameter
-#' getMaxCorner(vox)
+#' getMaxCorner(vxsp)
 #' @export
 setGeneric("getMaxCorner",
-           function(voxelSpace){standardGeneric ("getMaxCorner")})
+           function(vxsp){standardGeneric ("getMaxCorner")})
 
 #' Gets the elemental size of a voxel (dx, dy, dz) in meter.
 #'
 #' @docType methods
 #' @rdname getResolution
 #' @description Gets the elemental size of a voxel (dx, dy, dz) in meter.
-#' @param voxelSpace the \code{\link{VoxelSpace-class}} object.
+#' @param vxsp the \code{\link{VoxelSpace-class}} object.
 #' @return the size of the voxel in meter, as a numerical vector.
 #' @examples
 #' # load a voxel file
-#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 #' # retrieve 'resolution' parameter
-#' getResolution(vox)
+#' getResolution(vxsp)
 #' @export
 #' @export
 setGeneric("getResolution",
-           function(voxelSpace){standardGeneric ("getResolution")})
+           function(vxsp){standardGeneric ("getResolution")})
 
 #' Gets the x, y, z coordinates of a given voxel.
 #'
@@ -143,22 +146,22 @@ setGeneric("getResolution",
 #' @description Gets the x, y, z coordinates of the voxel center. If the voxel
 #'   parameter is missing, it returns the positions of all the voxels in the
 #'   voxel space.
-#' @param voxelSpace the \code{\link{VoxelSpace-class}} object.
-#' @param voxel either the voxel index as a \code{c(i, j, k)} vector or a voxel
-#'   from the VoxelSpace data.table.
+#' @param vxsp a \code{\link{VoxelSpace-class}} object.
+#' @param vx either a subset of voxels from the \code{\link{VoxelSpace-class}}
+#'     data.table or a voxel index as a \code{c(i, j, k)} vector.
 #' @return the x, y, z coordinates of the voxel center.
 #' @examples
 #' # load a voxel file
-#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 #'
 #' # get position of voxel(i=0, j=0, k=0)
-#' getPosition(vox, c(0, 0, 0))
+#' getPosition(vxsp, c(0, 0, 0))
 #'
 #' # get position of voxels 1 to 10 in the data.table
-#' getPosition(vox, vox@voxels[1:10,])
+#' getPosition(vxsp, vxsp@voxels[1:10,])
 #'
 #' # get positions of every voxel
-#' getPosition(vox)
+#' getPosition(vxsp)
 #' @export
 setGeneric("getPosition",
-           function(voxelSpace, voxel){standardGeneric ("getPosition")})
+           function(vxsp, vx){standardGeneric ("getPosition")})

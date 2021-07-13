@@ -3,21 +3,20 @@
 \docType{methods}
 \name{getParameter}
 \alias{getParameter}
-\alias{getParameter,VoxHeader,character-method}
 \alias{getParameter,VoxelSpace,character-method}
+\alias{getParameter,VoxelSpace,missing-method}
 \title{Gets a parameter from the VoxelSpace header.}
 \usage{
-getParameter(object, what)
+getParameter(vxsp, what)
 
-\S4method{getParameter}{VoxHeader,character}(object, what)
+\S4method{getParameter}{VoxelSpace,character}(vxsp, what)
 
-\S4method{getParameter}{VoxelSpace,character}(object, what)
+\S4method{getParameter}{VoxelSpace,missing}(vxsp, what)
 }
 \arguments{
-\item{object}{either the \code{\link{VoxelSpace-class}} object or the
-associated \code{\link{VoxHeader-class}}}
+\item{vxsp}{the \code{\link{VoxelSpace-class}} object}
 
-\item{what}{the name of the parameter}
+\item{what}{the name of the parameter. If missing returns all parameters.}
 }
 \value{
 the parameter as a \code{character}
@@ -27,10 +26,14 @@ Gets a parameter from the VoxelSpace header.
 }
 \examples{
 # load a voxel file
-vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
-# retrieve 'min_corner' parameter
-getParameter(vox, "min_corner")
+vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+# show parameters name
+names(getParameter(vxsp))
+# retrieve 'mincorner' parameter
+getParameter(vxsp, "mincorner")
+# all parameters
+getParameter(vxsp)
 }
 \seealso{
-\code{\link{VoxHeader-class}}, \code{\link{VoxelSpace-class}};
+\code{\link{VoxelSpace-class}};
 }

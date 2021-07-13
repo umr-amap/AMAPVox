@@ -4,37 +4,37 @@
 #' @rdname writeVoxelSpace
 #' @description write a voxel file out of a \code{\link{VoxelSpace-class}}
 #'   object.
-#' @param voxelSpace the object of class VoxelSpace to write
-#' @param outputFile The path where to write the voxel file.
+#' @param vxsp the object of class VoxelSpace to write
+#' @param f a character string naming a file.
 #' @include AMAPVoxClasses.R
 #' @seealso \code{\link{readVoxelSpace}}
 #' @examples
 #' \dontrun{
 #' # load a voxel file
-#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 #' # set max PAD to 5
-#' vox@voxels[, PadBVTotal:=max(PadBVTotal, 5, na.rm = TRUE)]
-#' # write updated voxel file
-#' writeVoxelSpace(vox, tempfile("pattern"="amapvox_", fileext=".vox"))
+#' vxsp@voxels[, PadBVTotal:=sapply(PadBVTotal, min, 5)]
+#' # write updated voxel file in temporary file
+#' writeVoxelSpace(vxsp, tempfile("pattern"="amapvox_", fileext=".vox"))
 #' }
 #' @export
-writeVoxelSpace <- function(voxelSpace, outputFile){
+writeVoxelSpace <- function(vxsp, f){
 
-  stopifnot(is.VoxelSpace(voxelSpace))
+  stopifnot(is.VoxelSpace(vxsp))
 
   # write header
-  conn <- file(outputFile, open="w")
+  conn <- file(f, open="w")
   writeLines("VOXEL SPACE", conn)
   writeLines(paste0("#",
-                    paste(names(voxelSpace@header@parameters),
-                          voxelSpace@header@parameters, sep=":")),
+                    paste(names(vxsp@parameters$parameters),
+                          vxsp@parameters$parameters, sep=":")),
              conn)
   close(conn)
 
   # write voxels
   suppressWarnings(
-    utils::write.table(voxelSpace@voxels,
-                     outputFile,
+    utils::write.table(vxsp@voxels,
+                     f,
                      row.names=FALSE,
                      col.names=TRUE,
                      na="NaN",
@@ -42,5 +42,5 @@ writeVoxelSpace <- function(voxelSpace, outputFile){
                      append=TRUE,
                      quote=FALSE)
   )
-  cat("Saved voxel file ", outputFile, "[OK]")
+  cat("Saved voxel file ", f, "[OK]")
 }

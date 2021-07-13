@@ -1,13 +1,9 @@
 #' AMAPVox package
 #'
-#' The package provides a a set of R functions for reading, manipulating and
-#' writing voxel spaces. Voxel spaces are read from text-based output files of
-#' the \url{https://amap-dev.cirad.fr/projects/amapvox}{AMAPVox software}.
-#'
-#' As of version 0.1, available functions are limited and rudimentary, basically
-#' read/write voxel space. With time the package will include functions to
-#' launch full GUI tool from R and a set of useful pre/post-processing
-#' functions.
+#' The package provides a a set of R functions for working with voxel spaces
+#' (read, write, plot, etc.).
+#' Voxel spaces are read from text-based output files of the
+#' \url{https://amap-dev.cirad.fr/projects/amapvox}{AMAPVox software}.
 #'
 #' @section References: \itemize{ \item{ Research paper first describing
 #'   AMAPVox:\cr Vincent, G., Antin, C., Laurans, M., Heurtebize, J., Durrieu,
@@ -30,7 +26,8 @@
 #' @importFrom methods callGeneric is new show
 #' @importFrom utils write.table
 #' @importFrom data.table data.table fread :=
-#' @importFrom stringr str_match str_trim str_squish str_starts str_split str_remove_all
+#' @importFrom stringr str_match str_trim str_squish str_starts str_split
+#'   str_remove_all
 #' @importFrom rgl par3d plot3d bgplot3d
 #' @importFrom fields image.plot
 #' @importFrom rgl par3d plot3d bgplot3d

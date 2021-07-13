@@ -8,19 +8,19 @@
 \alias{getPosition,VoxelSpace,missing-method}
 \title{Gets the x, y, z coordinates of a given voxel.}
 \usage{
-getPosition(voxelSpace, voxel)
+getPosition(vxsp, vx)
 
-\S4method{getPosition}{VoxelSpace,vector}(voxelSpace, voxel)
+\S4method{getPosition}{VoxelSpace,vector}(vxsp, vx)
 
-\S4method{getPosition}{VoxelSpace,data.table}(voxelSpace, voxel)
+\S4method{getPosition}{VoxelSpace,data.table}(vxsp, vx)
 
-\S4method{getPosition}{VoxelSpace,missing}(voxelSpace, voxel)
+\S4method{getPosition}{VoxelSpace,missing}(vxsp, vx)
 }
 \arguments{
-\item{voxelSpace}{the \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
 
-\item{voxel}{either the voxel index as a \code{c(i, j, k)} vector or a voxel
-from the VoxelSpace data.table.}
+\item{vx}{either a subset of voxels from the \code{\link{VoxelSpace-class}}
+data.table or a voxel index as a \code{c(i, j, k)} vector.}
 }
 \value{
 the x, y, z coordinates of the voxel center.
@@ -32,14 +32,14 @@ voxel space.
 }
 \examples{
 # load a voxel file
-vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 
 # get position of voxel(i=0, j=0, k=0)
-getPosition(vox, c(0, 0, 0))
+getPosition(vxsp, c(0, 0, 0))
 
 # get position of voxels 1 to 10 in the data.table
-getPosition(vox, vox@voxels[1:10,])
+getPosition(vxsp, vxsp@voxels[1:10,])
 
 # get positions of every voxel
-getPosition(vox)
+getPosition(vxsp)
 }

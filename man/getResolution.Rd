@@ -6,12 +6,12 @@
 \alias{getResolution,VoxelSpace-method}
 \title{Gets the elemental size of a voxel (dx, dy, dz) in meter.}
 \usage{
-getResolution(voxelSpace)
+getResolution(vxsp)
 
-\S4method{getResolution}{VoxelSpace}(voxelSpace)
+\S4method{getResolution}{VoxelSpace}(vxsp)
 }
 \arguments{
-\item{voxelSpace}{the \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{the \code{\link{VoxelSpace-class}} object.}
 }
 \value{
 the size of the voxel in meter, as a numerical vector.
@@ -21,7 +21,7 @@ Gets the elemental size of a voxel (dx, dy, dz) in meter.
 }
 \examples{
 # load a voxel file
-vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 # retrieve 'resolution' parameter
-getResolution(vox)
+getResolution(vxsp)
 }

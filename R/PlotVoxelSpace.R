@@ -23,11 +23,11 @@
 #' @examples
 #' \dontrun{
 #' # load a voxel file
-#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 #' # plot sampling intensity by default
-#' plot(vox)
+#' plot(vxsp)
 #' # plot PAD
-#' plot(vox, variable.name = "PadBVTotal", palette = "YlOrRd")
+#' plot(vxsp, variable.name = "PadBVTotal", palette = "YlOrRd")
 #' }
 #' @export
 setMethod("plot",
@@ -43,21 +43,21 @@ setMethod("plot",
   # y not used
   stopifnot(missing(y))
   # make sure variable exists
-  stopifnot(variable.name %in% x@header@columnNames)
+  stopifnot(variable.name %in% x@parameters$columnNames)
   # make sure variable nbSampling exists if discard unsampled voxel is TRUE
-  stopifnot(empty.discard | ('nbSampling' %in% x@header@columnNames))
+  stopifnot(empty.discard | ('nbSampling' %in% x@parameters$columnNames))
   # make sure variable nbEchos exists if discard empty voxel is TRUE
-  stopifnot(empty.discard | ('nbEchos' %in% x@header@columnNames))
+  stopifnot(empty.discard | ('nbEchos' %in% x@parameters$columnNames))
 
   # discard empty voxels
-  voxels <- x@voxels
+  vx <- x@voxels
   nbSampling = nbEchos = NULL # due to NSE notes in R CMD check
-  if (unsampled.discard) voxels <- voxels[nbSampling > 0]
-  if (empty.discard) voxels <- voxels[nbEchos > 0]
+  if (unsampled.discard) vx <- vx[nbSampling > 0]
+  if (empty.discard) vx <- vx[nbEchos > 0]
   # compute x, y, z positions
-  pos <- getPosition(x, voxels)
+  pos <- getPosition(x, vx)
   # extract variable to plot
-  variable <- unlist(voxels[, variable.name, with = FALSE])
+  variable <- unlist(vx[, variable.name, with = FALSE])
   # variable range
   varLim <- range(variable)
   varLen <- varLim[2] - varLim[1]

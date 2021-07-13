@@ -38,11 +38,9 @@
 #' @seealso \code{\link{writeVoxelSpace}}
 #' @examples
 #' # load a voxel file
-#' vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 #' @export
 readVoxelSpace <- function(f){
-
-  vox <- new(Class=("VoxelSpace"))
 
   #lecture du header
   conn <- file(f, open="r")
@@ -52,11 +50,10 @@ readVoxelSpace <- function(f){
   stopifnot(
     !is.na(stringr::str_match(stringr::str_trim(firstLine), "^VOXEL SPACE$")))
 
-  # set file slot
-  vox@file <- f
+
 
   # loop over header
-  parameters <- NULL
+  rawParameters <- list()
   nLineHeader <- 0
   while ( TRUE ) {
     # read next line
@@ -72,7 +69,7 @@ readVoxelSpace <- function(f){
                           function(p) unlist(stringr::str_split(p, ":")),
                           character(2))
       colnames(lineParam) <- as.character(lineParam[1,])
-      parameters <- c(parameters, lineParam[-1,])
+      rawParameters <- c(rawParameters, lineParam[-1,])
     } else {
       break
     }
@@ -81,41 +78,65 @@ readVoxelSpace <- function(f){
   # closes vox file
   close(conn)
 
-  ## Predefined parameters
+  # new VoxelSpace object
+  vxsp <- new(Class=("VoxelSpace"))
+
+  # set file slot
+  vxsp@file <- f
+
   # number of lines
-  vox@header@nline <- as.integer(nLineHeader)
+  nline <- as.integer(nLineHeader)
   # column names
   columnNames <- unlist(stringr::str_split(line, " "))
-  vox@header@columnNames <- columnNames
   # min corner
-  vox@header@mincorner <- .parseNumericVector(parameters["min_corner"])
+  mincorner <- .parseNumericVector(rawParameters["min_corner"])
   # max corner
-  vox@header@maxcorner <- .parseNumericVector(parameters["max_corner"])
+  maxcorner <- .parseNumericVector(rawParameters["max_corner"])
   # split
-  vox@header@split <- .parseNumericVector(parameters["split"])
+  split <- .parseNumericVector(rawParameters["split"])
   # resolution
-  vox@header@resolution <- .parseNumericVector(parameters["res"])
-  ## All parameters as characters
-  vox@header@parameters <- parameters
+  resolution <- .parseNumericVector(rawParameters["res"])
+  ## Predefined parameters
+  parameters <- list(
+    # number of lines
+    nline = as.integer(nLineHeader),
+    # column names
+    columnNames = unlist(stringr::str_split(line, " ")),
+    # min corner
+    mincorner = .parseNumericVector(rawParameters["min_corner"]),
+    # max corner
+    maxcorner = .parseNumericVector(rawParameters["max_corner"]),
+    # split
+    split = .parseNumericVector(rawParameters["split"]),
+    # resolution
+    resolution = .parseNumericVector(rawParameters["res"])
+  )
+  # Other parameters
+  parameters <- c(parameters,
+                  rawParameters[!(names(rawParameters) %in%
+                                    c("min_corner", "max_corner",
+                                      "split", "res")) ])
+
+  vxsp@parameters <- parameters
 
   #lecture des voxels
-  vox@voxels <- data.table::fread(f, header = TRUE, skip = nLineHeader)
+  vxsp@voxels <- data.table::fread(f, header = TRUE, skip = nLineHeader)
 
-  return (vox)
+  return (vxsp)
 }
 
 ## specific implementation of the "show" function for a VoxelSpace object
-showVoxelSpace <- function(voxelSpace) {
+showVoxelSpace <- function(vxsp) {
 
-  cat(class(voxelSpace)[1],'\n')
-  cat("  file",  voxelSpace@file, sep='\t', '\n')
+  cat(class(vxsp)[1],'\n')
+  cat("  file",  vxsp@file, sep='\t', '\n')
   writeLines(paste0("  ",
-                    paste(names(voxelSpace@header@parameters),
-                          voxelSpace@header@parameters,
+                    paste(names(vxsp@parameters),
+                          vxsp@parameters,
                           sep='\t')))
   cat("  output variables",
-      paste(voxelSpace@header@columnNames, collapse=", "),
+      paste(vxsp@parameters$columnNames, collapse=", "),
       '\n',
       sep='\t')
-  show(voxelSpace@voxels)
+  show(vxsp@voxels)
 }

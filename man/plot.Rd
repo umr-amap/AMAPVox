@@ -50,11 +50,11 @@ voxel file.
 \examples{
 \dontrun{
 # load a voxel file
-vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 # plot sampling intensity by default
-plot(vox)
+plot(vxsp)
 # plot PAD
-plot(vox, variable.name = "PadBVTotal", palette = "YlOrRd")
+plot(vxsp, variable.name = "PadBVTotal", palette = "YlOrRd")
 }
 }
 \seealso{

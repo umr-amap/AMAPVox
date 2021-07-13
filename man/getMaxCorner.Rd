@@ -6,12 +6,12 @@
 \alias{getMaxCorner,VoxelSpace-method}
 \title{Gets the x, y, z coordinates of the voxel space top right corner.}
 \usage{
-getMaxCorner(voxelSpace)
+getMaxCorner(vxsp)
 
-\S4method{getMaxCorner}{VoxelSpace}(voxelSpace)
+\S4method{getMaxCorner}{VoxelSpace}(vxsp)
 }
 \arguments{
-\item{voxelSpace}{the \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{the \code{\link{VoxelSpace-class}} object.}
 }
 \value{
 the x, y, z coordinates of the voxel space top right corner, as a
@@ -23,7 +23,7 @@ corner.
 }
 \examples{
 # load a voxel file
-vox <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
 # retrieve 'max_corner' parameter
-getMaxCorner(vox)
+getMaxCorner(vxsp)
 }

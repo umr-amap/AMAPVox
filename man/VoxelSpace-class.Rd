@@ -17,10 +17,9 @@ header.
 \describe{
 \item{\code{file}}{the path of the voxel file (.vox).}
 
-\item{\code{header}}{the \code{\link{VoxHeader-class}} object associated to this
-voxel file.}
-
 \item{\code{voxels}}{the voxels hold in a data.table.}
+
+\item{\code{parameters}}{a list of parameters associated to this voxel file.}
 }}
 
 \seealso{

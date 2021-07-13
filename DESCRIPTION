@@ -24,11 +24,14 @@ Imports:
   methods,
   utils,
   data.table,
-  stringr
+  stringr,
+  fields,
+  rgl
 Collate: 
     'AMAPVox.R'
     'AMAPVoxClasses.R'
     'AMAPVoxGenerics.R'
     'AMAPVoxGetters.R'
+    'PlotVoxelSpace.R'
     'ReadVoxelSpace.R'
     'WriteVoxelSpace.R'

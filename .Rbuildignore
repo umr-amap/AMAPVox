@@ -1,3 +1,6 @@
+^R/tmp$
+^\.git$
+^\.gitignore$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 git.log

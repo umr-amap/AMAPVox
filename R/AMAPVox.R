@@ -27,11 +27,15 @@
 #' @importFrom utils write.table
 #' @importFrom data.table data.table fread :=
 #' @importFrom stringr str_match str_trim str_squish str_starts str_split
-#'   str_remove_all
+#'   str_remove_all str_extract
 #' @importFrom rgl par3d plot3d bgplot3d
 #' @importFrom fields image.plot
 #' @importFrom rgl par3d plot3d bgplot3d
 #' @importFrom fields image.plot
 #' @importFrom grDevices hcl.colors
 #' @importFrom graphics par plot.new title
+#' @importFrom dplyr %>%
+#' @importFrom rvest read_html html_element html_nodes html_attr
+#' @importFrom rappdirs user_data_dir
+#' @importFrom curl nslookup
 "_PACKAGE"

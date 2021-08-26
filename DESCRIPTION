@@ -26,10 +26,16 @@ Imports:
   data.table,
   stringr,
   fields,
-  rgl
+  rgl,
+  dplyr,
+  curl,
+  rvest,
+  rappdirs
 Collate: 
     'AMAPVox.R'
     'AMAPVoxClasses.R'
+    'AMAPVoxVersionManager.R'
+    'AMAPVoxGUI.R'
     'AMAPVoxGenerics.R'
     'AMAPVoxGetters.R'
     'PlotVoxelSpace.R'

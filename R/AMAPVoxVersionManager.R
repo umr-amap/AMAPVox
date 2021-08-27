@@ -1,14 +1,9 @@
 #' @export
 versionManager <- function(version="latest", check.update = TRUE) {
 
+  # check internet connection
   is.offline <- class(
     try(curl::nslookup("amap-dev.cirad.fr"), silent = T))[1L] == "try-error"
-
-  if (check.update && is.offline) {
-    warning("Either offline or amap-dev.cirad.fr unreachable. Cannot check for update.",
-            call. = FALSE, immediate. = TRUE)
-    check.update <- FALSE
-  }
 
   # list local versions
   localVersions <- getLocalVersions()
@@ -16,54 +11,47 @@ versionManager <- function(version="latest", check.update = TRUE) {
   if (version == "latest") {
     version <- tail(localVersions$version, 1)
   }
-  # valid version number
-  stopifnot(is.validVersion(version))
+  # valid version number l.m(.n)
+  stopifnot(is.validVersion(version, expanded = FALSE))
+  # expand version number l.m.n
+  version <- expandVersion(version)
 
-  # short version number (major.minor, e.g. 1.7)
-  if (!is.validVersion(version, extended = TRUE)
-      && !class(try(checkLocalVersion(version), silent = T)) == "try-error")
-    version <- checkLocalVersion(version, silent = F)
-
-  # requested version not in local versions
-  # look for remote version, error otherwise
-  if (!(version %in% localVersions$version)) {
-    if (is.offline)
+  if (is.offline) {
+    ## OFFLINE
+    # resolve local version
+    if (!class(try(resolveLocalVersion(version, silent = TRUE), silent = TRUE)) == "try-error") {
+      localVersion <- resolveLocalVersion(version)
+      if (compVersion(version, localVersion) != 0)
+        warning(paste("We are offline, cannot check if version", version,
+                      "is available online."),
+                call. = FALSE, immediate. = TRUE)
+      if (check.update)
+        warning("We are offline, cannot check for update.",
+                call. = FALSE, immediate. = TRUE)
+      version <- localVersion
+    }
+    else
       stop(paste("Version", version, "does not match any local versions",
-                 "(", paste(localVersions$version, collapse = ", "), ")",
-                 "and we cannot look for remote version",
-                 "(either offline or amap-dev.cirad.fr unreachable).",
-                 "Please go online or use a local version."),
+                 "(", paste(localVersions$version, collapse = ", "), ").\n",
+                 "We are offline, cannot check if version", version,
+                 "is available online."),
            call. = FALSE)
-    # check availability in remote versions
+  } else {
+    ## ONLINE
+    # list remote versions
     remoteVersions <- getRemoteVersions()
-    if (!(version %in% remoteVersions$version)) {
-      # requested version not available in remote versions
-      # looking for approaching remote version
-      if (!class(try(checkRemoteVersion(version), silent = T)) == "try-error")
-        version <- checkRemoteVersion(version, silent = F)
-      else
-        stop(paste("Version", version, "does not match any local versions (",
-                   paste(localVersions$version, collapse = ", "),
-                   "), nor any remote versions (",
-                   paste(getRemoteVersions()$version, collapse = ", ")),
-             call. = FALSE)
-    }
-  }
-
-  # check for updates
-  if (check.update) {
-    # check for updates
-    remoteVersions <- getRemoteVersions()
-    latestVersion <- tail(remoteVersions$version, 1)
-    if (compVersion(version, latestVersion) < 0) {
-      message(paste("Check for updates. Latest version available", latestVersion))
+    latestVersion <- tail(remoteVersions, 1)$version
+    # update requested
+    if (check.update && (compVersion(version, latestVersion) < 0)) {
       version <- latestVersion
+      message(paste("Check for updates. Latest version available", latestVersion))
     }
+    # resolve remote version
+    version <- resolveRemoteVersion(version)
+    # install remote version
+    if (!(version %in% localVersions$version))
+      installVersion(version)
   }
-
-  # install remote version locally if needed
-  if (!(version %in% localVersions$version))
-    installVersion(version)
 
   return(version)
 }
@@ -134,9 +122,7 @@ orderVersions <- function(versions) {
 compVersion <- function(v1, v2) {
 
   # valid version numbers only
-  stopifnot(all(
-    is.validVersion(v1, extended = TRUE),
-    is.validVersion(v2, extended = TRUE)))
+  stopifnot(all(is.validVersion(v1), is.validVersion(v2)))
   # reformat as R package version number
   v1 <- gsub("\\.(\\d+)$", "-\\1", v1)
   v2 <- gsub("\\.(\\d+)$", "-\\1", v2)
@@ -144,7 +130,17 @@ compVersion <- function(v1, v2) {
   return(compareVersion(v1, v2))
 }
 
-is.validVersion <- function(version, extended = FALSE) {
+expandVersion <- function(version) {
+
+  stopifnot(is.validVersion(version, expanded = FALSE))
+  return(ifelse(
+    length(strsplit(version, "\\.")[[1L]]) == 3,
+    version,
+    paste0(version, ".0")
+  ))
+}
+
+is.validVersion <- function(version, expanded = TRUE) {
   # regex pattern for version number major.minor(.build)
   pattern <- "^(\\d+)(\\.\\d+)?(\\.\\d+)$"
   if (!grepl(pattern, version)) {
@@ -153,14 +149,15 @@ is.validVersion <- function(version, extended = FALSE) {
                   "Must be \"l.m(.n)\" with l, m & n integers"))
     return(FALSE)
   }
-  return(ifelse(extended,
+  return(ifelse(expanded,
                 length(strsplit(version, "\\.")[[1L]]) == 3,
                 TRUE))
 }
 
-checkVersion <- function(version, versions, silent = TRUE) {
+resolveVersion <- function(version, versions, silent) {
 
-  stopifnot(is.validVersion(version))
+  # valid version numbers only
+  stopifnot(all(sapply(rbind(version, versions), is.validVersion)))
   # version matches remote version, check successful
   if (version %in% versions) return(version)
   # version does not match, try with short version major.minor without build
@@ -178,20 +175,20 @@ checkVersion <- function(version, versions, silent = TRUE) {
   }
   # short version does not match any available version
   stop(paste("Version", version,
-             "does not match any available versions (",
-             paste(versions, collapse = ", "), ")"))
+             "does not match any available versions",
+             "(", paste(versions, collapse = ", "), ")"))
 }
 
 #' @export
-checkRemoteVersion <- function(version, silent = TRUE) {
+resolveRemoteVersion <- function(version, silent = FALSE) {
   versions <- getRemoteVersions()
-  checkVersion(version, versions$version, silent)
+  resolveVersion(version, versions$version, silent)
 }
 
 #' @export
-checkLocalVersion <- function(version, silent = TRUE) {
+resolveLocalVersion <- function(version, silent = FALSE) {
   versions <- getLocalVersions()
-  checkVersion(version, versions$version, silent)
+  resolveVersion(version, versions$version, silent)
 }
 
 #' @export
@@ -208,7 +205,7 @@ installVersion <- function(version, overwrite = FALSE) {
   # check whether requested version already installed
   jarPath <- file.path(versionPath, paste0("AMAPVox-", version, ".jar"))
   if (file.exists(jarPath) & !overwrite) {
-    message(paste(version, "already installed in", versionPath))
+    message(paste("AMAPVox", version, "already installed in", versionPath))
     return(versionPath)
   }
   # url to download
@@ -223,7 +220,7 @@ installVersion <- function(version, overwrite = FALSE) {
   unzip(zipfile, exdir = versionPath)
   # delete zip file
   file.remove(zipfile)
-  message(paste(version, "successfully installed in", versionPath))
+  message(paste("AMAPVox", version, "successfully installed in", versionPath))
   return(versionPath)
 }
 
@@ -231,22 +228,22 @@ installVersion <- function(version, overwrite = FALSE) {
 removeVersion <- function(version) {
 
   # make sure version number is valid
-  stopifnot(is.validVersion(version, extended = TRUE))
+  stopifnot(is.validVersion(version))
 
   localVersions <- getLocalVersions()
   # version not installed
   if (!(version %in% localVersions$version)) {
-    warning(paste("Version", version, "not installed locallly. Nothing to do."),
+    message(paste("Version", version, "not installed locallly. Nothing to do."),
             call. = FALSE, immediate. = TRUE)
     return(invisible(NULL))
   }
   # local version exists, uninstall it
   path <- localVersions$path[which(localVersions == version)]
-  ifelse(
-    unlink(path, recursive = TRUE) == 0,
-    message(paste("Version", version, "successfully removed from computer",
-                  "(", path, ").")),
+  if (class(try(unlink(path, recursive = TRUE), silent = TRUE)) != "try-error")
+    message(paste("Version", version, "successfully removed",
+                  "(", path, ")."))
+  else
     message(paste("Failed to delete folder", path,
-                  ", you may have to do so manually..."))
+                  ", you may have to do so manually...")
   )
 }

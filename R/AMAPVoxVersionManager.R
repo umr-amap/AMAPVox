@@ -56,6 +56,15 @@ versionManager <- function(version="latest", check.update = TRUE) {
   return(version)
 }
 
+#' List remote AMAPVox versions.
+#'
+#' @docType methods
+#' @rdname getRemoteVersions
+#' @description list AMAPVox versions available for download from page
+#'   \url{https://amap-dev.cirad.fr/projects/amapvox/files}
+#' @return a \code{data.frame} with 2 variables: \code{$version} that stores
+#'   the version number and \code{$url} the URL of the associated ZIP file.
+#' @seealso \code{\link{getLocalVerions}}
 #' @export
 getRemoteVersions <- function() {
 
@@ -89,6 +98,18 @@ getRemoteVersions <- function() {
   return(zips)
 }
 
+#' List local AMAPVox versions.
+#'
+#' @docType methods
+#' @rdname getLocalVersions
+#' @description list AMAPVox versions already installed on your computer by
+#'  the package. AMAPVox versions are installed in the user-specific data
+#'  directory, as specified by \code{\link{rappdirs::user_data_dir}}.
+#' @return a \code{data.frame} with 2 variables: \code{$version} that stores
+#'   the version number and \code{$path} the local path of the AMAPVox
+#'   directory.
+#' @seealso \code{\link{getRemoteVersions}}
+#' @seealso \code{\link{rappdirs::user_data_dir}}
 #' @export
 getLocalVersions <- function() {
 
@@ -109,37 +130,9 @@ getLocalVersions <- function() {
   return(binaries)
 }
 
-orderVersions <- function(versions) {
-
-  # valid version numbers only
-  stopifnot(all(sapply(versions, is.validVersion)))
-  #
-  split <- t(sapply(strsplit(versions, "\\."), as.integer))
-  vrs <- data.frame(major = split[, 1], minor = split[, 2], build = split[, 3])
-  return(order(vrs$major, vrs$minor, vrs$build))
-}
-
-compVersion <- function(v1, v2) {
-
-  # valid version numbers only
-  stopifnot(all(is.validVersion(v1), is.validVersion(v2)))
-  # reformat as R package version number
-  v1 <- gsub("\\.(\\d+)$", "-\\1", v1)
-  v2 <- gsub("\\.(\\d+)$", "-\\1", v2)
-  # compare with utils::compareVersion
-  return(compareVersion(v1, v2))
-}
-
-expandVersion <- function(version) {
-
-  stopifnot(is.validVersion(version, expanded = FALSE))
-  return(ifelse(
-    length(strsplit(version, "\\.")[[1L]]) == 3,
-    version,
-    paste0(version, ".0")
-  ))
-}
-
+## check if valid version number major.minor(.build) with major, minor & build
+## positive integers.
+## expanded option controls whether the (.build) number is mandatory or not.
 is.validVersion <- function(version, expanded = TRUE) {
   # regex pattern for version number major.minor(.build)
   pattern <- "^(\\d+)(\\.\\d+)?(\\.\\d+)$"
@@ -154,6 +147,46 @@ is.validVersion <- function(version, expanded = TRUE) {
                 TRUE))
 }
 
+## order version numbers respectively along major, minor and build numbers.
+orderVersions <- function(versions) {
+
+  # valid version numbers only
+  stopifnot(all(sapply(versions, is.validVersion)))
+  #
+  split <- t(sapply(strsplit(versions, "\\."), as.integer))
+  vrs <- data.frame(major = split[, 1], minor = split[, 2], build = split[, 3])
+  return(order(vrs$major, vrs$minor, vrs$build))
+}
+
+## compare two version numbers using the base function compareVersion
+compVersion <- function(v1, v2) {
+
+  # valid version numbers only
+  stopifnot(all(is.validVersion(v1), is.validVersion(v2)))
+  # reformat as R package version number
+  v1 <- gsub("\\.(\\d+)$", "-\\1", v1)
+  v2 <- gsub("\\.(\\d+)$", "-\\1", v2)
+  # compare with utils::compareVersion
+  return(compareVersion(v1, v2))
+}
+
+## expand version number major.minor to major.minor.0
+expandVersion <- function(version) {
+
+  stopifnot(is.validVersion(version, expanded = FALSE))
+  return(ifelse(
+    length(strsplit(version, "\\.")[[1L]]) == 3,
+    version,
+    paste0(version, ".0")
+  ))
+}
+
+## given a version number and a list of version numbers (versions), the function
+## resolves the version against the vector of version numbers.
+## if version is contained in versions, it returns version
+## if not it returns the latest version number from versions with matching
+## major and minor numbers.
+## at last throws error if none matches.
 resolveVersion <- function(version, versions, silent) {
 
   # valid version numbers only
@@ -179,18 +212,43 @@ resolveVersion <- function(version, versions, silent) {
              "(", paste(versions, collapse = ", "), ")"))
 }
 
-#' @export
+## check if remote version is available, or suggest approaching version
+## otherwise.
 resolveRemoteVersion <- function(version, silent = FALSE) {
   versions <- getRemoteVersions()
   resolveVersion(version, versions$version, silent)
 }
 
-#' @export
+## check if local version is available, or suggest approaching version
+## otherwise.
 resolveLocalVersion <- function(version, silent = FALSE) {
   versions <- getLocalVersions()
   resolveVersion(version, versions$version, silent)
 }
 
+#' Install specific AMAPVox version on local computer.
+#'
+#' @docType methods
+#' @rdname installVersion
+#' @description install specific AMAPVox version on your computer.
+#'   AMAPVox versions are installed in the user-specific data
+#'   directory, as specified by \code{\link{rappdirs::user_data_dir}}.
+#'   You should not worry to call directly the \code{install} function since
+#'   local installations are automatically handled by the version manager
+#'   when you launch AMAPVox GUI with \code{\link{AMAPVox::gui}} function.
+#' @param version, a valid and existing AMAPVox remote version number
+#'   (major.minor.build)
+#' @param overwrite, whether existing local installation should be re-installed.
+#' @return the path of the AMAPVox installation directory.
+#' @seealso \code{\link{getLocalVersions}}
+#' @seealso \code{\link{getRemoteVersions}}
+#' @seealso \code{\link{removeVersion}}
+#' @seealso \code{\link{rappdirs::user_data_dir}}
+#' @example
+#' \dontrun{
+#' # install latest version
+#' installVersion(tail(getRemoteVersions()$version, 1))
+#' }
 #' @export
 installVersion <- function(version, overwrite = FALSE) {
 
@@ -224,6 +282,20 @@ installVersion <- function(version, overwrite = FALSE) {
   return(versionPath)
 }
 
+#' Remove specific AMAPVox version from local computer.
+#'
+#' @docType methods
+#' @rdname removeVersion
+#' @description uninstall specific AMAPVox version from your computer.
+#' @param version, a valid and existing AMAPVox local version number
+#'   (major.minor.build)
+#' @seealso \code{\link{getLocalVersions}}
+#' @seealso \code{\link{installVersion}}
+#' @example
+#' \dontrun{
+#' # uninstall oldest version from your computer
+#' removeVersion(head(getLocalVersions()$version, 1))
+#' }
 #' @export
 removeVersion <- function(version) {
 

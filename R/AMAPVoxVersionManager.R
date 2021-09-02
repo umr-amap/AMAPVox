@@ -1,4 +1,13 @@
-#' @export
+## Version manager
+## Important function, not exported though, because there is no reason for a
+## direct call by end user. At this stage end user shall call AMAPVox::gui().
+## What is does ? Given a requested version (either "latest" or major.minor or
+## major.minor.build) the function either returns the requested version or the
+## best match.
+## If requested version is available locally, end of story. If not, check
+## remotely and install if available. If not returns best match, remote if
+## online, local otherwise.
+## Throws an error if no approaching version can be found.
 versionManager <- function(version="latest", check.update = TRUE) {
 
   # check internet connection
@@ -60,11 +69,11 @@ versionManager <- function(version="latest", check.update = TRUE) {
 #'
 #' @docType methods
 #' @rdname getRemoteVersions
-#' @description list AMAPVox versions available for download from page
+#' @description List AMAPVox versions available for download from page
 #'   \url{https://amap-dev.cirad.fr/projects/amapvox/files}
 #' @return a \code{data.frame} with 2 variables: \code{$version} that stores
 #'   the version number and \code{$url} the URL of the associated ZIP file.
-#' @seealso \code{\link{getLocalVerions}}
+#' @seealso \code{\link{getLocalVersions}}
 #' @export
 getRemoteVersions <- function() {
 
@@ -102,14 +111,14 @@ getRemoteVersions <- function() {
 #'
 #' @docType methods
 #' @rdname getLocalVersions
-#' @description list AMAPVox versions already installed on your computer by
+#' @description List AMAPVox versions already installed on your computer by
 #'  the package. AMAPVox versions are installed in the user-specific data
 #'  directory, as specified by \code{\link{rappdirs::user_data_dir}}.
 #' @return a \code{data.frame} with 2 variables: \code{$version} that stores
 #'   the version number and \code{$path} the local path of the AMAPVox
 #'   directory.
-#' @seealso \code{\link{getRemoteVersions}}
-#' @seealso \code{\link{rappdirs::user_data_dir}}
+#' @seealso \code{\link{getRemoteVersions}},
+#'   \code{\link{rappdirs::user_data_dir}}
 #' @export
 getLocalVersions <- function() {
 
@@ -159,6 +168,8 @@ orderVersions <- function(versions) {
 }
 
 ## compare two version numbers using the base function compareVersion
+## transform "major.minor.build" into "major.minor-build" for compatibility with
+## R version numbers.
 compVersion <- function(v1, v2) {
 
   # valid version numbers only
@@ -230,7 +241,7 @@ resolveLocalVersion <- function(version, silent = FALSE) {
 #'
 #' @docType methods
 #' @rdname installVersion
-#' @description install specific AMAPVox version on your computer.
+#' @description Install specific AMAPVox version on your computer.
 #'   AMAPVox versions are installed in the user-specific data
 #'   directory, as specified by \code{\link{rappdirs::user_data_dir}}.
 #'   You should not worry to call directly the \code{install} function since
@@ -240,11 +251,10 @@ resolveLocalVersion <- function(version, silent = FALSE) {
 #'   (major.minor.build)
 #' @param overwrite, whether existing local installation should be re-installed.
 #' @return the path of the AMAPVox installation directory.
-#' @seealso \code{\link{getLocalVersions}}
-#' @seealso \code{\link{getRemoteVersions}}
-#' @seealso \code{\link{removeVersion}}
+#' @seealso \code{\link{getLocalVersions}}, \code{\link{getRemoteVersions}},
+#'   \code{\link{removeVersion}}
 #' @seealso \code{\link{rappdirs::user_data_dir}}
-#' @example
+#' @examples
 #' \dontrun{
 #' # install latest version
 #' installVersion(tail(getRemoteVersions()$version, 1))
@@ -286,12 +296,11 @@ installVersion <- function(version, overwrite = FALSE) {
 #'
 #' @docType methods
 #' @rdname removeVersion
-#' @description uninstall specific AMAPVox version from your computer.
+#' @description Uninstall specific AMAPVox version from your computer.
 #' @param version, a valid and existing AMAPVox local version number
 #'   (major.minor.build)
-#' @seealso \code{\link{getLocalVersions}}
-#' @seealso \code{\link{installVersion}}
-#' @example
+#' @seealso \code{\link{getLocalVersions}}, \code{\link{installVersion}}
+#' @examples
 #' \dontrun{
 #' # uninstall oldest version from your computer
 #' removeVersion(head(getLocalVersions()$version, 1))

@@ -1,3 +1,42 @@
+#' Run AMAPVox Graphical User Interface.
+#'
+#' @docType methods
+#' @rdname gui
+#' @description Run AMAPVox Graphical User Interface (GUI). The function embeds
+#'   a version manager for installing locally any version available remotely.
+#'   AMAPVox GUI relies on Java 1.8 64-Bit and JavaFX.
+#'   See detailed section below.
+#' @section Java 1.8 64-Bit with JavaFX:
+#'   AMAPVox GUI relies on Java 1.8 64-Bit and JavaFX. In practice it requires
+#'   either \href{https://java.com/download/}{Java 1.8 64-Bit Oracle}
+#'   or \href{https://aws.amazon.com/fr/corretto/}{Java 1.8 64-Bit Corretto}.
+#'   Unfortunately OpenJDK 8 will not work since JavaFX is not included.
+#'   You may check beforehand if java is installed on your system and
+#'   which version.
+#'   \preformatted{
+#'   system2("java", args = "-version")
+#'   }
+#'   If AMAPVox::gui keeps complaining after you have installed suitable
+#'   Java 1.8 64-Bit, it means that Java 1.8 may not be properly detected by
+#'   your system. In such case you may have to check and set the
+#'   \code{JAVA_HOME} environment variable.
+#'   \preformatted{
+#'   Sys.getenv("JAVA_HOME")
+#'   Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
+#'   }
+#' @param version, either "latest" or a valid version number major.minor(.build)
+#'   if \code{version="latest"} and \code{check.update=FALSE} or no internet
+#'   connection it runs latest local version.
+#' @param check.update, check for newer version online and install it.
+#' @seealso \code{\link{getLocalVersions}}, \code{\link{getRemoteVersions}},
+#'   \code{\link{installVersion}}, \code{\link{removeVersion}}
+#' @examples
+#' \dontrun{
+#' # install and run latest AMAPVox version
+#' AMAPVox::gui()
+#' # install and run version 1.6.4 for instance
+#' AMAPVox::gui(version="1.6.4", check.update = FALSE)
+#' }
 #' @include AMAPVoxVersionManager.R
 #' @export
 gui <- function(version="latest", check.update = TRUE) {

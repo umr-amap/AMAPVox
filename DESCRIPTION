@@ -42,3 +42,7 @@ Collate:
     'PlotVoxelSpace.R'
     'ReadVoxelSpace.R'
     'WriteVoxelSpace.R'
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr

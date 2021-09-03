@@ -44,3 +44,4 @@ git.log
 # CRAN release
 CRAN-RELEASE
 
+inst/doc

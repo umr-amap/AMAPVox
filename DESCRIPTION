@@ -1,7 +1,7 @@
 Package: AMAPVox
 Type: Package
 Title: LiDAR Data Voxelisation
-Version: 0.3.0
+Version: 0.4.0
 Authors@R: c(
   person("Grégoire", "Vincent", email="gregoire.vincent@ird.fr", role=c("aut")),
   person("Julien", "Heurtebize", email="julienhtbe@gmail.com", role=c("aut")),

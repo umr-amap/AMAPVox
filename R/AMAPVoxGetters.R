@@ -46,7 +46,8 @@ setMethod("getPosition", signature(vxsp="VoxelSpace", vx="vector"),
             stopifnot(all((vx >= 0) & (vx < vxsp@parameters$split)))
 
             return (
-              callGeneric(vxsp, data.table::data.table(i=vx[1], j=vx[2], k=vx[3])))
+              callGeneric(vxsp,
+                          data.table::data.table(i=vx[1], j=vx[2], k=vx[3])))
           })
 
 #' @rdname getPosition
@@ -64,7 +65,7 @@ setMethod("getPosition", signature(vxsp="VoxelSpace", vx="data.table"),
             # function for calculating the position
             calcPos <- function(index, coord) minc[coord] + index * res[coord]
             # compute x, y, z
-            i = j = k = x = y = z = NULL # due to NSE notes in R CMD check
+            i <- j <- k <- x <- y <- z <- NULL # due to NSE notes in R CMD check
             pos <- pos[, x:=calcPos(i, "x")][, y:=calcPos(j, "y")][, z:=calcPos(k, "z")][, c("x", "y", "z")]
             # return positions as data.table
             return ( pos )

@@ -17,7 +17,8 @@
 #' @param voxel.size numeric, the size of voxel in pixels
 #' @param unsampled.discard logical, whether to discard unsampled voxel
 #' @param empty.discard logical, whether to discard empty voxel (no hit)
-#' @param ... additional parameters which will be passed to \code{\link[rgl]{plot3d}}.
+#' @param ... additional parameters which will be passed to
+#'   \code{\link[rgl]{plot3d}}.
 #' @include AMAPVoxClasses.R
 #' @seealso \code{\link[rgl]{plot3d}}
 #' @examples
@@ -51,7 +52,7 @@ setMethod("plot",
 
   # discard empty voxels
   vx <- x@voxels
-  nbSampling = nbEchos = NULL # due to NSE notes in R CMD check
+  nbSampling <- nbEchos <- NULL # due to NSE notes in R CMD check
   if (unsampled.discard) vx <- vx[nbSampling > 0]
   if (empty.discard) vx <- vx[nbEchos > 0]
   # compute x, y, z positions
@@ -76,7 +77,8 @@ setMethod("plot",
     graphics::par(bg= bg.color)
     graphics::plot.new()
     # colorbar
-    fields::image.plot(legend.only = TRUE, add = TRUE, zlim = varLim, col = colorlut)
+    fields::image.plot(legend.only = TRUE, add = TRUE, zlim = varLim,
+                       col = colorlut)
     # main title
     graphics::title(main = paste('Voxel space - Variable', variable.name))
   })

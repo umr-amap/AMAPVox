@@ -52,13 +52,14 @@ gui <- function(version="latest", check.update = TRUE) {
                " Make sure Java 1.8 64-Bit is properly installed"))
   } else {
     # java is installed, make sure it is Java 8 64-Bit
-    jversion <- system2("java", args = "-version", stdout = TRUE, stderr = TRUE)
+    jvrs <- system2("java", args = "-version", stdout = TRUE, stderr = TRUE)
     # java 1.8.0 64-Bit Oracle or Corretto for JavaFX support
-    if (!(grepl("1\\.8\\.0", jversion[1])
-          & (grepl("Java\\(TM\\)", jversion[2]) | grepl("Corretto", jversion[2]))
-          & grepl("64\\-[bB]it", jversion[3]))) {
-      stop("unsupported java version\n", paste("  ", jversion, "\n"),
-           "Must be Java 1.8 64-Bit, Oracle or Corretto. Read help function for details.")
+    if (!(grepl("1\\.8\\.0", jvrs[1])
+          & (grepl("Java\\(TM\\)", jvrs[2]) | grepl("Corretto", jvrs[2]))
+          & grepl("64\\-[bB]it", jvrs[3]))) {
+      stop("unsupported java version\n", paste("  ", jvrs, "\n"),
+           "Must be Java 1.8 64-Bit, Oracle or Corretto.\n",
+           "Read help function for details.")
     }
   }
 

@@ -37,7 +37,8 @@
 
 \item{empty.discard}{logical, whether to discard empty voxel (no hit)}
 
-\item{...}{additional parameters which will be passed to \code{\link[rgl]{plot3d}}.}
+\item{...}{additional parameters which will be passed to
+\code{\link[rgl]{plot3d}}.}
 }
 \description{
 plot a \code{\link{VoxelSpace-class}} object.

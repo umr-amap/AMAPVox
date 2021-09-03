@@ -28,14 +28,16 @@ or \href{https://aws.amazon.com/fr/corretto/}{Java 1.8 64-Bit Corretto}.
 Unfortunately OpenJDK 8 will not work since JavaFX is not included.
 You may check beforehand if java is installed on your system and
 which version.
-\preformatted{system2("java", args = "-version")}
+\preformatted{
+  system2("java", args = "-version")
+  }
 If AMAPVox::gui keeps complaining after you have installed suitable
 Java 1.8 64-Bit, it means that Java 1.8 may not be properly detected by
 your system. In such case you may have to check and set the
 \code{JAVA_HOME} environment variable.
 \preformatted{
-  Sys.getEnv("JAVA_HOME")
-  Sys.setEnv(JAVA_HOME="path/to/java/1.8/bin")
+  Sys.getenv("JAVA_HOME")
+  Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
   }
 }
 

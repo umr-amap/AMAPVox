@@ -9,7 +9,7 @@
 The package provides a a set of R functions for working with voxel spaces
 (read, write, plot, etc.).
 Voxel spaces are read from text-based output files of the
-\url{https://amap-dev.cirad.fr/projects/amapvox}{AMAPVox software}.
+\href{https://amap-dev.cirad.fr/projects/amapvox}{AMAPVox software}.
 }
 \section{References}{
  \itemize{ \item{ Research paper first describing

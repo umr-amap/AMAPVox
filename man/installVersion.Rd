@@ -19,10 +19,10 @@ the path of the AMAPVox installation directory.
 \description{
 Install specific AMAPVox version on your computer.
 AMAPVox versions are installed in the user-specific data
-directory, as specified by \code{\link{rappdirs::user_data_dir}}.
+directory, as specified by \code{\link[rappdirs]{user_data_dir}}.
 You should not worry to call directly the \code{install} function since
 local installations are automatically handled by the version manager
-when you launch AMAPVox GUI with \code{\link{AMAPVox::gui}} function.
+when you launch AMAPVox GUI with \code{\link{gui}} function.
 }
 \examples{
 \dontrun{
@@ -34,5 +34,5 @@ installVersion(tail(getRemoteVersions()$version, 1))
 \code{\link{getLocalVersions}}, \code{\link{getRemoteVersions}},
 \code{\link{removeVersion}}
 
-\code{\link{rappdirs::user_data_dir}}
+\code{\link[rappdirs]{user_data_dir}}
 }

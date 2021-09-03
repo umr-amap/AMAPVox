@@ -12,13 +12,13 @@ versionManager <- function(version="latest", check.update = TRUE) {
 
   # check internet connection
   is.offline <- class(
-    try(curl::nslookup("amap-dev.cirad.fr"), silent = T))[1L] == "try-error"
+    try(curl::nslookup("amap-dev.cirad.fr"), silent = TRUE))[1L] == "try-error"
 
   # list local versions
   localVersions <- getLocalVersions()
   # latest local version
   if (version == "latest") {
-    version <- tail(localVersions$version, 1)
+    version <- utils::tail(localVersions$version, 1)
   }
   # valid version number l.m(.n)
   stopifnot(is.validVersion(version, expanded = FALSE))
@@ -28,7 +28,8 @@ versionManager <- function(version="latest", check.update = TRUE) {
   if (is.offline) {
     ## OFFLINE
     # resolve local version
-    if (!class(try(resolveLocalVersion(version, silent = TRUE), silent = TRUE)) == "try-error") {
+    if (!class(try(resolveLocalVersion(version, silent = TRUE),
+                   silent = TRUE)) == "try-error") {
       localVersion <- resolveLocalVersion(version)
       if (compVersion(version, localVersion) != 0)
         warning(paste("We are offline, cannot check if version", version,
@@ -49,11 +50,12 @@ versionManager <- function(version="latest", check.update = TRUE) {
     ## ONLINE
     # list remote versions
     remoteVersions <- getRemoteVersions()
-    latestVersion <- tail(remoteVersions, 1)$version
+    latestVersion <- utils::tail(remoteVersions, 1)$version
     # update requested
     if (check.update && (compVersion(version, latestVersion) < 0)) {
       version <- latestVersion
-      message(paste("Check for updates. Latest version available", latestVersion))
+      message(paste("Check for updates. Latest version available",
+                    latestVersion))
     }
     # resolve remote version
     version <- resolveRemoteVersion(version)
@@ -96,7 +98,7 @@ getRemoteVersions <- function() {
     rvest::html_attr("href")
   # extract AMAPVox zip files only
   url <- paste0("https://amap-dev.cirad.fr",
-                grep("*AMAPVox-\\d+\\.\\d+\\.\\d+\\.zip$", files, value = T))
+                grep("*AMAPVox-\\d+\\.\\d+\\.\\d+\\.zip$", files, value = TRUE))
   # extract AMAPVox versions and sort them
   version <- stringr::str_extract(url, "\\d+\\.\\d+\\.\\d+")
   # create dataframe and sort it along version
@@ -113,12 +115,12 @@ getRemoteVersions <- function() {
 #' @rdname getLocalVersions
 #' @description List AMAPVox versions already installed on your computer by
 #'  the package. AMAPVox versions are installed in the user-specific data
-#'  directory, as specified by \code{\link{rappdirs::user_data_dir}}.
+#'  directory, as specified by \code{\link[rappdirs]{user_data_dir}}.
 #' @return a \code{data.frame} with 2 variables: \code{$version} that stores
 #'   the version number and \code{$path} the local path of the AMAPVox
 #'   directory.
 #' @seealso \code{\link{getRemoteVersions}},
-#'   \code{\link{rappdirs::user_data_dir}}
+#'   \code{\link[rappdirs]{user_data_dir}}
 #' @export
 getLocalVersions <- function() {
 
@@ -160,9 +162,9 @@ is.validVersion <- function(version, expanded = TRUE) {
 orderVersions <- function(versions) {
 
   # valid version numbers only
-  stopifnot(all(sapply(versions, is.validVersion)))
+  stopifnot(all(vapply(versions, is.validVersion, logical(1))))
   #
-  split <- t(sapply(strsplit(versions, "\\."), as.integer))
+  split <- t(vapply(strsplit(versions, "\\."), as.integer, integer(3)))
   vrs <- data.frame(major = split[, 1], minor = split[, 2], build = split[, 3])
   return(order(vrs$major, vrs$minor, vrs$build))
 }
@@ -178,7 +180,7 @@ compVersion <- function(v1, v2) {
   v1 <- gsub("\\.(\\d+)$", "-\\1", v1)
   v2 <- gsub("\\.(\\d+)$", "-\\1", v2)
   # compare with utils::compareVersion
-  return(compareVersion(v1, v2))
+  return(utils::compareVersion(v1, v2))
 }
 
 ## expand version number major.minor to major.minor.0
@@ -201,7 +203,7 @@ expandVersion <- function(version) {
 resolveVersion <- function(version, versions, silent) {
 
   # valid version numbers only
-  stopifnot(all(sapply(rbind(version, versions), is.validVersion)))
+  stopifnot(all(vapply(rbind(version, versions), is.validVersion, logical(1))))
   # version matches remote version, check successful
   if (version %in% versions) return(version)
   # version does not match, try with short version major.minor without build
@@ -210,7 +212,7 @@ resolveVersion <- function(version, versions, silent) {
   # short version matches remote short version
   if (shortVersion %in% shortVersions) {
     # return latest build corresponding to short version
-    ind <- tail(which(shortVersions == shortVersion), 1)
+    ind <- utils::tail(which(shortVersions == shortVersion), 1)
     suggestedVersion <- versions[ind]
     if (!silent)
       message(paste0("Requested version ", version,
@@ -243,17 +245,17 @@ resolveLocalVersion <- function(version, silent = FALSE) {
 #' @rdname installVersion
 #' @description Install specific AMAPVox version on your computer.
 #'   AMAPVox versions are installed in the user-specific data
-#'   directory, as specified by \code{\link{rappdirs::user_data_dir}}.
+#'   directory, as specified by \code{\link[rappdirs]{user_data_dir}}.
 #'   You should not worry to call directly the \code{install} function since
 #'   local installations are automatically handled by the version manager
-#'   when you launch AMAPVox GUI with \code{\link{AMAPVox::gui}} function.
+#'   when you launch AMAPVox GUI with \code{\link{gui}} function.
 #' @param version, a valid and existing AMAPVox remote version number
 #'   (major.minor.build)
 #' @param overwrite, whether existing local installation should be re-installed.
 #' @return the path of the AMAPVox installation directory.
 #' @seealso \code{\link{getLocalVersions}}, \code{\link{getRemoteVersions}},
 #'   \code{\link{removeVersion}}
-#' @seealso \code{\link{rappdirs::user_data_dir}}
+#' @seealso \code{\link[rappdirs]{user_data_dir}}
 #' @examples
 #' \dontrun{
 #' # install latest version
@@ -281,11 +283,12 @@ installVersion <- function(version, overwrite = FALSE) {
   # local destination
   zipfile <- file.path(binPath, paste0(version, ".zip"))
   # create local bin folder if does not exist
-  if (!dir.exists(binPath)) dir.create(binPath, recursive = T, showWarnings = F)
+  if (!dir.exists(binPath)) dir.create(binPath, recursive = TRUE,
+                                       showWarnings = FALSE)
   # download zip
-  download.file(url, zipfile)
+  utils::download.file(url, zipfile)
   # unzip
-  unzip(zipfile, exdir = versionPath)
+  utils::unzip(zipfile, exdir = versionPath)
   # delete zip file
   file.remove(zipfile)
   message(paste("AMAPVox", version, "successfully installed in", versionPath))

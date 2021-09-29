@@ -7,7 +7,7 @@
 #'   characteristics.
 #' @return show returns an invisible NULL.
 #' @param object a \code{\link{VoxelSpace-class}} object.
-#' @include AMAPVoxClasses.R
+#' @include Classes.R
 #' @examples
 #' # load a voxel file
 #' vxsp <- readVoxelSpace(
@@ -36,7 +36,7 @@ print.VoxelSpace <- function(x, ...) showVoxelSpace(x, ...)
 #'     value, namely \code{nrow(x@voxels) <= length(x)}
 #' @return the number of voxels in the voxel space.
 #' @param x a \code{\link{VoxelSpace-class}} object.
-#' @include AMAPVoxClasses.R
+#' @include Classes.R
 #' @export
 length.VoxelSpace <- function(x) return (prod(x@parameters$split))
 
@@ -48,7 +48,7 @@ length.VoxelSpace <- function(x) return (prod(x@parameters$split))
 #' @return the number of voxels nx, ny, nz of a \code{\link{VoxelSpace-class}}
 #'   along x, y, z axis.
 #' @param x a \code{\link{VoxelSpace-class}} object.
-#' @include AMAPVoxClasses.R
+#' @include Classes.R
 #' @export
 dim.VoxelSpace <- function(x) return (x@parameters$split)
 
@@ -58,7 +58,7 @@ dim.VoxelSpace <- function(x) return (x@parameters$split)
 #' @rdname is.VoxelSpace
 #' @description Tests for objects of class VoxelSpace
 #' @param x to be tested
-#' @include AMAPVoxClasses.R
+#' @include Classes.R
 #' @seealso \code{\link{VoxelSpace-class}};
 #' @export
 is.VoxelSpace <- function (x) is(x, "VoxelSpace")
@@ -71,7 +71,7 @@ is.VoxelSpace <- function (x) is(x, "VoxelSpace")
 #' @param vxsp the \code{\link{VoxelSpace-class}} object
 #' @param what the name of the parameter. If missing returns all parameters.
 #' @return the parameter as a \code{character}
-#' @include AMAPVoxClasses.R
+#' @include Classes.R
 #' @seealso \code{\link{VoxelSpace-class}};
 #' @examples
 #' # load a voxel file

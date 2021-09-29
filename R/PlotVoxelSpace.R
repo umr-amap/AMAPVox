@@ -19,7 +19,7 @@
 #' @param empty.discard logical, whether to discard empty voxel (no hit)
 #' @param ... additional parameters which will be passed to
 #'   \code{\link[rgl]{plot3d}}.
-#' @include AMAPVoxClasses.R
+#' @include Classes.R
 #' @seealso \code{\link[rgl]{plot3d}}
 #' @examples
 #' \dontrun{

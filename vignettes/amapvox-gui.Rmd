@@ -39,5 +39,10 @@ Install and run latest AMAPVox version (with active internet connection)
 ```{r eval=FALSE}
 AMAPVox::gui()
 ```
-After downloading latest version, AMAPVox GUI starts automatically:
+After downloading latest version, AMAPVox GUI should start automatically:
 <center>![](amapvox-1st-screen.png){width=640px}</center>
+If you get error(s) about java version, please read help page
+```{r}
+? AMAPVox::gui
+```
+

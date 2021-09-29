@@ -34,7 +34,7 @@
 #' @description read a voxel file and cast it into a
 #'   \code{\link{VoxelSpace-class}} object.
 #' @param f The path of the voxel file.
-#' @include AMAPVoxClasses.R
+#' @include Classes.R
 #' @seealso \code{\link{writeVoxelSpace}}
 #' @examples
 #' # load a voxel file

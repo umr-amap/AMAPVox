@@ -16,8 +16,16 @@ versionManager <- function(version="latest", check.update = TRUE) {
 
   # list local versions
   localVersions <- getLocalVersions()
-  # latest local version
-  if (version == "latest") {
+  # no local version and offline
+  if ((is.null(localVersions) | nrow(localVersions)==0) & is.offline) {
+    stop(paste("There are not any local version installed.",
+               "We are offline, cannot look for remote version. "))
+  }
+  # no local version, set arbitrary version 0.0
+  if ((is.null(localVersions) | nrow(localVersions)==0)) {
+    version <- "0.0"
+  } else if (version == "latest") {
+    # latest local version
     version <- utils::tail(localVersions$version, 1)
   }
   # valid version number l.m(.n)
@@ -286,7 +294,7 @@ installVersion <- function(version, overwrite = FALSE) {
   if (!dir.exists(binPath)) dir.create(binPath, recursive = TRUE,
                                        showWarnings = FALSE)
   # download zip
-  utils::download.file(url, zipfile)
+  utils::download.file(url, zipfile, method = "auto", mode="wb", timeout=300)
   # unzip
   utils::unzip(zipfile, exdir = versionPath)
   # delete zip file

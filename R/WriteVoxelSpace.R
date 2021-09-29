@@ -6,7 +6,7 @@
 #'   object.
 #' @param vxsp the object of class VoxelSpace to write
 #' @param f a character string naming a file.
-#' @include AMAPVoxClasses.R
+#' @include Classes.R
 #' @seealso \code{\link{readVoxelSpace}}
 #' @examples
 #' \dontrun{

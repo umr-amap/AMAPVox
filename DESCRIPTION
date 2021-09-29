@@ -34,11 +34,11 @@ Imports:
   rappdirs
 Collate: 
     'AMAPVox.R'
-    'AMAPVoxClasses.R'
-    'AMAPVoxVersionManager.R'
+    'VersionManager.R'
     'AMAPVoxGUI.R'
-    'AMAPVoxGenerics.R'
-    'AMAPVoxGetters.R'
+    'Classes.R'
+    'Generics.R'
+    'Getters.R'
     'PlotVoxelSpace.R'
     'ReadVoxelSpace.R'
     'WriteVoxelSpace.R'

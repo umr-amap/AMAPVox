@@ -31,13 +31,14 @@ which version.
 \preformatted{
   system2("java", args = "-version")
   }
-If AMAPVox::gui keeps complaining after you have installed suitable
+If AMAPVox::gui keeps throwing errors after you have installed suitable
 Java 1.8 64-Bit, it means that Java 1.8 may not be properly detected by
 your system. In such case you may have to check and set the
 \code{JAVA_HOME} environment variable.
 \preformatted{
   Sys.getenv("JAVA_HOME")
   Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
+  system2("java", args = "-version")
   }
 }
 

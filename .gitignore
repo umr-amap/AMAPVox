@@ -45,3 +45,5 @@ git.log
 CRAN-RELEASE
 
 inst/doc
+/doc/
+/Meta/

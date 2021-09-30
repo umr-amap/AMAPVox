@@ -8,3 +8,5 @@ git.log
 ^LICENSE$
 ^README\.md$
 ^CRAN-RELEASE$
+^doc$
+^Meta$

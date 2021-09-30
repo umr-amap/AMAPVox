@@ -1,0 +1,28 @@
+---
+title: "AMAPVox"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{AMAPVox}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+<!-- AMAPVox logo -->
+<center>![](rsc/amapvox-logo.png)</center>
+
+```{r setup}
+library(AMAPVox)
+```
+
+**AMAPVox packages provides several vignettes as a guided tour:**
+
+## [Installation](Installation.html)
+## [Graphical User Interface](amapvox-gui.html)
+## [Voxelization](Voxelization.html)

@@ -1,6 +1,7 @@
 ---
 title: "Voxelization"
 output: rmarkdown::html_vignette
+#output: rmarkdown::pdf_document
 vignette: >
   %\VignetteIndexEntry{Voxelization}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,8 +15,182 @@ knitr::opts_chunk$set(
 )
 ```
 
+<!-- AMAPVox logo -->
+![](rsc/amapvox-logo.png){width=256px}
+
 ```{r setup}
 library(AMAPVox)
 ```
 
-Please refer to [A note on PAD/LAD estimators implemented in AMAPVox 1.7]{https://doi.org/10.23708/1AJNMP}
+In the *voxelization* process, AMAPvox tracks every laser pulse through a 3D grid
+(voxelized space) to the last recorded hit. Several estimators are implemented 
+in order to calculate local transmittance, local attenuation and several other
+variables of interest. For details about the vozelization theoretical framework
+please refer to 
+[A note on PAD/LAD estimators implemented in AMAPVox](https://doi.org/10.23708/1AJNMP)
+
+This vignette goes through all the parameters of the voxelization configuration.
+
+## Semantics
+
+Every field has its own jargon, LiDAR is no exception. Throughout the documents
+we will use different terms
+
+- a shot or a pulse refers to a single light pulse going out from the laser. A shot
+is defined by an origin, a direction, a time
+- a hit or and echo occurs when the light beam hits and obstacle and returns
+some light that is recorded by the laser. It is associated to a pulse and there
+may be no hit, a single hit or multiple hits. Be aware that absence of hit does
+not mean that there were no obstacle on the way: the light might have been 
+diffracted or the laser failed to record the signal. we will refert to that situation
+as a "false empty shot". Conversely a hit may not always indicate that the
+light beam hit some vegetation (see section Butterfly remover for instance).
+- free path @Todo
+- free path length @Todo
+- path length @Todo
+
+## ALS input
+
+### Supported formats
+
+- [LAS](https://en.wikipedia.org/wiki/LAS_file_format) file format;
+- LAZ file format (compressed LAS);
+- SHT format, home brew "shot" format, see details below.
+
+*LAS/LAZ* files can be manipulated by the [LAStools](http://lastools.org/)
+software or the [LidR](https://cran.r-project.org/web/packages/lidR/) R package.
+
+*SHT or SHOT format* is a text based format, one shot per line, a shot being
+defined by an origin, a direction, the number of echoes and the echo ranges.
+
+First row is header, columns are separated by space character.
+
+```
+xOrigin yOrigin zOrigin xDirection yDirection zDirection nbEchoes r1 r2 r3 r4 r5 r6 r7 c1 c2 c3 c4 c5 c6 c7
+x0 y0 z0 xd yd zd 1 10
+etc.
+```
+
+### Trajectory file
+
+For LAS and LAZ file, you need to provide a *trajectory file*.
+
+A trajectory file is a text based format that contains GPS positions of the
+scanner at a given time.
+Four columns are expected:
+
+- easting (x coordinate),
+- northing (y coordinate),
+- elevation (z-coordinate)
+- and time.
+
+Time of the trajectory file must be consistent with time of the LAS/LAZ file. 
+Scanner positions must be expressed in the same coordinate system as the point
+cloud prior to any transformation (refer to section Transformation).
+
+AMAPVox will isolate points from the the LAS/LAZ point cloud with same GPS time
+(the hits from the same laser pulse), and calculates the scanner position with
+a linear interpolation of the trajectory points. Then AMAPVox can reconstruct
+the geometry of the pulse.
+
+The text based format is flexible: AMAPVox GUI provides a user interface to 
+identify the columns, the separator, number of lines to skip, etc.
+
+Example:
+
+```
+"X" "Y" "Z" "T"
+289109.129 586268.068 504.85 308500.003528
+289108.973 586267.861 504.846 308500.008528
+289108.816 586267.654 504.842 308500.013527
+289108.659 586267.447 504.838 308500.018526
+etc.
+```
+
+### ALS consistency checks
+
+AMAPVox can perform preliminary checks on the ALS data, prior to the voxelization.
+
+First, it suggests to discard shots with inconsistent number of echoes or ranks.
+It check whether a subset of LAS points with same GPS time is consistent in
+terms of echo rank and number of echoes. Every LAS point of the subset should
+have a unique echo rank and the same number of echoes.
+
+Secondly, it may discard shots whose echoes are not collinear. The maximal
+deviation, user defined, is a tolerance in degree to strict collinearity.
+
+Theses checks are not mandatory but inconsistent shots will most likely lead to
+errors in the voxelization process. It is advised to enable them both in a first
+run just to make sure the point cloud is "clean" and then disable them since it
+is time consuming and pointless to perform the checks every time.
+
+### Export LAS/LAZ file to SHOT file
+
+The button "Export ALS point cloud to lidar shots" converts LAS/LAZ file into
+the text based SHT format described above. It could be convenient to do so in
+terms of performance: 
+
+- your point cloud is cluttered with many inconsistent shots so you generate a
+cleaned-up data set.
+- if you plan to run many vozelization experiments with the same data set, then
+you skip reconstructing the shot geometry every time,
+
+## TLS input
+
+### Supported formats
+
+- RiSCAN single scan, RXP file format. A proprietary binary file format owned
+by RIEGL. Can be edited with RiSCAN Pro software. 
+- RiSCAN project, RSP file format. An aggregation of RXP scans in the same folder
+with an XML file project.xml that lists the file paths of the single scans, the
+SOP and POP matrix (see section Transformation for details on the
+transformation matrix)
+- PTX / PTG file formats from LEICA Geosystems.
+- XYB from FARO
+
+## Output parameters
+
+Set output folder, output format and output variables to be recorded.
+
+## Transformation matrix
+
+A transformation matrix in AMAPVox is a 4x4 matrix that combines translation and
+rotation movements applied to 3D points (x, y, z).
+
+### SOP matrix
+
+System Orientation and Position, TLS only.
+Each scan from Riscan Project has its own SOP matrix which is included in Riscan Pro project file.
+If a single scan (*.rxp) is selected, by clicking on the  « Open file » button next to POP matrix you can choose the Riscan Pro project file and it will automatically configure the POP matrix and the SOP matrix of that scan.
+
+### POP matrix
+
+Project Orientation and Position, TLS only
+Projection matrix of a Riscan Pro project, this is defined in the project file (*.rsp).
+That matrix is automatically filled when a Riscan Pro project file is open, being read in the file.
+Using single scan (*.rxp) voxelization, it is possible to defined POP matrix, either by opening a matrix file (see file formats in annexe), or by choosing a Riscan Pro project file.
+
+### VOP matrix
+
+Voxel Orientation and Position.
+Optional transformation matrix.
+
+The final transformation matrix is the product of the three matrix.
+`transformation matrix = (VOP.POP).SOP`
+
+## Voxel space
+
+@Todo
+
+## Filtering
+
+@Todo
+
+## Weighting
+
+@Todo
+
+## Scanner
+
+Either user predefined laser specifications or define custom specifications.
+

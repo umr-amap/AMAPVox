@@ -19,7 +19,7 @@ object.
 \examples{
 \dontrun{
 # load a voxel file
-vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 # set max PAD to 5
 vxsp@voxels[, PadBVTotal:=sapply(PadBVTotal, min, 5)]
 # write updated voxel file in temporary file

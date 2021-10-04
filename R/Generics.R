@@ -11,7 +11,7 @@
 #' @examples
 #' # load a voxel file
 #' vxsp <- readVoxelSpace(
-#'            system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#'            system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' # show VoxelSpace object
 #' show(vxsp)
 #' @export
@@ -75,7 +75,7 @@ is.VoxelSpace <- function (x) is(x, "VoxelSpace")
 #' @seealso \code{\link{VoxelSpace-class}};
 #' @examples
 #' # load a voxel file
-#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' # show parameters name
 #' names(getParameter(vxsp))
 #' # retrieve 'mincorner' parameter
@@ -97,7 +97,7 @@ setGeneric("getParameter",
 #'   numerical vector.
 #' @examples
 #' # load a voxel file
-#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' # retrieve 'min_corner' parameter
 #' getMinCorner(vxsp)
 #' @export
@@ -115,7 +115,7 @@ setGeneric("getMinCorner",
 #'   numerical vector.
 #' @examples
 #' # load a voxel file
-#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' # retrieve 'max_corner' parameter
 #' getMaxCorner(vxsp)
 #' @export
@@ -131,7 +131,7 @@ setGeneric("getMaxCorner",
 #' @return the size of the voxel in meter, as a numerical vector.
 #' @examples
 #' # load a voxel file
-#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' # retrieve 'resolution' parameter
 #' getResolution(vxsp)
 #' @export
@@ -152,7 +152,7 @@ setGeneric("getResolution",
 #' @return the x, y, z coordinates of the voxel center.
 #' @examples
 #' # load a voxel file
-#' vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+#' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #'
 #' # get position of voxel(i=0, j=0, k=0)
 #' getPosition(vxsp, c(0, 0, 0))

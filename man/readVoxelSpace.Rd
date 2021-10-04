@@ -16,7 +16,7 @@ read a voxel file and cast it into a
 }
 \examples{
 # load a voxel file
-vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 }
 \seealso{
 \code{\link{writeVoxelSpace}}

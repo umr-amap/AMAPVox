@@ -23,7 +23,7 @@ corner.
 }
 \examples{
 # load a voxel file
-vxsp <- readVoxelSpace(system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 # retrieve 'max_corner' parameter
 getMaxCorner(vxsp)
 }

@@ -17,3 +17,5 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(AMAPVox)
 ```
+
+Please refer to [A note on PAD/LAD estimators implemented in AMAPVox 1.7]{https://doi.org/10.23708/1AJNMP}

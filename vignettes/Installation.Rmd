@@ -1,6 +1,7 @@
 ---
 title: "Installation"
 output: rmarkdown::html_vignette
+#output: rmarkdown::pdf_document
 vignette: >
   %\VignetteIndexEntry{Installation}
   %\VignetteEngine{knitr::rmarkdown}
@@ -13,6 +14,9 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+
+<!-- AMAPVox logo -->
+![](rsc/amapvox-logo.png){width=256px}
 
 AMAPVox is an R package that embeds a Java Desktop Application. The Java part
 of AMAPVox is distributed as a set of JAR files (Java Archives) and is not 
@@ -36,11 +40,14 @@ the dimension of the voxel space and the size of the LiDAR scans.
 
 Install AMAPVox package latest stable version from source:
 
-```{r setup}
+```{r eval=FALSE}
 # install "remotes" package if not already installed
 if (!any(grepl("remotes", rownames(installed.packages())))) install.packages("remotes")
 # install latest stable version from source
 remotes::install_github('umr-amap/AMAPVox')
+```
+
+```{r setup}
 # load AMAPVox package
 library(AMAPVox)
 ```

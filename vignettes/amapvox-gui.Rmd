@@ -1,6 +1,7 @@
 ---
 title: "Graphical User Interface"
 output: rmarkdown::html_vignette
+#output: rmarkdown::pdf_document
 vignette: >
   %\VignetteIndexEntry{amapvox-gui}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,6 +15,9 @@ knitr::opts_chunk$set(
 )
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
+
+<!-- AMAPVox logo -->
+![](rsc/amapvox-logo.png){width=256px}
 
 ```{r setup}
 library(AMAPVox)
@@ -30,12 +34,12 @@ AMAPVox GUI fulfills three objectives:
 The main toolbar and the File menu provides the usual functions New/ Open / 
 Edit / Close / Save / Save as etc.
 
-## Tabs Configurationfiles and Output files
+## Tabs Configuration files and Output files
 
 The top left pane contains the configuration pane and the output pane.
 
 The configuration pane lists the configurations files that have
-been opened or created. Double click or right clik Edit to edit the
+been opened or created. Double click or right click Edit to edit the
 configuration file.
 
 <center>![](rsc/tab_config-files.png)</center>
@@ -61,9 +65,12 @@ Menu > File > New or click on the New button ![New button](rsc/menu-new.png){wid
 in the toolbar.
 
 A configuration file is an XML file with following header:
+
+```
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration creation-date="Thu Sep 23 16:14:41 CEST 2021" build-version="1.8.0" update-date="Mon Sep 27 09:59:18 CEST 2021">
 <process mode="process-name" >
+```
 
 ### Open configuration
 
@@ -92,7 +99,7 @@ some text fields only accept numerical values.
 
 ### Save configuration
 
-Select one or more modified files in the configuration pane then
+Select a modified files in the configuration pane then
 Menu > File > Save or click on the Save button ![Save button](rsc/save.png){width=24px}
 in the toolbar.
 
@@ -101,10 +108,16 @@ configuration will appear in bold with a leading *. It reminds you to save the
 configuration file. If you were to run a modified configuration file, it would
 be saved beforehand automatically.
 
-Before saving some configuration editors may launch a validity check and
+Before saving configuration editors may launch a validity check and
 provide some feedback. File will not be saved until you address all the issues 
 detected by the validity check. You may notice that in the meantime
 the ![Start button](rsc/start.png){width=24px} is disable.
+
+### Save as configuration
+
+Select a file in the configuration pane then Menu > File > Save as or click on
+the Save as button ![Save button](rsc/save-as.png){width=24px}
+in the toolbar.
 
 ### Close configuration
 
@@ -119,4 +132,48 @@ Closing the configuration tab in the Vox tools tab pane only hides the editor.
 Unsaved modifications are kept. A configuration file is only closed when it is
 removed from the configuration pane.
 
+### Run configuration
 
+You may run a single configuration by a click on the
+![Start button](rsc/start.png){width=24px} in the configuration pane. A disable
+Start button means that the configuration file is either empty (newly created)
+or that the file did not go through the validity check when saving and need
+more editing.
+When the simulation starts, the Start button becomes a Stop button
+![Stop button](rsc/stop.png){width=24px} that you may click to cancel the job.
+
+You may run a bunch of configurations by selecting them in the configuration
+pane and click on the Run button ![Run button](rsc/run-play.png){width=24px}
+in the toolbar. You will be asked whether to run the simulation sequentially
+(one after an other) or concurrently. The maximum number of CPUs dedicated to
+AMAPVox may be set in Menu > Edit > Preferences.
+When the simulations start, the Run button becomes a Stop Button 
+![Stop button](rsc/run-stop.png){width=24px} that you may click to cancel all
+the jobs.
+
+## Visualization pane
+
+AMAPVox provides two visualization tools:
+
+1. A 3D voxel space viewer
+2. A vertical profile viewer
+
+### 3D viewer
+
+The 3D Viewer relies on OpenGL >= 3.
+
+For Linux users, you may check OpenGL version with:
+```{r eval=FALSE}
+grep("OpenGL", system2("glxinfo", stdout = TRUE), value = TRUE)
+````
+
+The user is staight-forward. You choose a voxel file, select the variable to 
+plot (that can be changed later on, directly in the viewer) and you can click
+on the Draw button.
+
+The viewer can optionally draw the digital terrain model, the same one that is
+used in the voxelization process.
+
+### Vertical profile
+
+@TODO...

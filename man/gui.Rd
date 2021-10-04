@@ -25,7 +25,7 @@ See detailed section below.
 AMAPVox GUI relies on Java 1.8 64-Bit and JavaFX. In practice it requires
 either \href{https://java.com/download/}{Java 1.8 64-Bit Oracle}
 or \href{https://aws.amazon.com/fr/corretto/}{Java 1.8 64-Bit Corretto}.
-Unfortunately OpenJDK 8 will not work since JavaFX is not included.
+OpenJDK 8 will not work since JavaFX is not included.
 You may check beforehand if java is installed on your system and
 which version.
 \preformatted{

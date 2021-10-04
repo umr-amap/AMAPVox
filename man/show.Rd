@@ -20,7 +20,7 @@ characteristics.
 \examples{
 # load a voxel file
 vxsp <- readVoxelSpace(
-           system.file("extdata", "als_sample.vox", package = "AMAPVox"))
+           system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 # show VoxelSpace object
 show(vxsp)
 }

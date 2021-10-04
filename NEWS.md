@@ -1,5 +1,10 @@
 # AMAPVox 0.4.0
 
+*2021-10-04*
+Bug fix in the version manager. 
+Added first draft of vignettes.
+Not released on CRAN.
+
 # AMAPVox 0.3.0
 
 *2021-09-03*

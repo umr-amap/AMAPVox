@@ -71,7 +71,7 @@ gui <- function(version="latest", check.update = TRUE) {
   if (.Platform$OS.type == "unix") {
     system2("sh", args = file.path(amapvox$path, "AMAPVox.sh"))
   } else if (.Platform$OS.type == "windows") {
-    system2("cmd.exe", args = file.path(amapvox$path, "AMAPVox.bat"))
+    system2("cmd.exe", args = file.path(normalizePath(amapvox$path, winslash = "/"),"AMAPVox.bat"))
   } else {
     stop("Unsupported OS ", .Platform$OS.type)
   }

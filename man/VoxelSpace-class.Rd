@@ -12,7 +12,7 @@ Class that holds the state variables of every voxel of the voxel
 space in a \code{\link{data.table}}, plus metadata from the voxel space
 header.
 }
-\section{Fields}{
+\section{Slots}{
 
 \describe{
 \item{\code{file}}{the path of the voxel file (.vox).}

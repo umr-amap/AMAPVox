@@ -5,8 +5,6 @@
 #' sampling intensity but the user can choose any variable available in the
 #' voxel file.
 #'
-#' @docType methods
-#' @rdname plot
 #' @description plot a \code{\link{VoxelSpace-class}} object.
 #' @param x the object of class VoxelSpace to plot
 #' @param y Unused (inherited from R base)
@@ -39,16 +37,18 @@ setMethod("plot",
                            unsampled.discard = TRUE, empty.discard = TRUE,
                            ...) {
 
+  # check if rgl package is installed
+  stopifnot(requireNamespace("rgl", quietly = TRUE))
   # must be a voxel space
   stopifnot(is.VoxelSpace(x))
   # y not used
   stopifnot(missing(y))
   # make sure variable exists
-  stopifnot(variable.name %in% x@parameters$columnNames)
+  stopifnot(variable.name %in% colnames(x@voxels))
   # make sure variable nbSampling exists if discard unsampled voxel is TRUE
-  stopifnot(empty.discard | ('nbSampling' %in% x@parameters$columnNames))
+  stopifnot(empty.discard | ('nbSampling' %in% colnames(x@voxels)))
   # make sure variable nbEchos exists if discard empty voxel is TRUE
-  stopifnot(empty.discard | ('nbEchos' %in% x@parameters$columnNames))
+  stopifnot(empty.discard | ('nbEchos' %in% colnames(x@voxels)))
 
   # discard empty voxels
   vx <- x@voxels

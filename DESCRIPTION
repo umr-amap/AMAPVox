@@ -26,8 +26,6 @@ Imports:
   utils,
   data.table,
   stringr,
-  fields,
-  rgl,
   dplyr,
   curl,
   rvest,
@@ -42,7 +40,11 @@ Collate:
     'PlotVoxelSpace.R'
     'ReadVoxelSpace.R'
     'WriteVoxelSpace.R'
-Suggests: 
+Suggests:
+    rgl,
+    fields,
+    grDevices,
+    graphics,
     rmarkdown,
     knitr
 VignetteBuilder: knitr

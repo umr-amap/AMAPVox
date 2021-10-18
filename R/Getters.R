@@ -5,7 +5,7 @@ setMethod("getParameter", signature(vxsp="VoxelSpace", what="character"),
               sum(!is.na(str_match(
                 names(vxsp@parameters),
                 paste0("^", what, "$")))) == 1)
-            return ( vxsp@parameters[what] )
+            return ( vxsp@parameters[[what]] )
           })
 
 #' @rdname getParameter

@@ -1,5 +1,10 @@
 # AMAPVox 0.5.0
 
+*2021-10-19
+Normalized local paths.
+RGL library not imported, suggested only.
+Not released on CRAN.
+
 # AMAPVox 0.4.0
 
 *2021-10-04*

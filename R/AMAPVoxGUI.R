@@ -25,10 +25,21 @@
 #'   Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
 #'   system2("java", args = "-version")
 #'   }
+#'   As a last resort you may change the \code{java} parameter of this function
+#'   and set the full path to Java 1.8 binary.
+#'   \preformatted{
+#'   AMAPVox::gui(java = "/path/to/java/1.8/bin/java")
+#'   }
 #' @param version, either "latest" or a valid version number major.minor(.build)
 #'   if \code{version="latest"} and \code{check.update=FALSE} or no internet
 #'   connection it runs latest local version.
 #' @param check.update, check for newer version online and install it.
+#' @param java Path to the java executable. Default 'java' value assumes that
+#'   java is correctly defined on the $PATH variable.
+#' @param jvm.options JVM (Java Virtual Machine) options. By default it
+#'   allocates 2Go of heap memory to AMAPVox.
+#' @param stdout where output to both stdout/stderr should be sent. Same as
+#' stdout & stderr options from function \code{\link{system2}}.
 #' @seealso \code{\link{getLocalVersions}}, \code{\link{getRemoteVersions}},
 #'   \code{\link{installVersion}}, \code{\link{removeVersion}}
 #' @examples
@@ -40,20 +51,22 @@
 #' }
 #' @include VersionManager.R
 #' @export
-gui <- function(version="latest", check.update = TRUE) {
+gui <- function(version="latest", check.update = TRUE,
+                java = "java", jvm.options = "-Xms2048m",
+                stdout = "") {
 
   # handle versions
   version <- versionManager(version, check.update)
 
   # look for java and check version
   res <- suppressWarnings(
-    system2("java", args = "-version", stdout = NULL, stderr = NULL))
+    system2(java, args = "-version", stdout = NULL, stderr = NULL))
   if (res != 0) {
     stop(paste("R did not find 'java' command.",
                " Make sure Java 1.8 64-Bit is properly installed"))
   } else {
     # java is installed, make sure it is Java 8 64-Bit
-    jvrs <- system2("java", args = "-version", stdout = TRUE, stderr = TRUE)
+    jvrs <- system2(java, args = "-version", stdout = TRUE, stderr = TRUE)
     # java 1.8.0 64-Bit Oracle or Corretto for JavaFX support
     if (!(grepl("1\\.8\\.0", jvrs[1])
           & (grepl("Java\\(TM\\)", jvrs[2]) | grepl("Corretto", jvrs[2]))
@@ -64,16 +77,24 @@ gui <- function(version="latest", check.update = TRUE) {
     }
   }
 
-  # run AMAPVox
-  message(paste("Running AMAPVox", version))
+  # no JVM options
+  if(is.null(jvm.options)) jvm.options = ""
+
   localVersions <- getLocalVersions()
   amapvox <- localVersions[which(localVersions == version), ]
-  if (.Platform$OS.type == "unix") {
-    system2("sh", args = file.path(amapvox$path, "AMAPVox.sh"))
-  } else if (.Platform$OS.type == "windows") {
-    system2("cmd.exe", args = file.path(amapvox$path, "AMAPVox.bat"))
-  } else {
-    stop("Unsupported OS ", .Platform$OS.type)
-  }
-  message("Quit AMAPVox.")
+
+  # Generate the execution expression
+  jarPath <- normalizePath(
+    file.path(amapvox$path, paste0("AMAPVox-", version, ".jar")),
+    mustWork = TRUE)
+  args = paste(jvm.options, "-jar", jarPath)
+  command = paste(c(shQuote(java), args), collapse = " ")
+
+  # run AMAPVox
+  message(paste("Running AMAPVox", version))
+  message(command)
+  system2(java, args = args, stdout = stdout, stderr = stdout, wait = TRUE)
+  message("Closing AMAPVox.")
+
+  return(invisible(command))
 }

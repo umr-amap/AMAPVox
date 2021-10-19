@@ -17,12 +17,12 @@ versionManager <- function(version="latest", check.update = TRUE) {
   # list local versions
   localVersions <- getLocalVersions()
   # no local version and offline
-  if ((is.null(localVersions) | nrow(localVersions)==0) & is.offline) {
+  if (is.null(localVersions) & is.offline) {
     stop(paste("There are not any local version installed.",
                "We are offline, cannot look for remote version. "))
   }
   # no local version, set arbitrary version 0.0
-  if ((is.null(localVersions) | nrow(localVersions)==0)) {
+  if (is.null(localVersions)) {
     version <- "0.0"
   } else if (version == "latest") {
     # latest local version
@@ -133,14 +133,22 @@ getRemoteVersions <- function() {
 getLocalVersions <- function() {
 
   # local directory for AMAPVox binaries
-  binPath <- file.path(rappdirs::user_data_dir("AMAPVox"), "bin")
+  binPath <- normalizePath(
+    file.path(rappdirs::user_data_dir("AMAPVox"), "bin"),
+    mustWork = FALSE)
   # local directory does not exist, no local version yet
   if (!dir.exists(binPath))
     return(NULL)
   # list existing folders
   version <- list.dirs(binPath, full.names = FALSE, recursive = FALSE)
+  if (identical(version, character(0)))
+   return(NULL)
   version <- stringr::str_extract(version, "\\d+\\.\\d+\\.\\d+")
-  path <- list.dirs(binPath, full.names = TRUE, recursive = FALSE)
+  path <- vapply(
+    list.dirs(binPath, full.names = TRUE, recursive = FALSE),
+    normalizePath,
+    character(1),
+    USE.NAMES = F)
   # create dataframe and sort it along version
   binaries <- data.frame(version, path)
   binaries <- binaries[orderVersions(binaries$version),]
@@ -278,10 +286,16 @@ installVersion <- function(version, overwrite = FALSE) {
   stopifnot(version %in% remoteVersions$version)
 
   # local directory for AMAPVox binaries
-  binPath <- file.path(rappdirs::user_data_dir("AMAPVox"), "bin")
-  versionPath <- file.path(binPath, paste0("AMAPVox-", version))
+  binPath <- normalizePath(
+    file.path(rappdirs::user_data_dir("AMAPVox"), "bin"),
+    mustWork = FALSE)
+  versionPath <- normalizePath(
+    file.path(binPath, paste0("AMAPVox-", version)),
+    mustWork = FALSE)
   # check whether requested version already installed
-  jarPath <- file.path(versionPath, paste0("AMAPVox-", version, ".jar"))
+  jarPath <- normalizePath(
+    file.path(versionPath, paste0("AMAPVox-", version, ".jar")),
+    mustWork = FALSE)
   if (file.exists(jarPath) & !overwrite) {
     message(paste("AMAPVox", version, "already installed in", versionPath))
     return(versionPath)
@@ -289,7 +303,9 @@ installVersion <- function(version, overwrite = FALSE) {
   # url to download
   url <- remoteVersions$url[which(remoteVersions == version)]
   # local destination
-  zipfile <- file.path(binPath, paste0(version, ".zip"))
+  zipfile <- normalizePath(
+    file.path(binPath, paste0("AMAPVox-", version, ".zip")),
+    mustWork = FALSE)
   # create local bin folder if does not exist
   if (!dir.exists(binPath)) dir.create(binPath, recursive = TRUE,
                                        showWarnings = FALSE)

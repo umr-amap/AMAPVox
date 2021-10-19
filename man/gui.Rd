@@ -5,7 +5,13 @@
 \alias{gui}
 \title{Run AMAPVox Graphical User Interface.}
 \usage{
-gui(version = "latest", check.update = TRUE)
+gui(
+  version = "latest",
+  check.update = TRUE,
+  java = "java",
+  jvm.options = "-Xms2048m",
+  stdout = ""
+)
 }
 \arguments{
 \item{version, }{either "latest" or a valid version number major.minor(.build)
@@ -13,6 +19,15 @@ if \code{version="latest"} and \code{check.update=FALSE} or no internet
 connection it runs latest local version.}
 
 \item{check.update, }{check for newer version online and install it.}
+
+\item{java}{Path to the java executable. Default 'java' value assumes that
+java is correctly defined on the $PATH variable.}
+
+\item{jvm.options}{JVM (Java Virtual Machine) options. By default it
+allocates 2Go of heap memory to AMAPVox.}
+
+\item{stdout}{where output to both stdout/stderr should be sent. Same as
+stdout & stderr options from function \code{\link{system2}}.}
 }
 \description{
 Run AMAPVox Graphical User Interface (GUI). The function embeds
@@ -39,6 +54,11 @@ your system. In such case you may have to check and set the
   Sys.getenv("JAVA_HOME")
   Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
   system2("java", args = "-version")
+  }
+As a last resort you may change the \code{java} parameter of this function
+and set the full path to Java 1.8 binary.
+\preformatted{
+  AMAPVox::gui(java = "/path/to/java/1.8/bin/java")
   }
 }
 

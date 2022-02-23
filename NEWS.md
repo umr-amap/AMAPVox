@@ -1,6 +1,12 @@
+# AMAPVox 0.7.0
+
+*yyyy-MM-dd*
+...
+Not released on CRAN.
+
 # AMAPVox 0.6.0
 
-*2022-02-23
+*2022-02-23*
 Bug fix in writeVoxelSpace function.
 Not released on CRAN.
 

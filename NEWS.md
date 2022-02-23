@@ -1,8 +1,12 @@
 # AMAPVox 0.6.0
 
+*2022-02-23
+Bug fix in writeVoxelSpace function.
+Not released on CRAN.
+
 # AMAPVox 0.5.0
 
-*2021-10-19
+*2021-10-19*
 Normalized local paths.
 RGL library not imported, suggested only.
 Not released on CRAN.

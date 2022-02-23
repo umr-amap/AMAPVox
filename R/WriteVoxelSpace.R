@@ -25,22 +25,53 @@ writeVoxelSpace <- function(vxsp, f){
   # write header
   conn <- file(f, open="w")
   writeLines("VOXEL SPACE", conn)
-  writeLines(paste0("#",
-                    paste(names(vxsp@parameters$parameters),
-                          vxsp@parameters$parameters, sep=":")),
-             conn)
+  writeLines(printHeader(vxsp), conn)
   close(conn)
 
   # write voxels
   suppressWarnings(
-    utils::write.table(vxsp@voxels,
+    data.table::fwrite(vxsp@voxels,
                      f,
                      row.names=FALSE,
                      col.names=TRUE,
                      na="NaN",
                      sep=" ",
                      append=TRUE,
-                     quote=FALSE)
+                     quote=FALSE,
+                     scipen = 999)
   )
   cat("Saved voxel file ", f, "[OK]")
+#  options(scipen = scipen_o, digits = digits_o)
+}
+
+# format voxel file header
+# returns a vector of formatted parameters "#key:value"
+printHeader <- function(vxsp) {
+
+  # list parameters, discard nline & columnNames that are internal to package
+  parameters <- vxsp@parameters[!(names(vxsp@parameters)
+                                  %in% c("nline", "columnNames"))]
+  # index of numeric vector parameters
+  pVec <- which(sapply(parameters,
+                       function(p) is.numeric(p) && length(p) > 1) > 0)
+  # format numeric vectors and concatenate with remaining parameters
+  parameters <- c(parameters[-pVec],
+                  sapply(parameters[pVec], .formatNumericVector))
+  # renamed some parameters
+  names(parameters) <- sapply(
+    names(parameters),
+    function(p) switch(p,
+                       mincorner = "min_corner",
+                       maxcorner = "max_corner",
+                       resolution = "res",
+                       p))
+
+  # return a vector of parameters formatted as "#key:value"
+  return ( sort(paste0("#", paste(names(parameters), parameters, sep=":"))) )
+}
+
+# format numeric vector in readable format for AMAPVox
+# returns x formatted as "(x1, x2, ..., xn)"
+.formatNumericVector <- function(x) {
+  return(paste0("(", paste(x, collapse = ", "), ")"))
 }

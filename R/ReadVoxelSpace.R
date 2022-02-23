@@ -50,8 +50,6 @@ readVoxelSpace <- function(f){
   stopifnot(
     !is.na(stringr::str_match(stringr::str_trim(firstLine), "^VOXEL SPACE$")))
 
-
-
   # loop over header
   rawParameters <- list()
   nLineHeader <- 0
@@ -119,7 +117,7 @@ readVoxelSpace <- function(f){
 
   vxsp@parameters <- parameters
 
-  #lecture des voxels
+  # read voxels
   vxsp@voxels <- data.table::fread(f, header = TRUE, skip = nLineHeader)
 
   return (vxsp)

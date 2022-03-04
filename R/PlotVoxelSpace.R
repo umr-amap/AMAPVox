@@ -29,16 +29,27 @@
 #' plot(vxsp, variable.name = "PadBVTotal", palette = "YlOrRd")
 #' }
 #' @export
+#' @method plot VoxelSpace
+setGeneric("plot", function(x, y, ...)
+standardGeneric("plot"))
+
+#' @rdname plot
 setMethod("plot",
-          "VoxelSpace",
+          signature(x = "VoxelSpace", y = "missing"),
           function(x, y, variable.name = "nbSampling",
                            palette = "viridis", bg.color = "lightgrey",
                            width = 640, voxel.size = 5,
                            unsampled.discard = TRUE, empty.discard = TRUE,
                            ...) {
 
-  # check if rgl package is installed
-  stopifnot(requireNamespace("rgl", quietly = TRUE))
+ # check if rgl package is installed
+ if (!requireNamespace("rgl", quietly = TRUE)) {
+   stop(
+     "Package \"rgl\" must be installed to plot VoxelSpace object",
+     "\n",
+     ">> install.packages(\"rgl\")",
+      call. = FALSE)
+  }
   # must be a voxel space
   stopifnot(is.VoxelSpace(x))
   # y not used

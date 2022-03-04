@@ -1,35 +1,45 @@
-Package: AMAPVox
 Type: Package
+Package: AMAPVox
 Title: LiDAR Data Voxelisation
 Version: 0.7.0
 Authors@R: c(
-  person("Grégoire", "Vincent", email="gregoire.vincent@ird.fr", role=c("aut")),
-  person("Julien", "Heurtebize", email="julienhtbe@gmail.com", role=c("aut")),
-	person("Philippe", "Verley", email="philippe.verley@ird.fr", role = c("aut", "cre"))
+    person("Grégoire", "Vincent", , "gregoire.vincent@ird.fr", role = "aut"),
+    person("Julien", "Heurtebize", , "julienhtbe@gmail.com", role = "aut"),
+    person("Philippe", "Verley", , "philippe.verley@ird.fr", role = c("aut", "cre"))
   )
-Description: Read, manipulate and write voxel spaces. Voxel spaces are read
-    from text-based output files of the 'AMAPVox' software. 'AMAPVox' is a
-    LiDAR point cloud voxelisation software that aims at estimating
-    leaf area through several theoretical/numerical approaches. See more in the
-    article Vincent et al. (2017) <doi:10.23708/1AJNMP> and the technical note
-    Vincent et al. (2021) <doi:10.23708/1AJNMP>.
+Description: Read, manipulate and write voxel spaces. Voxel spaces are
+    read from text-based output files of the 'AMAPVox' software. 'AMAPVox'
+    is a LiDAR point cloud voxelisation software that aims at estimating
+    leaf area through several theoretical/numerical approaches. See more
+    in the article Vincent et al. (2017) <doi:10.23708/1AJNMP> and the
+    technical note Vincent et al. (2021) <doi:10.23708/1AJNMP>.
 License: CeCILL (>=2)
-Encoding: UTF-8
-LazyData: true
 URL: https://github.com/umr-amap/AMAPVox
 BugReports: https://github.com/umr-amap/AMAPVox/issues
+Imports: 
+    curl,
+    data.table,
+    dplyr,
+    methods,
+    rappdirs,
+    rvest,
+    stringr,
+    utils 
+Suggests:
+    fields,
+    graphics,
+    grDevices,
+    knitr,
+    RANN,
+    rgl,
+    rmarkdown
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
+LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 SystemRequirements: Java 1.8 64-Bit (Oracle or Corretto)
-Imports: 
-  methods,
-  utils,
-  data.table,
-  stringr,
-  dplyr,
-  curl,
-  rvest,
-  rappdirs
 Collate: 
     'AMAPVox.R'
     'VersionManager.R'
@@ -39,12 +49,5 @@ Collate:
     'Getters.R'
     'PlotVoxelSpace.R'
     'ReadVoxelSpace.R'
+    'RemoveButterfly.R'
     'WriteVoxelSpace.R'
-Suggests:
-    rgl,
-    fields,
-    grDevices,
-    graphics,
-    rmarkdown,
-    knitr
-VignetteBuilder: knitr

@@ -1,7 +1,7 @@
 # AMAPVox 0.7.0
 
-*yyyy-MM-dd*
-...
+*2022-03-04*
+Added new function "removeButterfly" to remove butterfly in voxel space.
 Not released on CRAN.
 
 # AMAPVox 0.6.0

@@ -40,7 +40,7 @@ uniform <- function(thetaL) {
   2 / pi
 }
 
-elipsoidal <- function(thetaL, chi) {
+ellipsoidal <- function(thetaL, chi) {
   stopifnot(dplyr::between(thetaL, 0, pi / 2))
   # chi == 1
   if (chi == 1)
@@ -78,10 +78,10 @@ dleaf <- function(thetaL, pdf = "spherical", chi, mu, nu) {
                      "plagiophile",
                      "spherical",
                      "uniform",
-                     "elipsoidal",
+                     "ellipsoidal",
                      "twoParamBeta"))
 
-  if (pdf == "elipsoidal") stopifnot(!missing(chi))
+  if (pdf == "ellipsoidal") stopifnot(!missing(chi))
   if (pdf == "twoParamBeta") stopifnot(all(!missing(mu), !missing(nu)))
 
   switch(
@@ -92,29 +92,68 @@ dleaf <- function(thetaL, pdf = "spherical", chi, mu, nu) {
     "plagiophile" = plagiophile(thetaL),
     "spherical" = spherical(thetaL),
     "uniform" = uniform(thetaL),
-    "elipsoidal" = elipsoidal(thetaL, chi),
+    "ellipsoidal" = ellipsoidal(thetaL, chi),
     "twoParamBeta" = twoParamBeta(thetaL, mu, nu)
   )
 }
 
-extinction <- function(theta, pdf, chi, mu, nu) {
 
-  thetaL.bin <- seq(0, pi / 2, length.out = 181)
-  nbin <- length(thetaL.bin)
-  thetaL.bin[1] <- 0.00000001
-  thetaL.bin[length(thetaL.bin)] <- pi / 2 - 0.00000001
-  pdfj <- sapply(seq(1, nbin - 1), function(j) integrate(dleaf, thetaL.bin[j], thetaL.bin[j + 1], pdf)$value)
-  fj <- pdfj / sum(pdfj)
 
+extinction <- function(theta, pdf = "spherical", chi, mu, nu) {
+
+  stopifnot(all(is.numeric(theta)))
+  # normalize theta in [0, pi / 2]
+  theta <- theta %% pi
+  theta <- ifelse(theta > (pi / 2), pi - theta, theta)
+
+  sapply(theta, .computeG, pdf, chi, mu, nu)
+}
+
+
+.computeG <- function(theta, pdf, chi, mu, nu) {
+
+  stopifnot(length(theta) == 1)
+  stopifnot(is.character(pdf))
+
+  # special case G(theta) for spherical leaf angle distribution is always 0.5
+  # save computation time
+  if (pdf == "spherical") return(0.5)
+
+  thetaL.bin <- seq(0, pi / 2, length.out = 181 * 7)
+  nbin <- length(thetaL.bin) - 1
+#  thetaL.bin[1] <- 0.00000001
+#  thetaL.bin[lnbin + 1] <- pi / 2 - 0.00000001
+  dthetaL <- thetaL.bin[-1] - thetaL.bin[-(nbin + 1)]
+  thetaL.x <- 0.5 * (thetaL.bin[-1] + thetaL.bin[-(nbin + 1)])
+
+  # large number of bins allows to skip proper integration of dleaf function
+#  fj <- sapply(seq(1, nbin), function(j) integrate(dleaf, thetaL.bin[j], thetaL.bin[j + 1], pdf)$value)
+  fj <- dleaf(thetaL.x, pdf, chi, mu, nu) * dthetaL
+
+  # internal auxiliary function used in computation of extinction coefficient
   A <- function(thetaL) {
-    cotcot <- 1 / (tan(theta) * tan(thetaL))
-    ifelse(
-      abs(cotcot) > 1 || is.infinite(cotcot),
-      cos(theta) * cos(thetaL),
-      cos(theta) * cos(thetaL) * (1 + (2 / pi) * (tan(acos(cotcot)) - acos(cotcot))))
+    if (theta == pi / 2)
+      return(0)
+    else {
+      cotcot <-  1 / (tan(theta) * tan(thetaL))
+      suppressWarnings(
+        return(
+          ifelse(
+            abs(cotcot) > 1 | is.infinite(cotcot),
+            cos(theta) * cos(thetaL),
+            cos(theta) * cos(thetaL) * (1 + (2 / pi) * (tan(acos(cotcot)) - acos(cotcot))))
+        )
+      )
+    }
   }
 
-  hj <- sapply(seq(1, nbin - 1), function(j) integrate(A, thetaL.bin[j], thetaL.bin[j + 1])$value)
+  # large number of bins allows to skip proper integration of A function
+#  hj <- sapply(seq(1, nbin), function(j) integrate(A, thetaL.bin[j], thetaL.bin[j + 1])$value)
+  hj <- A(thetaL.x) * dthetaL
 
-  sum(fj * hj / (pi / 2) / length(thetaL.bin))
+  # return G(theta)
+  sum(fj * hj / dthetaL)
 }
+
+#
+#plot(seq(0, pi/2, length.out = 120) / pi, extinction(seq(0, pi/2, length.out = 120), "ellipsoidal", 0.1))

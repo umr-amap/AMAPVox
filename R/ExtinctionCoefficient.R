@@ -42,6 +42,7 @@ uniform <- function(thetaL) {
 
 ellipsoidal <- function(thetaL, chi) {
   stopifnot(dplyr::between(thetaL, 0, pi / 2))
+  stopifnot(chi >= 0)
   # chi == 1
   if (chi == 1)
     return(sin(thetaL))
@@ -130,21 +131,20 @@ extinction <- function(theta, pdf = "spherical", chi, mu, nu) {
 #  fj <- sapply(seq(1, nbin), function(j) integrate(dleaf, thetaL.bin[j], thetaL.bin[j + 1], pdf)$value)
   fj <- dleaf(thetaL.x, pdf, chi, mu, nu) * dthetaL
 
+  # avoid tan(pi/2)
+  theta.corr <- ifelse(theta == pi / 2,  pi / 2 - 0.00000001, theta)
+
   # internal auxiliary function used in computation of extinction coefficient
   A <- function(thetaL) {
-    if (theta == pi / 2)
-      return(0)
-    else {
-      cotcot <-  1 / (tan(theta) * tan(thetaL))
-      suppressWarnings(
-        return(
-          ifelse(
-            abs(cotcot) > 1 | is.infinite(cotcot),
-            cos(theta) * cos(thetaL),
-            cos(theta) * cos(thetaL) * (1 + (2 / pi) * (tan(acos(cotcot)) - acos(cotcot))))
-        )
+    cotcot <-  1 / (tan(theta.corr) * tan(thetaL))
+    suppressWarnings(
+      return(
+        ifelse(
+          abs(cotcot) > 1 | is.infinite(cotcot),
+          cos(theta.corr) * cos(thetaL),
+          cos(theta.corr) * cos(thetaL) * (1 + (2 / pi) * (tan(acos(cotcot)) - acos(cotcot))))
       )
-    }
+    )
   }
 
   # large number of bins allows to skip proper integration of A function

@@ -45,6 +45,7 @@ Collate:
     'VersionManager.R'
     'AMAPVoxGUI.R'
     'Classes.R'
+    'ComputeG.R'
     'Generics.R'
     'Getters.R'
     'PlotVoxelSpace.R'

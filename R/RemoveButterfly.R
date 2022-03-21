@@ -33,7 +33,7 @@ removeButterfly <- function(vxsp, f.out = vxsp@file) {
     stop(
       "Package \"RANN\" must be installed to remove butterfly",
       "\n",
-      ">> install.packages(\"RANN\")",
+      "> install.packages(\"RANN\")",
       call. = FALSE)
   }
 

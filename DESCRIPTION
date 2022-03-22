@@ -48,6 +48,7 @@ Collate:
     'ComputeG.R'
     'Generics.R'
     'Getters.R'
+    'PlantAreaDensity.R'
     'PlotVoxelSpace.R'
     'ReadVoxelSpace.R'
     'RemoveButterfly.R'

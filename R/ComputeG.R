@@ -1,3 +1,14 @@
+# AMAPVox namespace variable
+leafAngleDistribution = c("planophile",
+                          "erectophile",
+                          "extremophile",
+                          "plagiophile",
+                          "spherical",
+                          "uniform",
+                          "ellipsoidal",
+                          "twoParamBeta")
+
+
 #' Foliage projection ratio G(θ).
 #'
 #' @description Compute the mean projection of unit leaf area on the plane
@@ -64,7 +75,7 @@ computeG <- function(theta, pdf = "spherical", chi, mu, nu,
 
   if (with.lut & lut.precision > 0) {
     theta.lut <- seq(0, pi / 2, by = lut.precision)
-    lut <- extinction(theta.lut, pdf, chi, mu, nu,
+    lut <- computeG(theta.lut, pdf, chi, mu, nu,
                       with.lut = FALSE)
     theta.round <- round(theta / lut.precision) * lut.precision
     theta.round[theta.round > max(theta.lut)] <- max(theta.lut)
@@ -74,7 +85,6 @@ computeG <- function(theta, pdf = "spherical", chi, mu, nu,
     return ( sapply(theta, computeGtheta, pdf, chi, mu, nu) )
   }
 }
-
 
 # planophile probability density of leaf angle distribution
 # planophile == horizontal leaves most frequent
@@ -173,14 +183,7 @@ dtwoParamBeta <- function(thetaL, mu, nu) {
 # mu & nu the parameters of the two-parameters Beta probability density function
 dleaf <- function(thetaL, pdf = "spherical", chi, mu, nu) {
 
-  stopifnot(pdf %in% c("planophile",
-                     "erectophile",
-                     "extremophile",
-                     "plagiophile",
-                     "spherical",
-                     "uniform",
-                     "ellipsoidal",
-                     "twoParamBeta"))
+  stopifnot(pdf %in% AMAPVox:::leafAngleDistribution)
 
   if (pdf == "ellipsoidal") stopifnot(!missing(chi))
   if (pdf == "twoParamBeta") stopifnot(all(!missing(mu), !missing(nu)))
@@ -220,7 +223,7 @@ computeGtheta <- function(theta, pdf, chi, mu, nu) {
   # avoid tan(pi/2)
   theta.corr <- ifelse(theta == pi / 2,  pi / 2 - 0.00000001, theta)
 
-  # internal auxiliary function used in computation of extinction coefficient
+  # internal auxiliary function used in computation of Gtheta
   A <- function(thetaL) {
     cotcot <-  1 / (tan(theta.corr) * tan(thetaL))
     suppressWarnings(
@@ -262,22 +265,21 @@ computeGtheta <- function(theta, pdf, chi, mu, nu) {
 #' # plot G(θ) for every distributions
 #' AMAPVox::plotG()
 #' @export
-plotG <- function(pdf = c("planophile", "erectophile", "extremophile",
-                                   "plagiophile", "spherical", "uniform",
-                                   "ellipsoidal", "twoParamBeta"),
-                           chi = 0.6, mu = 1.1, nu = 1.3) {
+plotG <- function(pdf = AMAPVox:::leafAngleDistribution,
+                  chi = 0.6,
+                  mu = 1.1, nu = 1.3) {
 
   # check for ggplot2 package
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop(
-      "Package \"ggplot2\" must be installed to plot extinction coefficient profiles.",
+      "Package \"ggplot2\" must be installed to plot G(θ) profiles.",
       "\n",
       "> install.packages(\"ggplot2\")",
       call. = FALSE)
   }
 
   theta <- seq(0, pi / 2, length.out = 91)
-  data <- data.frame()
+  df.lad <- data.frame()
   for (lad in pdf) {
     LAD <- lad
     LAD <- switch(
@@ -287,13 +289,13 @@ plotG <- function(pdf = c("planophile", "erectophile", "extremophile",
       lad
     )
     df <- data.frame(theta = theta * (180 / pi),
-                     Gtheta = computeG(theta, pdf = lad, chi, mu, nu),
+                     Gtheta = AMAPVox::computeG(theta, pdf = lad, chi, mu, nu),
                      LAD)
-    data <- rbind(data, df)
+    df.lad <- rbind(df.lad, df)
   }
 
   suppressPackageStartupMessages(require(ggplot2))
-  ggplot(data = data, aes(x=theta, y=Gtheta)) +
+  ggplot(data = df.lad, aes(x=theta, y=Gtheta)) +
     geom_line(aes(colour=LAD)) +
     ggtitle(sprintf("Foliage projection ratio G(\u03B8) for given Leaf Angle Distribution (LAD)")) +
     xlab(sprintf("Beam angle \u03B8 [0:90\u00B0]")) +

@@ -46,6 +46,7 @@ Collate:
     'AMAPVoxGUI.R'
     'Classes.R'
     'ComputeG.R'
+    'FillNA.R'
     'Generics.R'
     'Getters.R'
     'PlantAreaDensity.R'

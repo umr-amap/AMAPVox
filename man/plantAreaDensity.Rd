@@ -21,6 +21,9 @@ plantAreaDensity(
 \item{lad}{the name of the probability density function of the leaf angle
 distribution. One of \code{AMAPVox:::leafAngleDistribution}.}
 
+\item{angle.name}{the name of the mean angle variable in the VoxelSpace
+object.}
+
 \item{variable.name}{the name of the transmittance/attenuation variables in
 the VoxelSpace object. Transmittance variables are expected to start with
 "tra" and attenuation variables with "att".}

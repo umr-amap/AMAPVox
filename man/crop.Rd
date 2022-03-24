@@ -23,7 +23,7 @@ crop(vxsp, imin = 0, imax = Inf, jmin = 0, jmax = Inf, kmin = 0, kmax = Inf)
 \item{kmax}{maximum k index of cropped area (inclusive)}
 }
 \value{
-cropped voxel space with updated i, j, k grid coordinates and
+Cropped voxel space with updated i, j, k grid coordinates and
 updated header (min and max corner).
 }
 \description{
@@ -44,11 +44,13 @@ vxsp@voxels <- sf::st_drop_geometry(vx.sf)
 }
 }
 \examples{
+\dontrun{
 vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 plot(crop(vxsp, imin = 1, imax = 5))
 # introduce unsampled areas in voxel space
 vxsp@voxels[i < 3, nbSampling:= 0]
 # automatic cropping
 plot(crop(vxsp))
+}
 
 }

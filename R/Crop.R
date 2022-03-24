@@ -33,20 +33,25 @@
 #' updated header (min and max corner).
 #'
 #' @examples
+#' \dontrun{
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' plot(crop(vxsp, imin = 1, imax = 5))
 #' # introduce unsampled areas in voxel space
 #' vxsp@voxels[i < 3, nbSampling:= 0]
 #' # automatic cropping
 #' plot(crop(vxsp))
+#' }
 #'
 #' @export
 crop <- function(vxsp,
                  imin = 0, imax = Inf,
                  jmin = 0, jmax = Inf,
                  kmin = 0, kmax = Inf) {
+
   # must be a voxel space
   stopifnot(is.VoxelSpace(vxsp))
+
+  i <- j <- k <- nbSampling <- NULL # due to NSE notes in R CMD check
 
   # get current max index
   vx.imax <- vxsp@voxels[, max(i)]

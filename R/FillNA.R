@@ -86,6 +86,7 @@ fillNA <- function(vxsp,
   vx.na <- vx[is.na(get(variable.name))]
 
   # extract voxels whose number of pulse >= pulse.min
+  nbSampling <- NULL # due to NSE notes in R CMD check
   vx.pool <- vx[!is.na(get(variable.name)) & nbSampling >= pulse.min]
 
   # computes max number of neighboring voxels inside sphere(r=radius)

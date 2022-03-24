@@ -5,6 +5,8 @@
 #' @param vxsp the object of class VoxelSpace
 #' @param lad the name of the probability density function of the leaf angle
 #' distribution. One of `AMAPVox:::leafAngleDistribution`.
+#' @param angle.name the name of the mean angle variable in the VoxelSpace
+#' object.
 #' @param variable.name the name of the transmittance/attenuation variables in
 #' the VoxelSpace object. Transmittance variables are expected to start with
 #' "tra" and attenuation variables with "att".
@@ -30,7 +32,7 @@ plantAreaDensity <- function(vxsp, lad = "spherical",
   stopifnot(is.VoxelSpace(vxsp))
 
   # check leaf angle distribution
-  stopifnot(lad %in% AMAPVox::leafAngleDistribution)
+  stopifnot(lad %in% leafAngleDistribution)
 
   # angle variable must exist
   stopifnot(angle.name %in% colnames(vxsp@voxels))
@@ -44,6 +46,8 @@ plantAreaDensity <- function(vxsp, lad = "spherical",
 
   # pointer to voxels data.table
   vx <- vxsp@voxels
+
+  nbSampling <- padtmp <- NULL # due to NSE notes in R CMD check
 
   # loop over requested variables
   for (variable in variable.name) {

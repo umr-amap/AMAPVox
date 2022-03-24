@@ -4,7 +4,7 @@
 \alias{plotG}
 \title{Plot G(θ) profiles for one or several leaf angle distribution functions}
 \usage{
-plotG(pdf = AMAPVox:::leafAngleDistribution, chi = 0.6, mu = 1.1, nu = 1.3)
+plotG(pdf = leafAngleDistribution, chi = 0.6, mu = 1.1, nu = 1.3)
 }
 \arguments{
 \item{pdf}{the name of the leaf angle distribution functions. One of

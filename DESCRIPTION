@@ -27,6 +27,7 @@ Imports:
     utils 
 Suggests:
     fields,
+    ggplot2,
     graphics,
     grDevices,
     knitr,

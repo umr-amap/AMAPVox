@@ -1,7 +1,9 @@
 # AMAPVox 0.8.0
 
-*yyyy-MM-dd*
-...
+*2022-03-24*
+Added new function "plantAreaDensity"" to compute plant area density.
+Added new function "fillNA" to fill missing values in voxel space.
+Added new function "crop" to crop a voxel space to a specified cuboid.
 Not released on CRAN.
 
 # AMAPVox 0.7.0

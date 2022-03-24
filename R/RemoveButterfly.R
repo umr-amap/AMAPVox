@@ -29,6 +29,8 @@
 #' @export
 removeButterfly <- function(vxsp, f.out = vxsp@file) {
 
+  i <- j <- k <- nbSampling <- nbEchos <- NULL # due to NSE notes in R CMD check
+
   if (!requireNamespace("RANN", quietly = TRUE)) {
     stop(
       "Package \"RANN\" must be installed to remove butterfly",
@@ -47,10 +49,10 @@ removeButterfly <- function(vxsp, f.out = vxsp@file) {
 
   # subset of voxels with nbEchos > 0
   vx.hit.index <- vx[nbEchos > 0, which = TRUE]
-  vx.hit <- vx[vx.hit.index, .(i, j, k, nbEchos)]
+  vx.hit <- vx[vx.hit.index, list(i, j, k, nbEchos)]
 
   # moore neighborhood of rank 1
-  neighbors <- RANN::nn2(data = vx.hit[, .(i, j, k)],
+  neighbors <- RANN::nn2(data = vx.hit[, list(i, j, k)],
                          k = 27, searchtype = "radius", radius = 1.8)
   # remove current voxel from neighbors
   neighbors <- neighbors$nn.idx[, -1]
@@ -72,7 +74,7 @@ removeButterfly <- function(vxsp, f.out = vxsp@file) {
                                  attenuation_FPL_biasCorrection = 0,
                                  attenuation_FPL_unbiasedMLE = 0,
                                  attenuation_PPL_MLE = 0),
-       on = .(i, j, k)]
+       on = list(i, j, k)]
 
     cat("Removed", length(butterflies), "butterflies in",
         basename(vxsp@file), "\n")

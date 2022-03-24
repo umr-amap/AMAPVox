@@ -165,7 +165,7 @@ The 3D Viewer relies on OpenGL >= 3.
 For Linux users, you may check OpenGL version with:
 ```{r eval=FALSE}
 grep("OpenGL", system2("glxinfo", stdout = TRUE), value = TRUE)
-````
+```
 
 The user is staight-forward. You choose a voxel file, select the variable to 
 plot (that can be changed later on, directly in the viewer) and you can click

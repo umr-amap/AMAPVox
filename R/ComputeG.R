@@ -63,7 +63,7 @@ leafAngleDistribution = c("planophile",
 #' all(computeG(theta = runif(10, 0, pi/2)) == 0.5) # returns TRUE
 #' # ellipsoidal distribution
 #' computeG(theta = runif(10, 0, pi/2), pdf = "ellipsoidal", chi = 0.6)
-#' @seealso [AMAPVox::plotGtheta()]
+#' @seealso [AMAPVox::plotG()]
 #' @export
 computeG <- function(theta, pdf = "spherical", chi, mu, nu,
                      with.lut = length(theta) > 100, lut.precision = 0.001) {
@@ -173,7 +173,7 @@ dtwoParamBeta <- function(thetaL, mu, nu) {
   stopifnot(dplyr::between(thetaL, 0, pi / 2))
   stopifnot(all(mu >= 0, nu >= 0))
   t <- 2 * thetaL / pi
-  dbeta(t, mu, nu) * (2 / pi)
+  stats::dbeta(t, mu, nu) * (2 / pi)
 }
 
 # probability density function of leaf angle distribution
@@ -183,7 +183,7 @@ dtwoParamBeta <- function(thetaL, mu, nu) {
 # mu & nu the parameters of the two-parameters Beta probability density function
 dleaf <- function(thetaL, pdf = "spherical", chi, mu, nu) {
 
-  stopifnot(pdf %in% AMAPVox:::leafAngleDistribution)
+  stopifnot(pdf %in% leafAngleDistribution)
 
   if (pdf == "ellipsoidal") stopifnot(!missing(chi))
   if (pdf == "twoParamBeta") stopifnot(all(!missing(mu), !missing(nu)))
@@ -265,14 +265,14 @@ computeGtheta <- function(theta, pdf, chi, mu, nu) {
 #' # plot G(θ) for every distributions
 #' AMAPVox::plotG()
 #' @export
-plotG <- function(pdf = AMAPVox:::leafAngleDistribution,
+plotG <- function(pdf = leafAngleDistribution,
                   chi = 0.6,
                   mu = 1.1, nu = 1.3) {
 
   # check for ggplot2 package
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop(
-      "Package \"ggplot2\" must be installed to plot G(θ) profiles.",
+      "Package \"ggplot2\" must be installed to plot G(\u03B8) profiles.",
       "\n",
       "> install.packages(\"ggplot2\")",
       call. = FALSE)
@@ -294,10 +294,10 @@ plotG <- function(pdf = AMAPVox:::leafAngleDistribution,
     df.lad <- rbind(df.lad, df)
   }
 
-  suppressPackageStartupMessages(require(ggplot2))
-  ggplot(data = df.lad, aes(x=theta, y=Gtheta)) +
-    geom_line(aes(colour=LAD)) +
-    ggtitle(sprintf("Foliage projection ratio G(\u03B8) for given Leaf Angle Distribution (LAD)")) +
-    xlab(sprintf("Beam angle \u03B8 [0:90\u00B0]")) +
-    ylab(sprintf("G(\u03B8)"))
+  Gtheta <- NULL # due to NSE notes in R CMD check
+  ggplot2::ggplot(data = df.lad, ggplot2::aes(x=theta, y=Gtheta)) +
+    ggplot2::geom_line(ggplot2::aes(colour=LAD)) +
+    ggplot2::ggtitle(sprintf("Foliage projection ratio G(\u03B8) for given Leaf Angle Distribution (LAD)")) +
+    ggplot2::xlab(sprintf("Beam angle \u03B8 [0:90\u00B0]")) +
+    ggplot2::ylab(sprintf("G(\u03B8)"))
 }

@@ -1,67 +1,63 @@
-
-#' Show \code{\link{VoxelSpace-class}} object.
+#' Tools inherited from base R for VoxelSpace object.
 #'
-#' @docType methods
-#' @rdname show
-#' @description Display the \code{\link{VoxelSpace-class}} object main
-#'   characteristics.
-#' @return show returns an invisible NULL.
+#' @description Tools inherited from base R for \code{\link{VoxelSpace-class}}
+#' objects.
+#'
+#' @section Note on `length.VoxelSpace`:
+#'     AMAPVox allows to discard empty voxels in the voxel file. In such case
+#'     \code{length.VoxelSpace} will return the expected number of voxels as if
+#'     none were missing. As a  consequence the number of voxels stored in the
+#'     \code{\link{VoxelSpace-class}} object may be inferior to the returned
+#'     value, namely \code{nrow(x) <= length(x)}
+#'
+#' @param x a \code{\link{VoxelSpace-class}} object.
 #' @param object a \code{\link{VoxelSpace-class}} object.
-#' @include Classes.R
-#' @examples
-#' # load a voxel file
-#' vxsp <- readVoxelSpace(
-#'            system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
-#' # show VoxelSpace object
-#' show(vxsp)
+#' @param \dots further arguments passed to `print` function.
+#'
+#' @name tools
+#' @rdname tools
+NULL
+
+#' @rdname tools
 #' @export
 setMethod ("show",
            signature(object = "VoxelSpace"),
            function(object) showVoxelSpace(object))
 
-##
+#' @rdname tools
 #' @export
 print.VoxelSpace <- function(x, ...) showVoxelSpace(x, ...)
 
-#' Length of a VoxelSpace
-#'
-#' @docType methods
-#' @rdname dim
-#' @description Get the number of voxels in the voxel space.
-#' @section Warning:
-#' AMAPVox allows to discard empty voxels in the voxel file. In such case
-#'     \code{length.VoxelSpace} will return the expected number of voxels as if
-#'     none were missing. As a  consequence the number of voxels stored in the
-#'     \code{\link{VoxelSpace-class}} object may be inferior to the returned
-#'     value, namely \code{nrow(x@data) <= length(x)}
-#' @return the number of voxels in the voxel space.
-#' @param x a \code{\link{VoxelSpace-class}} object.
-#' @include Classes.R
+#' @rdname tools
 #' @export
 length.VoxelSpace <- function(x) return (prod(x@header$dim))
 
-#' Dimensions of the VoxelSpace
-#'
-#' @docType methods
-#' @rdname dim
-#' @description Retrieve the dimension of a \code{\link{VoxelSpace-class}}
-#' @return the number of voxels nx, ny, nz of a \code{\link{VoxelSpace-class}}
-#'   along x, y, z axis.
-#' @param x a \code{\link{VoxelSpace-class}} object.
-#' @include Classes.R
+#' @rdname tools
 #' @export
 dim.VoxelSpace <- function(x) return (x@header$dim)
 
-#' Tests for objects of class VoxelSpace
-#'
-#' @docType methods
-#' @rdname is.VoxelSpace
-#' @description Tests for objects of class VoxelSpace
-#' @param x to be tested
-#' @include Classes.R
-#' @seealso \code{\link{VoxelSpace-class}};
+#' @rdname tools
 #' @export
 is.VoxelSpace <- function (x) is(x, "VoxelSpace")
+
+#' @export
+#' @rdname tools
+setMethod ("ncol",
+           signature(x = "VoxelSpace"),
+           function(x) ncol(x@data))
+
+#' @export
+#' @rdname tools
+setMethod ("nrow",
+           signature(x = "VoxelSpace"),
+           function(x) nrow(x@data))
+#' @export
+#' @rdname tools
+nrow.VoxelSpace <- function(x) return(nrow(x@data))
+
+#' @export
+#' @rdname tools
+names.VoxelSpace <- function(x) return(names(x@data))
 
 #' Gets a parameter from the VoxelSpace header.
 #'

@@ -51,6 +51,7 @@ Collate:
     'FillNA.R'
     'Generics.R'
     'Getters.R'
+    'Operators.R'
     'PlantAreaDensity.R'
     'PlotVoxelSpace.R'
     'ReadVoxelSpace.R'

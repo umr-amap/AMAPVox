@@ -39,7 +39,7 @@
 #' # read voxel space
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' # Randomly add some NA in PAD variable
-#' vx <- vxsp@voxels
+#' vx <- vxsp@data
 #' ind <- sample(vx[PadBVTotal > 0, which = TRUE], 3)
 #' # print initial values
 #' vx[ind, .(i, j, k, PadBVTotal)]
@@ -59,7 +59,7 @@ fillNA <- function(vxsp,
   stopifnot(is.VoxelSpace(vxsp))
 
   # variable must exist, only one variable at a time
-  stopifnot(variable.name %in% colnames(vxsp@voxels),
+  stopifnot(variable.name %in% colnames(vxsp@data),
             length(variable.name) == 1)
 
   # check variable min & max
@@ -80,7 +80,7 @@ fillNA <- function(vxsp,
   stopifnot(is.numeric(pulse.min), pulse.min >= 0)
 
   # pointer to voxels
-  vx <- vxsp@voxels
+  vx <- vxsp@data
 
   # extract NA voxels
   vx.na <- vx[is.na(get(variable.name))]
@@ -116,7 +116,7 @@ fillNA <- function(vxsp,
   fill.value[which(fill.value < variable.min)] <- variable.min
 
   # write fill values in data.table
-  vxsp@voxels[is.na(get(variable.name)), (variable.name):=fill.value]
+  vxsp@data[is.na(get(variable.name)), (variable.name):=fill.value]
 }
 
 # Computes number of voxels, given voxel size (in meter), whose centers are

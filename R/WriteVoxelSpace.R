@@ -13,7 +13,7 @@
 #' # load a voxel file
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' # set max PAD to 5
-#' vxsp@voxels[, PadBVTotal:=sapply(PadBVTotal, min, 5)]
+#' vxsp@data[, PadBVTotal:=sapply(PadBVTotal, min, 5)]
 #' # write updated voxel file in temporary file
 #' writeVoxelSpace(vxsp, tempfile("pattern"="amapvox_", fileext=".vox"))
 #' }
@@ -30,7 +30,7 @@ writeVoxelSpace <- function(vxsp, f){
 
   # write voxels
   suppressWarnings(
-    data.table::fwrite(vxsp@voxels,
+    data.table::fwrite(vxsp@data,
                      f,
                      row.names=FALSE,
                      col.names=TRUE,
@@ -49,7 +49,7 @@ writeVoxelSpace <- function(vxsp, f){
 printHeader <- function(vxsp) {
 
   # list parameters, discard nline & columnNames that are internal to package
-  parameters <- vxsp@parameters[!(names(vxsp@parameters)
+  parameters <- vxsp@header[!(names(vxsp@header)
                                   %in% c("nline", "columnNames"))]
   # index of numeric vector parameters
   pVec <- which(sapply(parameters,
@@ -64,6 +64,7 @@ printHeader <- function(vxsp) {
                        mincorner = "min_corner",
                        maxcorner = "max_corner",
                        resolution = "res",
+                       dim = "split",
                        p))
 
   # return a vector of parameters formatted as "#key:value"

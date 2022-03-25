@@ -82,18 +82,6 @@ readVoxelSpace <- function(f){
   # set file slot
   vxsp@file <- f
 
-  # number of lines
-  nline <- as.integer(nLineHeader)
-  # column names
-  columnNames <- unlist(stringr::str_split(line, " "))
-  # min corner
-  mincorner <- .parseNumericVector(rawParameters["min_corner"])
-  # max corner
-  maxcorner <- .parseNumericVector(rawParameters["max_corner"])
-  # split
-  split <- .parseNumericVector(rawParameters["split"])
-  # resolution
-  resolution <- .parseNumericVector(rawParameters["res"])
   ## Predefined parameters
   parameters <- list(
     # number of lines
@@ -105,7 +93,7 @@ readVoxelSpace <- function(f){
     # max corner
     maxcorner = .parseNumericVector(rawParameters["max_corner"]),
     # split
-    split = .parseNumericVector(rawParameters["split"]),
+    dim = .parseNumericVector(rawParameters["split"]),
     # resolution
     resolution = .parseNumericVector(rawParameters["res"])
   )
@@ -115,10 +103,10 @@ readVoxelSpace <- function(f){
                                     c("min_corner", "max_corner",
                                       "split", "res")) ])
 
-  vxsp@parameters <- parameters
+  vxsp@header <- parameters
 
   # read voxels
-  vxsp@voxels <- data.table::fread(f, header = TRUE, skip = nLineHeader)
+  vxsp@data <- data.table::fread(f, header = TRUE, skip = nLineHeader)
 
   return (vxsp)
 }
@@ -129,12 +117,12 @@ showVoxelSpace <- function(vxsp) {
   cat(class(vxsp)[1],'\n')
   cat("  file",  vxsp@file, sep='\t', '\n')
   writeLines(paste0("  ",
-                    paste(names(vxsp@parameters),
-                          vxsp@parameters,
+                    paste(names(vxsp@header),
+                          vxsp@header,
                           sep='\t')))
   cat("  output variables",
-      paste(vxsp@parameters$columnNames, collapse=", "),
+      paste(vxsp@header$columnNames, collapse=", "),
       '\n',
       sep='\t')
-  show(vxsp@voxels)
+  show(vxsp@data)
 }

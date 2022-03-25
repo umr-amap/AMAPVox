@@ -14,11 +14,11 @@
 #' the [sf::st_crop] function.
 #' ```
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
-#' vxsp@voxels[, c("x", "y"):=getPosition(vxsp)[, .(x, y)]]
-#' vx.sf <- sf::st_as_sf(vxsp@voxels, coords=c("x", "y"))
+#' vxsp@data[, c("x", "y"):=getPosition(vxsp)[, .(x, y)]]
+#' vx.sf <- sf::st_as_sf(vxsp@data, coords=c("x", "y"))
 #' vx.sf <- sf::st_crop(vx.sf, c(xmin = 4, ymin = 1, xmax = 5, ymax = 4))
 #' sf::st_bbox(vx.sf)
-#' vxsp@voxels <- sf::st_drop_geometry(vx.sf)
+#' vxsp@data <- sf::st_drop_geometry(vx.sf)
 #' ```
 #'
 #' @param vxsp a \code{\link{VoxelSpace-class}} object.
@@ -37,7 +37,7 @@
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' plot(crop(vxsp, imin = 1, imax = 5))
 #' # introduce unsampled areas in voxel space
-#' vxsp@voxels[i < 3, nbSampling:= 0]
+#' vxsp@data[i < 3, nbSampling:= 0]
 #' # automatic cropping
 #' plot(crop(vxsp))
 #' }
@@ -54,21 +54,21 @@ crop <- function(vxsp,
   i <- j <- k <- nbSampling <- NULL # due to NSE notes in R CMD check
 
   # get current max index
-  vx.imax <- vxsp@voxels[, max(i)]
-  vx.jmax <- vxsp@voxels[, max(j)]
-  vx.kmax <- vxsp@voxels[, max(k)]
+  vx.imax <- vxsp@data[, max(i)]
+  vx.jmax <- vxsp@data[, max(j)]
+  vx.kmax <- vxsp@data[, max(k)]
 
   # automatic crop
   if (imin == 0 & imax == Inf
       & jmin == 0 & jmax == Inf
       & kmin == 0 & kmax == Inf) {
-    irange <- range(which(vxsp@voxels[, sum(nbSampling, na.rm = T), by = i][[2]] > 0)) - 1
+    irange <- range(which(vxsp@data[, sum(nbSampling, na.rm = T), by = i][[2]] > 0)) - 1
     imin <- irange[1]
     imax <- irange[2]
-    jrange <- range(which(vxsp@voxels[, sum(nbSampling, na.rm = T), by = j][[2]] > 0)) - 1
+    jrange <- range(which(vxsp@data[, sum(nbSampling, na.rm = T), by = j][[2]] > 0)) - 1
     jmin <- jrange[1]
     jmax <- jrange[2]
-    krange <- range(which(vxsp@voxels[, sum(nbSampling, na.rm = T), by = k][[2]] > 0)) - 1
+    krange <- range(which(vxsp@data[, sum(nbSampling, na.rm = T), by = k][[2]] > 0)) - 1
     kmin <- krange[1]
     kmax <- krange[2]
   }
@@ -100,7 +100,7 @@ crop <- function(vxsp,
   }
 
   # crop
-  vx.cropped <- vxsp@voxels[i >= imin & i <= imax
+  vx.cropped <- vxsp@data[i >= imin & i <= imax
                             & j >= jmin & j <= jmax
                             & k >= kmin & k <= kmax, ]
   # update i, j, k index
@@ -116,14 +116,14 @@ crop <- function(vxsp,
   # cropped voxel space
   vxsp.cropped <- new(Class=("VoxelSpace"))
   vxsp.cropped@file <- vxsp@file
-  vxsp.cropped@parameters <- vxsp@parameters
+  vxsp.cropped@header <- vxsp@header
 
-  vxsp.cropped@parameters$mincorner <- mincorner
-  vxsp.cropped@parameters$maxcorner <- maxcorner
-  vxsp.cropped@parameters$split <- dim
+  vxsp.cropped@header$mincorner <- mincorner
+  vxsp.cropped@header$maxcorner <- maxcorner
+  vxsp.cropped@header$dim <- dim
 
   # overwrite voxels
-  vxsp.cropped@voxels <- vx.cropped
+  vxsp.cropped@data <- vx.cropped
 
   # return cropped voxel space
   return(vxsp.cropped)

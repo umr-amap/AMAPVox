@@ -21,7 +21,7 @@ object.
 # load a voxel file
 vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 # set max PAD to 5
-vxsp@voxels[, PadBVTotal:=sapply(PadBVTotal, min, 5)]
+vxsp@data[, PadBVTotal:=sapply(PadBVTotal, min, 5)]
 # write updated voxel file in temporary file
 writeVoxelSpace(vxsp, tempfile("pattern"="amapvox_", fileext=".vox"))
 }

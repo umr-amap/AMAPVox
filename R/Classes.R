@@ -4,8 +4,8 @@
 #'   header.
 #' @docType class
 #' @slot file the path of the voxel file (.vox).
-#' @slot voxels the voxels hold in a data.table.
-#' @slot parameters a list of parameters associated to this voxel file.
+#' @slot data the voxels hold in a data.table.
+#' @slot header a list of parameters associated to this voxel file.
 #' @return An object of class VoxelSpace.
 #' @seealso \code{\link{readVoxelSpace}}
 #' @name VoxelSpace-class
@@ -14,10 +14,9 @@
 setClass(
 
   Class="VoxelSpace",
-  contains="data.table",
   slots=c(
     file="character",
-    voxels="data.table",
-    parameters="list"
+    data="data.table",
+    header="list"
   )
 )

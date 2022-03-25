@@ -33,12 +33,12 @@ print.VoxelSpace <- function(x, ...) showVoxelSpace(x, ...)
 #'     \code{length.VoxelSpace} will return the expected number of voxels as if
 #'     none were missing. As a  consequence the number of voxels stored in the
 #'     \code{\link{VoxelSpace-class}} object may be inferior to the returned
-#'     value, namely \code{nrow(x@voxels) <= length(x)}
+#'     value, namely \code{nrow(x@data) <= length(x)}
 #' @return the number of voxels in the voxel space.
 #' @param x a \code{\link{VoxelSpace-class}} object.
 #' @include Classes.R
 #' @export
-length.VoxelSpace <- function(x) return (prod(x@parameters$split))
+length.VoxelSpace <- function(x) return (prod(x@header$dim))
 
 #' Dimensions of the VoxelSpace
 #'
@@ -50,7 +50,7 @@ length.VoxelSpace <- function(x) return (prod(x@parameters$split))
 #' @param x a \code{\link{VoxelSpace-class}} object.
 #' @include Classes.R
 #' @export
-dim.VoxelSpace <- function(x) return (x@parameters$split)
+dim.VoxelSpace <- function(x) return (x@header$dim)
 
 #' Tests for objects of class VoxelSpace
 #'
@@ -158,7 +158,7 @@ setGeneric("getResolution",
 #' getPosition(vxsp, c(0, 0, 0))
 #'
 #' # get position of voxels 1 to 10 in the data.table
-#' getPosition(vxsp, vxsp@voxels[1:10,])
+#' getPosition(vxsp, vxsp@data[1:10,])
 #'
 #' # get positions of every voxel
 #' getPosition(vxsp)

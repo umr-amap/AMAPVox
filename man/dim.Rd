@@ -30,6 +30,6 @@ AMAPVox allows to discard empty voxels in the voxel file. In such case
 \code{length.VoxelSpace} will return the expected number of voxels as if
 none were missing. As a  consequence the number of voxels stored in the
 \code{\link{VoxelSpace-class}} object may be inferior to the returned
-value, namely \code{nrow(x@voxels) <= length(x)}
+value, namely \code{nrow(x@data) <= length(x)}
 }
 

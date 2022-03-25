@@ -45,7 +45,7 @@ removeButterfly <- function(vxsp, f.out = vxsp@file) {
   cat("Looking for butterflies in", basename(vxsp@file), "...", "\n")
 
   # pointer to voxels
-  vx <- vxsp@voxels
+  vx <- vxsp@data
 
   # subset of voxels with nbEchos > 0
   vx.hit.index <- vx[nbEchos > 0, which = TRUE]
@@ -80,7 +80,7 @@ removeButterfly <- function(vxsp, f.out = vxsp@file) {
         basename(vxsp@file), "\n")
 
     # only keep original columns
-    vxsp@voxels <- vx[, .SD, .SDcols = getParameter(vxsp, "columnNames")]
+    vxsp@data <- vx[, .SD, .SDcols = getParameter(vxsp, "columnNames")]
 
     # create output directory if it does not exist
     if (!dir.exists(dirname(f.out))) {

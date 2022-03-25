@@ -3,34 +3,34 @@ setMethod("getParameter", signature(vxsp="VoxelSpace", what="character"),
           function(vxsp, what) {
             stopifnot(
               sum(!is.na(str_match(
-                names(vxsp@parameters),
+                names(vxsp@header),
                 paste0("^", what, "$")))) == 1)
-            return ( vxsp@parameters[[what]] )
+            return ( vxsp@header[[what]] )
           })
 
 #' @rdname getParameter
 setMethod("getParameter", signature(vxsp="VoxelSpace", what="missing"),
           function(vxsp, what) {
 
-            return ( vxsp@parameters )
+            return ( vxsp@header )
           })
 
 #' @rdname getMinCorner
 setMethod("getMinCorner", "VoxelSpace",
           function(vxsp) {
-            return ( vxsp@parameters$mincorner )
+            return ( vxsp@header$mincorner )
           })
 
 #' @rdname getMaxCorner
 setMethod("getMaxCorner", "VoxelSpace",
           function(vxsp) {
-            return ( vxsp@parameters$maxcorner )
+            return ( vxsp@header$maxcorner )
           })
 
 #' @rdname getResolution
 setMethod("getResolution", "VoxelSpace",
           function(vxsp) {
-            return ( vxsp@parameters$resolution )
+            return ( vxsp@header$resolution )
           })
 
 #' @rdname getPosition
@@ -43,7 +43,7 @@ setMethod("getPosition", signature(vxsp="VoxelSpace", vx="vector"),
             stopifnot(as.integer(vx) == vx)
             stopifnot(all(vx >=0))
             # check i, j, k ranges
-            stopifnot(all((vx >= 0) & (vx < vxsp@parameters$split)))
+            stopifnot(all((vx >= 0) & (vx < vxsp@header$split)))
 
             return (
               callGeneric(vxsp,
@@ -60,8 +60,8 @@ setMethod("getPosition", signature(vxsp="VoxelSpace", vx="data.table"),
             # extract i, j, k
             pos <- vx[, c("i", "j", "k")]
             # min corner and resolution as local variables
-            minc <- vxsp@parameters$mincorner
-            res <- vxsp@parameters$resolution
+            minc <- vxsp@header$mincorner
+            res <- vxsp@header$resolution
             # function for calculating the position
             calcPos <- function(index, coord) minc[coord] + index * res[coord]
             # compute x, y, z
@@ -76,7 +76,7 @@ setMethod("getPosition", signature(vxsp="VoxelSpace", vx="missing"),
           function(vxsp, vx) {
 
             return (
-              callGeneric(vxsp, vxsp@voxels[ , c("i", "j", "k")]))
+              callGeneric(vxsp, vxsp@data[ , c("i", "j", "k")]))
           })
 
 

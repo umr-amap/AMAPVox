@@ -38,7 +38,7 @@ vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPV
 getPosition(vxsp, c(0, 0, 0))
 
 # get position of voxels 1 to 10 in the data.table
-getPosition(vxsp, vxsp@voxels[1:10,])
+getPosition(vxsp, vxsp@data[1:10,])
 
 # get positions of every voxel
 getPosition(vxsp)

@@ -35,17 +35,17 @@ plantAreaDensity <- function(vxsp, lad = "spherical",
   stopifnot(lad %in% leafAngleDistribution)
 
   # angle variable must exist
-  stopifnot(angle.name %in% colnames(vxsp@voxels))
+  stopifnot(angle.name %in% colnames(vxsp@data))
 
   # transmittance / attenuation variable must exist
-  stopifnot(variable.name %in% colnames(vxsp@voxels))
+  stopifnot(variable.name %in% colnames(vxsp@data))
 
   # transmittance / attenuation variable must start, by convention, either
   # by "tra" of "att"
   stopifnot(all(grepl("(^tra*)|(^att*)", variable.name)))
 
   # pointer to voxels data.table
-  vx <- vxsp@voxels
+  vx <- vxsp@data
 
   nbSampling <- padtmp <- NULL # due to NSE notes in R CMD check
 
@@ -75,10 +75,10 @@ plantAreaDensity <- function(vxsp, lad = "spherical",
 
     # add PAD into data.table
     pad.name <- paste0("pad_", variable)
-    vxsp@voxels[, padtmp := pad]
+    vxsp@data[, padtmp := pad]
     # overwrite existing column
-    if (pad.name %in% colnames(vxsp@voxels))
-      vxsp@voxels[, (pad.name):=NULL]
-    data.table::setnames(vxsp@voxels, "padtmp", pad.name)
+    if (pad.name %in% colnames(vxsp@data))
+      vxsp@data[, (pad.name):=NULL]
+    data.table::setnames(vxsp@data, "padtmp", pad.name)
   }
 }

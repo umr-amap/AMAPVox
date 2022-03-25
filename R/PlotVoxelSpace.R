@@ -55,14 +55,14 @@ setMethod("plot",
   # y not used
   stopifnot(missing(y))
   # make sure variable exists
-  stopifnot(variable.name %in% colnames(x@voxels))
+  stopifnot(variable.name %in% colnames(x@data))
   # make sure variable nbSampling exists if discard unsampled voxel is TRUE
-  stopifnot(empty.discard | ('nbSampling' %in% colnames(x@voxels)))
+  stopifnot(empty.discard | ('nbSampling' %in% colnames(x@data)))
   # make sure variable nbEchos exists if discard empty voxel is TRUE
-  stopifnot(empty.discard | ('nbEchos' %in% colnames(x@voxels)))
+  stopifnot(empty.discard | ('nbEchos' %in% colnames(x@data)))
 
   # discard empty voxels
-  vx <- x@voxels
+  vx <- x@data
   nbSampling <- nbEchos <- NULL # due to NSE notes in R CMD check
   if (unsampled.discard) vx <- vx[nbSampling > 0]
   if (empty.discard) vx <- vx[nbEchos > 0]

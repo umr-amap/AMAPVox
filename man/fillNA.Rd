@@ -59,7 +59,7 @@ radius or lower sampling threshold.
 # read voxel space
 vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 # Randomly add some NA in PAD variable
-vx <- vxsp@voxels
+vx <- vxsp@data
 ind <- sample(vx[PadBVTotal > 0, which = TRUE], 3)
 # print initial values
 vx[ind, .(i, j, k, PadBVTotal)]

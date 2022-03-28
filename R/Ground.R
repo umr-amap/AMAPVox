@@ -27,9 +27,9 @@
 #' ag <- aboveGround(vxsp)
 #' bg <- belowGround(vxsp) # empty in test case
 #' # ground layer included in above ground subset
-#' identical(ag[gr, on=list(i, j, k)], gr) # TRUE expected
-#' # below ground + above ground == whole voxel space
-#' all(merge(bg, ag, all = TRUE) == vxsp@data[, list(i, j, k)]) # TRUE expected
+#' all(ag[gr, on=list(i, j, k)] == gr) # TRUE expected
+#  # extract above ground voxels
+#' vxsp@data[ag, on=list(i, j, k)]
 #'
 #' @export
 ground <- function(vxsp) {

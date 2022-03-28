@@ -45,6 +45,7 @@ Collate:
     'AMAPVox.R'
     'VersionManager.R'
     'AMAPVoxGUI.R'
+    'Canopy.R'
     'Classes.R'
     'ComputeG.R'
     'Crop.R'

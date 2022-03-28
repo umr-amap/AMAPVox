@@ -33,7 +33,8 @@ Suggests:
     knitr,
     RANN,
     rgl,
-    rmarkdown
+    rmarkdown,
+    terra
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
@@ -51,6 +52,7 @@ Collate:
     'FillNA.R'
     'Generics.R'
     'Getters.R'
+    'Ground.R'
     'Operators.R'
     'PlantAreaDensity.R'
     'PlotVoxelSpace.R'

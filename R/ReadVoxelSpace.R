@@ -94,8 +94,8 @@ readVoxelSpace <- function(f){
     maxcorner = .parseNumericVector(rawParameters["max_corner"]),
     # split
     dim = .parseNumericVector(rawParameters["split"]),
-    # resolution
-    resolution = .parseNumericVector(rawParameters["res"])
+    # voxel size
+    voxel.size = .parseNumericVector(rawParameters["res"])
   )
   # Other parameters
   parameters <- c(parameters,

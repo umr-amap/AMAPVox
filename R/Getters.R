@@ -27,10 +27,10 @@ setMethod("getMaxCorner", "VoxelSpace",
             return ( vxsp@header$maxcorner )
           })
 
-#' @rdname getResolution
-setMethod("getResolution", "VoxelSpace",
+#' @rdname getVoxelSize
+setMethod("getVoxelSize", "VoxelSpace",
           function(vxsp) {
-            return ( vxsp@header$resolution )
+            return ( vxsp@header$voxel.size )
           })
 
 #' @rdname getPosition
@@ -59,9 +59,9 @@ setMethod("getPosition", signature(vxsp="VoxelSpace", vx="data.table"),
 
             # extract i, j, k
             pos <- vx[, c("i", "j", "k")]
-            # min corner and resolution as local variables
+            # min corner and voxel size as local variables
             minc <- vxsp@header$mincorner
-            res <- vxsp@header$resolution
+            res <- vxsp@header$voxel.size
             # function for calculating the position
             calcPos <- function(index, coord) minc[coord] + index * res[coord]
             # compute x, y, z

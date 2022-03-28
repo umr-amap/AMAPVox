@@ -63,7 +63,7 @@ printHeader <- function(vxsp) {
     function(p) switch(p,
                        mincorner = "min_corner",
                        maxcorner = "max_corner",
-                       resolution = "res",
+                       voxel.size = "res",
                        dim = "split",
                        p))
 

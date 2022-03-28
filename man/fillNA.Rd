@@ -30,7 +30,7 @@ value can be estimated from neighboring voxels.}
 \item{radius}{a numeric, the radius in meter that defines the neighborhood of
 a voxel. The function looks for the voxels whose center is inside a sphere
 of radius \code{radius} centered at current voxel center. Default is set to
-\code{max(getResolution(vxsp))}}
+\code{max(getVoxelSize(vxsp))}}
 
 \item{pulse.min}{a numeric, minimal sampling intensity (i.e. number of pulses
 that went through a voxel) to include neighboring voxel in the estimation of
@@ -47,7 +47,7 @@ euclidian distance between voxel centers. Fill-value may be capped by
 user-defined minimal and maximal values.
 
 Default radius (if not defined by user) is set to largest dimension of voxel
-size \code{max(getResolution(vxsp))}. It guarantees that default neighborhood is
+size \code{max(getVoxelSize(vxsp))}. It guarantees that default neighborhood is
 isotropic.
 
 In some cases, for instance poorly sampled area, neighboring values may all

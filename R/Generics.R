@@ -121,19 +121,19 @@ setGeneric("getMaxCorner",
 #' Gets the elemental size of a voxel (dx, dy, dz) in meter.
 #'
 #' @docType methods
-#' @rdname getResolution
+#' @rdname getVoxelSize
 #' @description Gets the elemental size of a voxel (dx, dy, dz) in meter.
 #' @param vxsp the \code{\link{VoxelSpace-class}} object.
 #' @return the size of the voxel in meter, as a numerical vector.
 #' @examples
 #' # load a voxel file
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
-#' # retrieve 'resolution' parameter
-#' getResolution(vxsp)
+#' # retrieve voxel size
+#' getVoxelSize(vxsp)
 #' @export
 #' @export
-setGeneric("getResolution",
-           function(vxsp){standardGeneric ("getResolution")})
+setGeneric("getVoxelSize",
+           function(vxsp){standardGeneric ("getVoxelSize")})
 
 #' Gets the x, y, z coordinates of a given voxel.
 #'

@@ -13,7 +13,7 @@
 #' user-defined minimal and maximal values.
 #'
 #' Default radius (if not defined by user) is set to largest dimension of voxel
-#' size `max(getResolution(vxsp))`. It guarantees that default neighborhood is
+#' size `max(getVoxelSize(vxsp))`. It guarantees that default neighborhood is
 #' isotropic.
 #'
 #' In some cases, for instance poorly sampled area, neighboring values may all
@@ -30,7 +30,7 @@
 #' @param radius a numeric, the radius in meter that defines the neighborhood of
 #' a voxel. The function looks for the voxels whose center is inside a sphere
 #' of radius `radius` centered at current voxel center. Default is set to
-#' `max(getResolution(vxsp))`
+#' `max(getVoxelSize(vxsp))`
 #' @param pulse.min a numeric, minimal sampling intensity (i.e. number of pulses
 #' that went through a voxel) to include neighboring voxel in the estimation of
 #' the averaged fill value.
@@ -71,7 +71,7 @@ fillNA <- function(vxsp,
   # radius missing
   # default value set to largest voxel size to make sure there will be
   # neighbors in every direction
-  if (missing(radius)) radius <- max(getResolution(vxsp))
+  if (missing(radius)) radius <- max(getVoxelSize(vxsp))
 
   # radius must be a positive float
   stopifnot(is.numeric(radius), length(radius) == 1)
@@ -90,7 +90,7 @@ fillNA <- function(vxsp,
   vx.pool <- vx[!is.na(get(variable.name)) & nbSampling >= pulse.min]
 
   # computes max number of neighboring voxels inside sphere(r=radius)
-  neighbors.k <- neighbors.max(getResolution(vxsp), radius)
+  neighbors.k <- neighbors.max(getVoxelSize(vxsp), radius)
   # identify valid neighbors
   neighbors <- RANN::nn2(data = getPosition(vxsp, vx.pool),
                          query = getPosition(vxsp, vx.na),

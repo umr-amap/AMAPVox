@@ -38,7 +38,7 @@ groundLayer <- function(vxsp, as.raster = FALSE) {
   stopifnot("ground_distance" %in% colnames(vx))
 
   # z voxel size
-  dz <- vxsp[["resolution"]]["z"]
+  dz <- getVoxelSize(vxsp)["z"]
 
   # extract ground layer
   i <- j <- k <- ground_distance <- NULL # trick to avoid "no visible binding" note

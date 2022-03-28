@@ -33,8 +33,7 @@ Suggests:
     knitr,
     RANN,
     rgl,
-    rmarkdown,
-    terra
+    rmarkdown
 VignetteBuilder: 
     knitr
 Encoding: UTF-8

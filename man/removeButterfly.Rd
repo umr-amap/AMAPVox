@@ -5,13 +5,13 @@
 \alias{removeButterfly}
 \title{Remove butterflies from a VoxelSpace object.}
 \usage{
-removeButterfly(vxsp, f.out = vxsp@file)
+removeButterfly(vxsp)
 }
 \arguments{
 \item{vxsp}{a VoxelSpace object}
-
-\item{f.out}{a character string naming an output file. If missing the
-function overwrites the input VoxelSpace.}
+}
+\value{
+a cleaned-up voxel space
 }
 \description{
 Remove butterflies from a \code{\link{VoxelSpace-class}} object.
@@ -35,5 +35,5 @@ namely:
 # load a voxel file
 vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 # remove butterflies
-removeButterfly(vxsp, f.out = tempfile("pattern"="amapvox_", fileext=".vox"))
+vxsp <- removeButterfly(vxsp)
 }

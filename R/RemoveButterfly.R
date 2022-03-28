@@ -18,16 +18,15 @@
 #' \item{transmittance set to one (if variable is outputed)}
 #' \item{any attenuation variable set to zero}
 #' }
+#' @return a cleaned-up voxel space
 #' @param vxsp a VoxelSpace object
-#' @param f.out a character string naming an output file. If missing the
-#' function overwrites the input VoxelSpace.
 #' @examples
 #' # load a voxel file
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' # remove butterflies
-#' removeButterfly(vxsp, f.out = tempfile("pattern"="amapvox_", fileext=".vox"))
+#' vxsp <- removeButterfly(vxsp)
 #' @export
-removeButterfly <- function(vxsp, f.out = vxsp@file) {
+removeButterfly <- function(vxsp) {
 
   i <- j <- k <- nbSampling <- nbEchos <- NULL # due to NSE notes in R CMD check
 
@@ -42,7 +41,7 @@ removeButterfly <- function(vxsp, f.out = vxsp@file) {
   # must be a voxel space
   stopifnot(is.VoxelSpace(vxsp))
 
-  cat("Looking for butterflies in", basename(vxsp@file), "...", "\n")
+#  cat("Looking for butterflies in", basename(vxsp@file), "...", "\n")
 
   # pointer to voxels
   vx <- vxsp@data
@@ -63,7 +62,7 @@ removeButterfly <- function(vxsp, f.out = vxsp@file) {
     apply(neighbors, 1, function(neighbor) all(neighbor == 0)))
 
   if (length(butterflies) == 0) {
-    cat("No butterfly found. Nothing to do.", "\n")
+    cat("No butterfly found.", "\n")
   } else {
     # clean butterflies
     vx[vx.hit[butterflies], `:=`(nbEchos = 0,
@@ -76,18 +75,11 @@ removeButterfly <- function(vxsp, f.out = vxsp@file) {
                                  attenuation_PPL_MLE = 0),
        on = list(i, j, k)]
 
-    cat("Removed", length(butterflies), "butterflies in",
-        basename(vxsp@file), "\n")
+    cat("Removed", length(butterflies), "butterflies.", "\n")
 
     # only keep original columns
     vxsp@data <- vx[, .SD, .SDcols = getParameter(vxsp, "columnNames")]
-
-    # create output directory if it does not exist
-    if (!dir.exists(dirname(f.out))) {
-      dir.create(dirname(f.out))
-    }
-
-    # write butterfly-free voxel file
-    AMAPVox::writeVoxelSpace(vxsp, f.out)
   }
+
+  return ( vxsp )
 }

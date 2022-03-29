@@ -108,6 +108,9 @@ readVoxelSpace <- function(f){
   # read voxels
   vxsp@data <- data.table::fread(f, header = TRUE, skip = nLineHeader)
 
+  # create key on i, j, k
+  data.table::setkeyv(vxsp@data, c("i", "j", "k"))
+
   return (vxsp)
 }
 

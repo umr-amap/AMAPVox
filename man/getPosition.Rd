@@ -22,8 +22,8 @@ getPosition(vxsp, vx)
 \arguments{
 \item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
 
-\item{vx}{either a subset of voxels from the \code{\link{VoxelSpace-class}}
-data.table, a \verb{i, j, k} vector, or a \verb{i, j, k} matrix.}
+\item{vx}{(i, j, k) voxel coordinates as a \link[data.table:data.table]{data.table::data.table} with
+i, j, k columns, a vector (i, j, k) or a matrix with i, j, k columns.}
 }
 \value{
 the x, y, z coordinates of the voxel center.

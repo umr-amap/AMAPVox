@@ -143,8 +143,8 @@ setGeneric("getVoxelSize",
 #'   parameter is missing, it returns the positions of all the voxels in the
 #'   voxel space.
 #' @param vxsp a \code{\link{VoxelSpace-class}} object.
-#' @param vx either a subset of voxels from the \code{\link{VoxelSpace-class}}
-#'     data.table, a `i, j, k` vector, or a `i, j, k` matrix.
+#' @param vx (i, j, k) voxel coordinates as a [data.table::data.table] with
+#' i, j, k columns, a vector (i, j, k) or a matrix with i, j, k columns.
 #' @return the x, y, z coordinates of the voxel center.
 #' @examples
 #' # load a voxel file
@@ -161,3 +161,41 @@ setGeneric("getVoxelSize",
 #' @export
 setGeneric("getPosition",
            function(vxsp, vx){standardGeneric ("getPosition")})
+
+#' Clear voxel
+#'
+#' @docType methods
+#' @rdname clear
+#'
+#' @description Clear a set of voxels. Clearing means that the state variables
+#' of the selected voxels are altered as if they were *clear* of any vegetation.
+#' Namely:
+#' \itemize{
+#' \item{number of echo set to zero}
+#' \item{intercepted beam surface set to zero (if variable is outputed)}
+#' \item{plant area density set to zero (if variable is outputed)}
+#' \item{transmittance set to one (if variable is outputed)}
+#' \item{any attenuation variable set to zero}
+#' }
+#' Other state variables such as sampling intensity, mean angle, entering beam
+#' surface, etc. are unaltered. A cleared voxel is not the same as an unsampled
+#' voxel (not "crossed" by any beam).
+#'
+#' @param vxsp a \code{\link{VoxelSpace-class}} object.
+#' @param vx (i, j, k) voxel coordinates as a [data.table::data.table] with
+#' i, j, k columns, a vector (i, j, k) or a matrix with i, j, k columns.
+#'
+#' @examples
+#' # load a voxel file
+#' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
+#' # clear 1st voxel
+#' clear(vxsp, c(0, 0, 0)) # clear 1st voxel
+#' # clear butterflies
+#' clear(vxsp, butterfly(vxsp))
+#' # clear voxels with less than two hits
+#' clear(vxsp, vxsp@data[nbEchos < 2])
+#'
+#' @export
+setGeneric("clear",
+           function(vxsp, vx){standardGeneric ("clear")})
+

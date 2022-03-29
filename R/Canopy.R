@@ -13,7 +13,7 @@
 #' in a voxel is enough to consider that there is some vegetation. Increasing
 #' this threshold will tend to lower the canopy level or introduce some gaps (
 #' i-j-cells with no vegetation). This `hit.min` filter is stronger than
-#' [AMAPVox::removeButterfly] since is does not discriminate isolated voxels.
+#' [AMAPVox::butterfly] since is does not discriminate isolated voxels.
 #' A reasonable value for `hit.min` cannot be suggested ad-hoc since it
 #' strongly depends on sampling intensity. Removing butterflies prior to
 #' extracting canopy is advisable.
@@ -35,7 +35,7 @@
 #' @param hit.min a positive integer, minimum number of hit/echo in a voxel
 #' to consider it contains vegetation.
 #'
-#' @seealso [AMAPVox::removeButterfly], [AMAPVox::ground]
+#' @seealso [AMAPVox::butterfly], [AMAPVox::ground]
 #'
 #' @examples
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))

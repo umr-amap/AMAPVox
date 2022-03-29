@@ -33,7 +33,7 @@ Minimum number of hits is set by default to one, meaning that a single echo
 in a voxel is enough to consider that there is some vegetation. Increasing
 this threshold will tend to lower the canopy level or introduce some gaps (
 i-j-cells with no vegetation). This \code{hit.min} filter is stronger than
-\link{removeButterfly} since is does not discriminate isolated voxels.
+\link{butterfly} since is does not discriminate isolated voxels.
 A reasonable value for \code{hit.min} cannot be suggested ad-hoc since it
 strongly depends on sampling intensity. Removing butterflies prior to
 extracting canopy is advisable.
@@ -61,5 +61,5 @@ vxsp@data[cnp, list(i, j, ground_distance), on=list(i, j, k)]
 
 }
 \seealso{
-\link{removeButterfly}, \link{ground}
+\link{butterfly}, \link{ground}
 }

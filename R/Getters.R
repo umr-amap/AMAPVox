@@ -43,11 +43,28 @@ setMethod("getPosition", signature(vxsp="VoxelSpace", vx="vector"),
             stopifnot(as.integer(vx) == vx)
             stopifnot(all(vx >=0))
             # check i, j, k ranges
-            stopifnot(all((vx >= 0) & (vx < vxsp@header$split)))
+            stopifnot(all((vx >= 0) & (vx < dim(vxsp))))
 
             return (
               callGeneric(vxsp,
                           data.table::data.table(i=vx[1], j=vx[2], k=vx[3])))
+          })
+
+#' @rdname getPosition
+setMethod("getPosition", signature(vxsp="VoxelSpace", vx="matrix"),
+          function(vxsp, vx) {
+
+            # 3 columns i, j, k
+            stopifnot(ncol(vx) == 3)
+            # i, j, k must be integers
+            stopifnot(as.integer(vx) == vx)
+            # check i, j, k ranges
+            stopifnot(
+              all(apply(vx, 1, function(vx) (vx >= 0) & (vx < dim(vxsp)))))
+
+            return (
+              callGeneric(vxsp,
+                          data.table::data.table(i=vx[,1], j=vx[,2], k=vx[,3])))
           })
 
 #' @rdname getPosition

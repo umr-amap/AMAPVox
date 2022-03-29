@@ -5,6 +5,7 @@
 \alias{ground}
 \alias{belowGround}
 \alias{aboveGround}
+\alias{groundEnergy}
 \title{Extract ground from voxel space.}
 \usage{
 ground(vxsp)
@@ -12,6 +13,8 @@ ground(vxsp)
 belowGround(vxsp)
 
 aboveGround(vxsp)
+
+groundEnergy(vxsp)
 }
 \arguments{
 \item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
@@ -22,18 +25,31 @@ below ground, ground level or above ground.
 }
 \description{
 Extract ground layer from \code{\link{VoxelSpace-class}} object.
-
+}
+\section{Ground layer}{
 The ground layer is the set of voxels that are just above ground level. The
 bottom facet of the voxel must be above ground
 \code{ground_distance(voxel_center) >= dz/2} with dz the voxel size on z axis.
 Ground layer may be missing (the function returns an empty data.table) or
 incomplete (the function returns a data.table with
 \code{nrow(ground(vxsp)) < prod(dim(vxsp)[1:2])}) for some voxel space.
-
-Function \code{aboveGround} returns voxel index from ground layer and above.
-
-Function \code{belowGround} returns voxel index below ground layer.
 }
+
+\section{Above ground}{
+Function \code{aboveGround} returns voxel index above ground layer (included).
+}
+
+\section{Below ground}{
+Function \code{belowGround} returns voxel index below ground layer (excluded).
+}
+
+\section{Ground energy}{
+Function \code{groundEnergy} estimates fraction of light reaching the ground. It
+is computed as the ratio of entering beam section on potential beam section
+(beams that would have crossed a voxel if there were no vegetation in the
+scene). It requires variables \emph{bsEntering} and \emph{bsPotential}.
+}
+
 \examples{
 vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 gr <- ground(vxsp)

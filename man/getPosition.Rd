@@ -4,6 +4,7 @@
 \name{getPosition}
 \alias{getPosition}
 \alias{getPosition,VoxelSpace,vector-method}
+\alias{getPosition,VoxelSpace,matrix-method}
 \alias{getPosition,VoxelSpace,data.table-method}
 \alias{getPosition,VoxelSpace,missing-method}
 \title{Gets the x, y, z coordinates of a given voxel.}
@@ -11,6 +12,8 @@
 getPosition(vxsp, vx)
 
 \S4method{getPosition}{VoxelSpace,vector}(vxsp, vx)
+
+\S4method{getPosition}{VoxelSpace,matrix}(vxsp, vx)
 
 \S4method{getPosition}{VoxelSpace,data.table}(vxsp, vx)
 
@@ -20,7 +23,7 @@ getPosition(vxsp, vx)
 \item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
 
 \item{vx}{either a subset of voxels from the \code{\link{VoxelSpace-class}}
-data.table or a voxel index as a \code{c(i, j, k)} vector.}
+data.table, a \verb{i, j, k} vector, or a \verb{i, j, k} matrix.}
 }
 \value{
 the x, y, z coordinates of the voxel center.

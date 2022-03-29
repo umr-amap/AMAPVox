@@ -144,7 +144,7 @@ setGeneric("getVoxelSize",
 #'   voxel space.
 #' @param vxsp a \code{\link{VoxelSpace-class}} object.
 #' @param vx either a subset of voxels from the \code{\link{VoxelSpace-class}}
-#'     data.table or a voxel index as a \code{c(i, j, k)} vector.
+#'     data.table, a `i, j, k` vector, or a `i, j, k` matrix.
 #' @return the x, y, z coordinates of the voxel center.
 #' @examples
 #' # load a voxel file

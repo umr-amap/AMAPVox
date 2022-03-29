@@ -109,6 +109,7 @@ groundEnergy <- function(vxsp) {
   stopifnot(c("bsEntering", "bsPotential") %in% names(vxsp))
 
   # ground energy
-  i<- j <- bsEntering <- bsPotential <- NULL # trick to avoid "no visible binding" note
-  vxsp@data[ground, list(i, j, ground_energy=bsEntering / bsPotential)]
+  i <- j <- k <- bsEntering <- bsPotential <- NULL # trick to avoid "no visible binding" note
+  vxsp@data[ground, list(i, j, ground_energy=bsEntering / bsPotential),
+            on=list(i, j, k)]
 }

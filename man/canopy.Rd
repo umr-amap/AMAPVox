@@ -5,19 +5,25 @@
 \alias{canopy}
 \alias{belowCanopy}
 \alias{aboveCanopy}
+\alias{canopyHeight}
 \title{Extract canopy from voxel space.}
 \usage{
 canopy(vxsp, hit.min = 1)
 
-belowCanopy(vxsp, hit.min = 1)
+belowCanopy(vxsp, ...)
 
-aboveCanopy(vxsp, hit.min = 1)
+aboveCanopy(vxsp, ...)
+
+canopyHeight(vxsp, ...)
 }
 \arguments{
 \item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
 
 \item{hit.min}{a positive integer, minimum number of hit/echo in a voxel
 to consider it contains vegetation.}
+
+\item{...}{additional parameters which will be passed to \code{canopy} function.
+So far only \code{hit.min} parameter.}
 }
 \value{
 \link[data.table:data.table-class]{data.table::data.table} object with voxel index either
@@ -44,10 +50,18 @@ extracting canopy is advisable.
 For a VoxelSpace with fully defined ground level (see \link{ground}),
 missing canopy cells can be interpreted as gaps. Conversely if both ground
 and canopy are missing for a i-j-cell, then it is inconclusive.
+}
+
+\subsection{Above/below canopy}{
 
 Function \code{aboveCanopy} returns voxel index above canopy level (excluded).
-
 Function \code{belowCanopy} returns voxel index below canopy level (included).
+}
+
+\subsection{Canopy Height Model}{
+
+Function \code{canopyHeight} returns ground distance at canopy level, including
+gaps.
 }
 }
 \examples{

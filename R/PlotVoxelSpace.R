@@ -71,7 +71,7 @@ setMethod("plot",
   # extract variable to plot
   variable <- unlist(vx[, variable.name, with = FALSE])
   # variable range
-  varLim <- range(variable)
+  varLim <- range(variable, finite = TRUE)
   varLen <- varLim[2] - varLim[1]
   # color look-up table
   colorlut <- grDevices::hcl.colors(1024, palette = palette)

@@ -16,6 +16,8 @@ Description: Read, manipulate and write voxel spaces. Voxel spaces are
 License: CeCILL (>=2)
 URL: https://github.com/umr-amap/AMAPVox
 BugReports: https://github.com/umr-amap/AMAPVox/issues
+Depends:
+    R (>= 4.0.0)
 Imports: 
     curl,
     data.table,

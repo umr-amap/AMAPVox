@@ -1,7 +1,9 @@
 # AMAPVox 0.9.0
 
-*yyyy-MM-dd*
-...
+*2022-03-30*
+Added new functions "ground", "aboveGround", "belowGround", "groundEnergy", "groundElevation".
+Added new functions "canopy", "aboveCanopy", "belowCanopy", "canopyHeight".
+Updated "removeButterfly" into "butterfly" function.
 Not released on CRAN.
 
 # AMAPVox 0.8.0

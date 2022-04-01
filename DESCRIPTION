@@ -57,7 +57,7 @@ Collate:
     'Getters.R'
     'Ground.R'
     'Operators.R'
-    'PlantAreaDensity.R'
+    'PlantArea.R'
     'PlotVoxelSpace.R'
     'ReadVoxelSpace.R'
     'Utils-voxel.R'

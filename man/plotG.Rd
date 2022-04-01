@@ -26,8 +26,10 @@ Plot G(θ) profiles for one or several leaf angle distribution
 functions with \verb{θ in [0, π/2]}. Requires ggplot2 package.
 }
 \examples{
+\dontrun{
 # plot G(θ) for planophile leaf angle distribution function
 AMAPVox::plotG(pdf = "planophile")
 # plot G(θ) for every distributions
 AMAPVox::plotG()
+}
 }

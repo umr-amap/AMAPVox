@@ -35,7 +35,8 @@ Suggests:
     knitr,
     RANN,
     rgl,
-    rmarkdown
+    rmarkdown,
+    terra
 VignetteBuilder: 
     knitr
 Encoding: UTF-8

@@ -110,6 +110,7 @@ canopyHeight <- function(vxsp, ...) {
   chm <- merge(vxsp@data[canopy, list(i, j, ground_distance), on=list(i, j, k)],
                vxsp@data[ground[!canopy], list(i, j, ground_distance)],
                all = TRUE)
+  data.table::setnames(chm, "ground_distance", "canopy_height")
 
   return ( chm )
 }

@@ -126,7 +126,7 @@ groundElevation <- function(vxsp) {
 
   # ground elevation
   dem <- vxsp@data[ground, c("i", "j")]
-  dem[["elevation"]] <- getPosition(vxsp, vxsp@data[ground])[["z"]]
+  dem[["ground_elevation"]] <- getPosition(vxsp, vxsp@data[ground])[["z"]]
 
   return (dem)
 }

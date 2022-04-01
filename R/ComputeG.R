@@ -260,10 +260,12 @@ computeGtheta <- function(theta, pdf, chi, mu, nu) {
 #' @param nu a float, ν, parameter controlling the Beta distribution. See section
 #' "Leaf Angle Distribution functions" for details.
 #' @examples
+#' \dontrun{
 #' # plot G(θ) for planophile leaf angle distribution function
 #' AMAPVox::plotG(pdf = "planophile")
 #' # plot G(θ) for every distributions
 #' AMAPVox::plotG()
+#' }
 #' @export
 plotG <- function(pdf = leafAngleDistribution,
                   chi = 0.6,

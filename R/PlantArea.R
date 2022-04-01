@@ -250,5 +250,8 @@ plantAreaIndex <- function(vxsp, vx,
     } # end loop pai.type
   } # end loop pad.variable
 
+  if (length(pai.all) == 1)
+    return ( pai.all[[1]])
+  else
   return ( pai.all )
 }

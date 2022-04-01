@@ -93,7 +93,8 @@ gui <- function(version="latest", check.update = TRUE,
   # run AMAPVox
   message(paste("Running AMAPVox", version))
   message(command)
-  system2(java, args = args, stdout = stdout, stderr = stdout, wait = TRUE)
+  system2(java, args = args, stdout = stdout, stderr = stdout,
+          wait = TRUE, invisible = FALSE)
   message("Closing AMAPVox.")
 
   return(invisible(command))

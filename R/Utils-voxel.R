@@ -234,9 +234,9 @@ merge.VoxelSpace <- function(x, y, ...) {
                   "from y are not in x. Discarded from merging."))
 
   # raw merge
-  ..variables.merged <- NULL # trick to get rid of `no visible binding` note
-  vx.raw <- data.table::merge.data.table(x@data[, ..variables.merged],
-                  y@data[, ..variables.merged],
+  .SD <- .SDcols <- NULL # trick to get rid of `no visible binding` note
+  vx.raw <- data.table::merge.data.table(x@data[, .SD, .SDcols=variables.merged],
+                  y@data[, .SD, .SDcols=variables.merged],
                   all = TRUE, by = c("i", "j", "k"),
                   suffixes = c(".x", ".y"))
 
@@ -324,9 +324,11 @@ merge.VoxelSpace <- function(x, y, ...) {
   if ("attenuation_FPL_biasCorrection" %in% variables.merged) {
     if ("weightedEffectiveFreepathLength" %in% variables.merged) {
       xx <- vx.raw[["attenuation_FPL_biasCorrection.x"]] *
-        vx.raw[["weightedEffectiveFreepathLength.x"]]^2
+        vx.raw[["weightedEffectiveFreepathLength.x"]]^2 *
+        vx.raw[["nbSampling.x"]]
       yy <- vx.raw[["attenuation_FPL_biasCorrection.y"]] *
-        vx.raw[["weightedEffectiveFreepathLength.y"]]^2
+        vx.raw[["weightedEffectiveFreepathLength.y"]]^2 *
+        vx.raw[["nbSampling.y"]]
       attenuation_FPL_biasCorrection <- weightedEffectiveFreepathLength <- nbSampling <- NULL # trick to get rid of `no visible binding` note
       vx.merged[["attenuation_FPL_biasCorrection"]] <-
         apply(cbind(xx, yy), 1, sum, na.rm = TRUE) / vx.merged[, weightedEffectiveFreepathLength^2 * nbSampling]

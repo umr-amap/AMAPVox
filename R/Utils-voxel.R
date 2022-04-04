@@ -143,3 +143,217 @@ toRaster <- function(vxsp, vx) {
   # stack layers into a single raster
   return ( terra::rast(r))
 }
+
+#' Merge two voxel spaces
+#'
+#' @docType methods
+#' @rdname merge
+#'
+#' @description Merge of two \code{\link{VoxelSpace-class}} object.
+#'   Voxel spaces must have same sptial extension and resolution, and some
+#'   shared column names.
+#'
+#'   ## Merging modes
+#'
+#'   Variables \code{i, j, k & ground_distance} are merged.
+#'
+#'   Variables \code{nbEchos, nbSampling, lgTotal, bsEntering, bsIntercepted,
+#'   bsPotential, weightedEffectiveFreepathLength & weightedFreepathLength}
+#'   are summed-up.
+#'
+#'   Variables \code{sdLength, angleMean and distLaser} are weighted means with
+#'   \code{nbSampling} (the number of pulses) as weights.
+#'
+#'   Attenuation FPL variables \code{(attenuation_FPL_biasedMLE,
+#'   attenuation_FPL_biasCorrection, attenuation_FPL_unbiasedMLE) & lMeanTotal}
+#'   are calculated analytically.
+#'
+#'   Transmittance and attenuation variables (except the FPL attenuation
+#'   variables listed above) are weighted means with bsEntering as weights.
+#'
+#'   Any other variables will not be merged. In particular PAD variables
+#'   are not merged and should be recalculated with [AMAPVox::plantAreaDensity]
+#'   on the merged voxel space.
+#'   E.g: \code{vxsp <- plantAreaDensity(merge(vxsp1, vxsp2))}
+#'
+#'   ## Merging multiple voxel spaces
+#'
+#'   Merging several voxel spaces works as follow : vxsp1 and vxsp2 merged
+#'   into vxsp12. vxsp12 & vxsp3 merged into vxsp123, etc. THe process can be
+#'   syntethized with the [base::Reduce] function.
+#'   ```r
+#'   vxsp <- Reduce(merge, list(vxsp1, vxsp2, vxsp3))
+#'   ```
+#'
+#' @param x,y \code{\link{VoxelSpace-class}} objects to be merged.
+#' @param ... Not used
+#' @return A merged \code{\link{VoxelSpace-class}} object.
+#'
+#' @examples
+#' # merge same voxel space to confirm merging behavior
+#' vxsp1 <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
+#' vxsp2 <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
+#' vxsp <- merge(vxsp1, vxsp2)
+#' all(vxsp$nbSampling == vxsp1$nbSampling + vxsp2$nbSampling)
+#'
+#' # with PAD
+#' vxsp <- plantAreaDensity(merge(vxsp1, vxsp2), pulse.min = 1)
+#' all((vxsp$pad_transmittance - vxsp1$PadBVTotal) < 1e-7) # equal at float precision
+#'
+#' @export
+merge.VoxelSpace <- function(x, y, ...) {
+
+  # must be a voxel space
+  stopifnot(is.VoxelSpace(x), is.VoxelSpace(y))
+
+  # same spatial extension
+  stopifnot(getMinCorner(x) == getMinCorner(y))
+  stopifnot(getMaxCorner(x) == getMaxCorner(y))
+  stopifnot(getVoxelSize(x) == getVoxelSize(y))
+
+  # shared variables
+  variables.merged <- intersect(names(x), names(y))
+  if (!all(c("i", "j", "k", "nbSampling") %in% variables.merged)) {
+    stop("i, j, k & nbSampling variables are mandatory for merging voxel spaces.")
+  }
+
+  # Discarded variables
+  x.discarded <- names(x)[which(!names(x) %in% variables.merged)]
+  y.discarded <- names(y)[which(!names(y) %in% variables.merged)]
+  if (length(x.discarded) == 1)
+    warning(paste("Variable", x.discarded,
+                  "from x is not in y. Discarded from merging."))
+  else if (length(x.discarded) > 1)
+    warning(paste("Variables", x.discarded,
+                  "from x are not in y. Discarded from merging."))
+  if (length(y.discarded) == 1)
+    warning(paste("Variable", y.discarded,
+                  "from y is not in x. Discarded from merging."))
+  else if (length(y.discarded) > 1)
+    warning(paste("Variables", y.discarded,
+                  "from y are not in x. Discarded from merging."))
+
+  # raw merge
+  ..variables.merged <- NULL # trick to get rid of `no visible binding` note
+  vx.raw <- data.table::merge.data.table(x@data[, ..variables.merged],
+                  y@data[, ..variables.merged],
+                  all = TRUE, by = c("i", "j", "k"),
+                  suffixes = c(".x", ".y"))
+
+  i <- j <- k <- NULL # trick to get rid of `no visible binding` note
+  vx.merged = vx.raw[, list(i, j, k)]
+
+  # list of predifined custom merge
+  variable.custom <- c("i", "j", "k", "ground_distance", "lMeanTotal",
+                       "attenuation_FPL_biasedMLE",
+                       "attenuation_FPL_biasCorrection",
+                       "attenuation_FPL_unbiasedMLE")
+
+  # ground distance
+  ground_distance.y <- ground_distance <- NULL # trick to get rid of `no visible binding` note
+  vx.merged[["ground_distance"]] <- vx.raw[["ground_distance.x"]]
+  ind.grd.y <- vx.raw[!is.na(ground_distance.y), which = TRUE]
+  vx.merged[ind.grd.y,
+            ground_distance:=vx.raw[["ground_distance.y"]][ind.grd.y]]
+
+ # weighted mean function for merging
+  wmean <- function(x) {
+    return ( stats::weighted.mean(x[1:2], x[3:4], na.rm = TRUE))
+  }
+
+  # merge variables one at a time
+  for (variable in
+       variables.merged[which(!variables.merged %in% variable.custom)]) {
+
+    if (variable %in% c("nbEchos", "nbSampling", "lgTotal",
+                        "bsPotential", "bsEntering", "bsIntercepted",
+                        "weightedEffectiveFreepathLength",
+                        "weightedFreepathLength")) {
+      # sum
+      vx.merged[[variable]] <- vx.raw[, apply(.SD, 1, sum, na.rm=TRUE),
+                                         .SDcols=paste0(variable, c(".x", ".y"))]
+    } else if (variable %in% c("sdLength", "angleMean", "distLaser")) {
+      # weighted mean on number of sampling
+      xy <- cbind(vx.raw[[paste0(variable, ".x")]],
+                 vx.raw[[paste0(variable, ".y")]],
+                 vx.raw[["nbSampling.x"]],
+                 vx.raw[["nbSampling.y"]])
+      vx.merged[[variable]] <- apply(xy, 1, wmean)
+    } else if (grepl("^(att|tra)", variable)) {
+      # weighted mean on entering beam surface for attenuation/transmittance
+      if ("bsEntering" %in% variables.merged) {
+        xy <- cbind(vx.raw[[paste0(variable, ".x")]],
+                   vx.raw[[paste0(variable, ".y")]],
+                   vx.raw[["bsEntering.x"]],
+                   vx.raw[["bsEntering.y"]])
+        vx.merged[[variable]] <- apply(xy, 1, wmean)
+      } else {
+        warning("`", variable,"` cannot be merged without `bsEntering` variable.")
+      }
+    }
+    else {
+      # unknown or user-defined variable, not merged
+      warning("Variable `", variable, "` does not have predefined merging mode. Discarded from merging.")
+    }
+  }
+
+  # lMeanTotal = lgTotal / nbSampling
+  if (all(c("lMeanTotal", "lgTotal") %in% variables.merged)) {
+    lgTotal <- nbSampling <- lMeanTotal <- NULL # trick to get rid of `no visible binding` note
+    vx.merged[["lMeanTotal"]] <- vx.merged[, lgTotal / nbSampling]
+    vx.merged[is.infinite(lMeanTotal), lMeanTotal:=NA]
+  } else if ("lMeanTotal" %in% variables.merged) {
+    warning("`lMeanTotal` cannot be merged without `lgTotal` variable.")
+  }
+
+
+  # biased attenuation FPL (free path length)
+  if ("attenuation_FPL_biasedMLE" %in% variables.merged) {
+    if (all(c("bsIntercepted", "weightedEffectiveFreepathLength")
+            %in% variables.merged)) {
+      attenuation_FPL_biasedMLE <- bsIntercepted <- weightedEffectiveFreepathLength <- NULL # trick to get rid of `no visible binding` note
+      vx.merged[["attenuation_FPL_biasedMLE"]] <- vx.merged[, bsIntercepted / weightedEffectiveFreepathLength]
+      vx.merged[is.infinite(attenuation_FPL_biasedMLE), attenuation_FPL_biasedMLE:=NA]
+    } else {
+      warning("`attenuation_FPL_biasedMLE` cannot be merged without
+              `bsIntercepted` and `weightedEffectiveFreepathLength` variables.")
+    }
+  }
+
+  # attenuation FPL correction factor
+  if ("attenuation_FPL_biasCorrection" %in% variables.merged) {
+    if ("weightedEffectiveFreepathLength" %in% variables.merged) {
+      xx <- vx.raw[["attenuation_FPL_biasCorrection.x"]] *
+        vx.raw[["weightedEffectiveFreepathLength.x"]]^2
+      yy <- vx.raw[["attenuation_FPL_biasCorrection.y"]] *
+        vx.raw[["weightedEffectiveFreepathLength.y"]]^2
+      attenuation_FPL_biasCorrection <- weightedEffectiveFreepathLength <- nbSampling <- NULL # trick to get rid of `no visible binding` note
+      vx.merged[["attenuation_FPL_biasCorrection"]] <-
+        apply(cbind(xx, yy), 1, sum, na.rm = TRUE) / vx.merged[, weightedEffectiveFreepathLength^2 * nbSampling]
+      vx.merged[is.infinite(attenuation_FPL_biasCorrection), attenuation_FPL_biasCorrection:=NA]
+    } else {
+      warning("`attenuation_FPL_biasedMLE` cannot be merged without
+              `weightedEffectiveFreepathLength` variable")
+    }
+  }
+
+  # unbiased attenuation FPL
+  if ("attenuation_FPL_unbiasedMLE" %in% variables.merged) {
+    if (all(c("attenuation_FPL_biasedMLE", "attenuation_FPL_biasCorrection")
+            %in% variables.merged)) {
+      attenuation_FPL_biasedMLE <- attenuation_FPL_biasCorrection <- NULL # trick to get rid of `no visible binding` note
+      vx.merged[["attenuation_FPL_unbiasedMLE"]] <- vx.merged[, attenuation_FPL_biasedMLE - attenuation_FPL_biasCorrection]
+    } else {
+      warning("`attenuation_FPL_unbiasedMLE` cannot be merged without
+              `attenuation_FPL_biasedMLE` & `attenuation_FPL_biasCorrection` variables.")
+    }
+  }
+
+  # new VoxelSpace object
+  vxsp.merged <- new(Class=("VoxelSpace"))
+  vxsp.merged@header <- x@header
+  vxsp.merged@data <- vx.merged
+  # return merged voxel space
+  return ( vxsp.merged )
+}
+

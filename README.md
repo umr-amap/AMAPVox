@@ -1,5 +1,8 @@
 AMAPVox
 ================
+
+<img src="man/figures/logo.png" align="right" alt="" width="200" />
+
 **LiDAR data voxelisation package**
 
 ## Description

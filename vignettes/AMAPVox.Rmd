@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 <!-- AMAPVox logo -->
-<center>![](rsc/amapvox-logo.png)</center>
+<center><img src="rsc/amapvox-logo.png" alt="AMAPVox logo" width="250"/></center>
 
 ```{r setup}
 library(AMAPVox)

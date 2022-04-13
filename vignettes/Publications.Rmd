@@ -1,0 +1,36 @@
+---
+# https://bookdown.org/yihui/rmarkdown-cookbook/bibliography.html
+title: "Publications"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteIndexEntry{Installation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+*Updated April 2022*
+
+Your article is not listed ? Please let us know *contact at amapvox dot org*
+
+```{r, setup, echo=FALSE}
+library(bibtex)
+library(RefManageR)
+```
+
+```{r, echo=FALSE, eval=TRUE, results='asis'}
+bib <- RefManageR::ReadBib("rsc/amapvox-bibtex.bib")
+RefManageR::NoCite(bib, "*")
+RefManageR::PrintBibliography(bib, .opts = list(style = "text", sorting = "ydnt"))
+```
+
+
+
+

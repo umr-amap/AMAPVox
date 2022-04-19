@@ -30,7 +30,7 @@ AMAPVox 1.7", \doi{10.23708/1AJNMP}, DataSuds, V1 } }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/umr-amap/AMAPVox}
+  \item \url{https://amapvox.org}
   \item Report bugs at \url{https://github.com/umr-amap/AMAPVox/issues}
 }
 

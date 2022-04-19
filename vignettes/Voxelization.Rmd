@@ -58,7 +58,7 @@ light beam hit some vegetation (see section Butterfly remover for instance).
 - SHT format, home brew "shot" format, see details below.
 
 *LAS/LAZ* files can be manipulated by the [LAStools](http://lastools.org/)
-software or the [LidR](https://cran.r-project.org/web/packages/lidR/) R package.
+software or the [LidR](https://CRAN.R-project.org/package=lidR) R package.
 
 *SHT or SHOT format* is a text based format, one shot per line, a shot being
 defined by an origin, a direction, the number of echoes and the echo ranges.

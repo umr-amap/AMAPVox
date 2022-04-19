@@ -1,9 +1,10 @@
 ---
 # https://bookdown.org/yihui/rmarkdown-cookbook/bibliography.html
 title: "Publications"
-output: rmarkdown::html_document
+output: rmarkdown::html_vignette
+#output: rmarkdown::pdf_document
 vignette: >
-  %\VignetteIndexEntry{Installation}
+  %\VignetteIndexEntry{Publications}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -21,8 +22,8 @@ knitr::opts_chunk$set(
 Your article is not listed ? Please let us know *contact at amapvox dot org*
 
 ```{r, setup, echo=FALSE}
-suppressPackageStartupMessages(library(bibtex))
-suppressPackageStartupMessages(library(RefManageR))
+# libraries RefManageR
+require("RefManageR")  
 ```
 
 ```{r, echo=FALSE, eval=TRUE, results='asis'}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ComputeG.R
 \name{plotG}
 \alias{plotG}
-\title{Plot G(θ) profiles for one or several leaf angle distribution functions}
+\title{Plot G(theta) profiles for one or several leaf angle distribution functions}
 \usage{
 plotG(pdf = leafAngleDistribution, chi = 0.6, mu = 1.1, nu = 1.3)
 }
@@ -11,25 +11,25 @@ plotG(pdf = leafAngleDistribution, chi = 0.6, mu = 1.1, nu = 1.3)
 "uniform", "spherical", "planophile", "erectophile", "plagiophile",
 "extremophile", "ellipsoidal", "twoParamBeta".}
 
-\item{chi}{a float, χ, parameter of the ellipsoidal leaf angle distribution.
+\item{chi}{a float, parameter of the ellipsoidal leaf angle distribution.
 The ratio the ratio horizontal axis over vertical axis. See section "Leaf
 Angle Ditribution functions" for details.}
 
-\item{mu}{a float, μ, parameter controlling the Beta distribution. See section
+\item{mu}{a float, parameter controlling the Beta distribution. See section
 "Leaf Angle Distribution functions" for details.}
 
-\item{nu}{a float, ν, parameter controlling the Beta distribution. See section
+\item{nu}{a float, parameter controlling the Beta distribution. See section
 "Leaf Angle Distribution functions" for details.}
 }
 \description{
-Plot G(θ) profiles for one or several leaf angle distribution
-functions with \verb{θ in [0, π/2]}. Requires ggplot2 package.
+Plot G(theta) profiles for one or several leaf angle distribution
+functions with \verb{theta in [0, pi/2]}. Requires ggplot2 package.
 }
 \examples{
 \dontrun{
-# plot G(θ) for planophile leaf angle distribution function
+# plot G(theta) for planophile leaf angle distribution function
 AMAPVox::plotG(pdf = "planophile")
-# plot G(θ) for every distributions
+# plot G(theta) for every distributions
 AMAPVox::plotG()
 }
 }

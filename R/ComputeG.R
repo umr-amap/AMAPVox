@@ -9,12 +9,12 @@ leafAngleDistribution = c("planophile",
                           "twoParamBeta")
 
 
-#' Foliage projection ratio G(θ).
+#' Foliage projection ratio G(theta).
 #'
 #' @description Compute the mean projection of unit leaf area on the plane
-#' perpendicular to beam direction, namely, G(θ) parameter. Assumption of
+#' perpendicular to beam direction, namely, G(theta) parameter. Assumption of
 #' symmetric distribution of leaf azimuth angle.
-#' When estimating G for large amount of θ values, it is advised to enable
+#' When estimating G for large amount of theta values, it is advised to enable
 #' the lookup table for speeding up the calculation.
 #' @details Leaf Angle Distribution functions
 #' * de Wit’s leaf angle distribution functions:
@@ -27,39 +27,39 @@ leafAngleDistribution = c("planophile",
 #'   * \strong{extremophile}, oblique leaves least frequent
 #' * \strong{ellipsoidal} distribution function, generalization of the spherical
 #' distribution over an ellipsoid. Relative frequency of leaf angle is the same
-#' as for surface elements of an ellipsoid. Takes one parameter `χ` the ratio
-#' horizontal axis over vertical axis. For `χ = 1` the distribution becomes
-#' spherical. For `χ < 1`, the ellipsoid is a prolate spheroid (like a
-#' rugby ball). For `χ > 1` the ellipsoid is an oblate spheroid (a sphere that
+#' as for surface elements of an ellipsoid. Takes one parameter `chi` the ratio
+#' horizontal axis over vertical axis. For `chi = 1` the distribution becomes
+#' spherical. For `chi < 1`, the ellipsoid is a prolate spheroid (like a
+#' rugby ball). For `chi > 1` the ellipsoid is an oblate spheroid (a sphere that
 #' bulges at the equator and is somewhat squashed at the poles).
 #' * \strong{two parameters Beta} distribution. Most generic approach from Goal
 #' and Strebel (1984) to represent large variety of leaf angle distribution. Takes
-#' two parameters `μ` and `ν` that control the shape of the Beta
+#' two parameters `mu` and `nu` that control the shape of the Beta
 #' distribution.
-#' @param theta a numeric vector, θ, the incident beam inclination, in radian,
-#' ranging `[0, π/2]`.
+#' @param theta a numeric vector, theta, the incident beam inclination, in radian,
+#' ranging `[0, pi/2]`.
 #' @param pdf the name of the probability density function of the leaf angle
 #' distribution. One of "uniform", "spherical", "planophile", "erectophile",
 #' "plagiophile", "extremophile", "ellipsoidal", "twoParamBeta". Refer to
 #' section "Leaf Angle Distribution functions" for details.
-#' @param chi a float, χ, parameter of the ellipsoidal leaf angle distribution.
+#' @param chi a float, parameter of the ellipsoidal leaf angle distribution.
 #' The ratio the ratio horizontal axis over vertical axis. See section "Leaf
 #' Angle Ditribution functions" for details.
-#' @param mu a float, μ, parameter controlling the Beta distribution. See section
+#' @param mu a float, parameter controlling the Beta distribution. See section
 #' "Leaf Angle Distribution functions" for details.
-#' @param nu a float, ν, parameter controlling the Beta distribution. See section
+#' @param nu a float, parameter controlling the Beta distribution. See section
 #' "Leaf Angle Distribution functions" for details.
 #' @param with.lut a Boolean, whether to estimate G with a lookup table (LUT).
 #' By default the lookup table is automatically generated when length of theta
 #' vector is greater than 100.
-#' @param lut.precision a float, the increment of the θ sequence ranging
-#' from 0 to π/2 for computing the lookup table.
+#' @param lut.precision a float, the increment of the theta sequence ranging
+#' from 0 to pi/2 for computing the lookup table.
 #' @references Wang, W. M., Li, Z. L., & Su, H. B. (2007).
 #' Comparison of leaf angle distribution functions: effects on extinction
 #' coefficient and fraction of sunlit foliage. Agricultural and Forest
 #' Meteorology, 143(1), 106-122.
 #' @examples
-#' # G(θ) == 0.5 for spherical distribution
+#' # G(theta) == 0.5 for spherical distribution
 #' all(computeG(theta = runif(10, 0, pi/2)) == 0.5) # returns TRUE
 #' # ellipsoidal distribution
 #' computeG(theta = runif(10, 0, pi/2), pdf = "ellipsoidal", chi = 0.6)
@@ -245,25 +245,25 @@ computeGtheta <- function(theta, pdf, chi, mu, nu) {
 }
 
 
-#' Plot G(θ) profiles for one or several leaf angle distribution functions
+#' Plot G(theta) profiles for one or several leaf angle distribution functions
 #'
-#' @description Plot G(θ) profiles for one or several leaf angle distribution
-#' functions with `θ in [0, π/2]`. Requires ggplot2 package.
+#' @description Plot G(theta) profiles for one or several leaf angle distribution
+#' functions with `theta in [0, pi/2]`. Requires ggplot2 package.
 #' @param pdf the name of the leaf angle distribution functions. One of
 #' "uniform", "spherical", "planophile", "erectophile", "plagiophile",
 #' "extremophile", "ellipsoidal", "twoParamBeta".
-#' @param chi a float, χ, parameter of the ellipsoidal leaf angle distribution.
+#' @param chi a float, parameter of the ellipsoidal leaf angle distribution.
 #' The ratio the ratio horizontal axis over vertical axis. See section "Leaf
 #' Angle Ditribution functions" for details.
-#' @param mu a float, μ, parameter controlling the Beta distribution. See section
+#' @param mu a float, parameter controlling the Beta distribution. See section
 #' "Leaf Angle Distribution functions" for details.
-#' @param nu a float, ν, parameter controlling the Beta distribution. See section
+#' @param nu a float, parameter controlling the Beta distribution. See section
 #' "Leaf Angle Distribution functions" for details.
 #' @examples
 #' \dontrun{
-#' # plot G(θ) for planophile leaf angle distribution function
+#' # plot G(theta) for planophile leaf angle distribution function
 #' AMAPVox::plotG(pdf = "planophile")
-#' # plot G(θ) for every distributions
+#' # plot G(theta) for every distributions
 #' AMAPVox::plotG()
 #' }
 #' @export

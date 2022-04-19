@@ -2,7 +2,7 @@
 % Please edit documentation in R/ComputeG.R
 \name{computeG}
 \alias{computeG}
-\title{Foliage projection ratio G(θ).}
+\title{Foliage projection ratio G(theta).}
 \usage{
 computeG(
   theta,
@@ -15,36 +15,36 @@ computeG(
 )
 }
 \arguments{
-\item{theta}{a numeric vector, θ, the incident beam inclination, in radian,
-ranging \verb{[0, π/2]}.}
+\item{theta}{a numeric vector, theta, the incident beam inclination, in radian,
+ranging \verb{[0, pi/2]}.}
 
 \item{pdf}{the name of the probability density function of the leaf angle
 distribution. One of "uniform", "spherical", "planophile", "erectophile",
 "plagiophile", "extremophile", "ellipsoidal", "twoParamBeta". Refer to
 section "Leaf Angle Distribution functions" for details.}
 
-\item{chi}{a float, χ, parameter of the ellipsoidal leaf angle distribution.
+\item{chi}{a float, parameter of the ellipsoidal leaf angle distribution.
 The ratio the ratio horizontal axis over vertical axis. See section "Leaf
 Angle Ditribution functions" for details.}
 
-\item{mu}{a float, μ, parameter controlling the Beta distribution. See section
+\item{mu}{a float, parameter controlling the Beta distribution. See section
 "Leaf Angle Distribution functions" for details.}
 
-\item{nu}{a float, ν, parameter controlling the Beta distribution. See section
+\item{nu}{a float, parameter controlling the Beta distribution. See section
 "Leaf Angle Distribution functions" for details.}
 
 \item{with.lut}{a Boolean, whether to estimate G with a lookup table (LUT).
 By default the lookup table is automatically generated when length of theta
 vector is greater than 100.}
 
-\item{lut.precision}{a float, the increment of the θ sequence ranging
-from 0 to π/2 for computing the lookup table.}
+\item{lut.precision}{a float, the increment of the theta sequence ranging
+from 0 to pi/2 for computing the lookup table.}
 }
 \description{
 Compute the mean projection of unit leaf area on the plane
-perpendicular to beam direction, namely, G(θ) parameter. Assumption of
+perpendicular to beam direction, namely, G(theta) parameter. Assumption of
 symmetric distribution of leaf azimuth angle.
-When estimating G for large amount of θ values, it is advised to enable
+When estimating G for large amount of theta values, it is advised to enable
 the lookup table for speeding up the calculation.
 }
 \details{
@@ -62,19 +62,19 @@ surface elements of a sphere
 }
 \item \strong{ellipsoidal} distribution function, generalization of the spherical
 distribution over an ellipsoid. Relative frequency of leaf angle is the same
-as for surface elements of an ellipsoid. Takes one parameter \code{χ} the ratio
-horizontal axis over vertical axis. For \code{χ = 1} the distribution becomes
-spherical. For \code{χ < 1}, the ellipsoid is a prolate spheroid (like a
-rugby ball). For \code{χ > 1} the ellipsoid is an oblate spheroid (a sphere that
+as for surface elements of an ellipsoid. Takes one parameter \code{chi} the ratio
+horizontal axis over vertical axis. For \code{chi = 1} the distribution becomes
+spherical. For \code{chi < 1}, the ellipsoid is a prolate spheroid (like a
+rugby ball). For \code{chi > 1} the ellipsoid is an oblate spheroid (a sphere that
 bulges at the equator and is somewhat squashed at the poles).
 \item \strong{two parameters Beta} distribution. Most generic approach from Goal
 and Strebel (1984) to represent large variety of leaf angle distribution. Takes
-two parameters \code{μ} and \code{ν} that control the shape of the Beta
+two parameters \code{mu} and \code{nu} that control the shape of the Beta
 distribution.
 }
 }
 \examples{
-# G(θ) == 0.5 for spherical distribution
+# G(theta) == 0.5 for spherical distribution
 all(computeG(theta = runif(10, 0, pi/2)) == 0.5) # returns TRUE
 # ellipsoidal distribution
 computeG(theta = runif(10, 0, pi/2), pdf = "ellipsoidal", chi = 0.6)

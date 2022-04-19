@@ -9,7 +9,6 @@
 \alias{is.VoxelSpace}
 \alias{ncol,VoxelSpace-method}
 \alias{nrow,VoxelSpace-method}
-\alias{nrow.VoxelSpace}
 \alias{names.VoxelSpace}
 \title{Tools inherited from base R for VoxelSpace object.}
 \usage{
@@ -26,8 +25,6 @@ is.VoxelSpace(x)
 \S4method{ncol}{VoxelSpace}(x)
 
 \S4method{nrow}{VoxelSpace}(x)
-
-nrow.VoxelSpace(x)
 
 \method{names}{VoxelSpace}(x)
 }

@@ -51,9 +51,6 @@ setMethod ("ncol",
 setMethod ("nrow",
            signature(x = "VoxelSpace"),
            function(x) nrow(x@data))
-#' @export
-#' @rdname tools
-nrow.VoxelSpace <- function(x) return(nrow(x@data))
 
 #' @export
 #' @rdname tools

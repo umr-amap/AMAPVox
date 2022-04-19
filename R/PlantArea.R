@@ -6,7 +6,7 @@
 #' @description Computes Plant Area Density either from transmittance or
 #' attenuation coefficient estimates.
 #' Details of calculation and underlying assumptions can be found online at
-#' \url{https://doi.org/10.23708/1AJNMP}.
+#' \doi{10.23708/1AJNMP}.
 #' PAD is defind as the plant area per unit volume
 #' ( PAD plant area / voxel volume = m^2 / m^3).
 #'
@@ -29,7 +29,7 @@
 #' @seealso [AMAPVox::computeG]
 #' @references VINCENT, Gregoire; PIMONT, François; VERLEY, Philippe, 2021,
 #' "A note on PAD/LAD estimators implemented in AMAPVox 1.7",
-#' \url{https://doi.org/10.23708/1AJNMP}, DataSuds, V1
+#' \doi{10.23708/1AJNMP}, DataSuds, V1
 #' @export
 plantAreaDensity <- function(vxsp, lad = "spherical",
                              angle.name = "angleMean",

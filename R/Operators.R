@@ -51,6 +51,7 @@ setMethod("$<-", "VoxelSpace", function(x, name, value)
 })
 
 #' @export
+#' @aliases [[<-,VoxelSpace,ANY,missing-method
 #' @rdname Extract
 setMethod("[[<-", c("VoxelSpace", "ANY", "missing", "ANY"),  function(x, i, j, value)
 {

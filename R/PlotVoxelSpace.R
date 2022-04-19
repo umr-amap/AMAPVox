@@ -43,11 +43,12 @@ setMethod("plot",
                            ...) {
 
  # check if rgl package is installed
- if (!requireNamespace("rgl", quietly = TRUE)) {
+ if (!(requireNamespace("rgl", quietly = TRUE) &
+       requireNamespace("fields", quietly = TRUE))) {
    stop(
-     "Package \"rgl\" must be installed to plot VoxelSpace object",
+     "Package \"rgl\" & \"fields\" must be installed to plot VoxelSpace object",
      "\n",
-     ">> install.packages(\"rgl\")",
+     ">> install.packages(c(\"rgl\", \"fields\"))",
       call. = FALSE)
   }
   # must be a voxel space

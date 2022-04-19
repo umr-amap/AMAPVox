@@ -85,7 +85,9 @@ gui <- function(version="latest", check.update = TRUE,
 
   # Generate the execution expression
   jarPath <- normalizePath(
-    file.path(amapvox$path, paste0("AMAPVox-", version, ".jar")),
+    file.path(amapvox$path, paste0(
+      ifelse(compVersion(version, "1.10.1") >= 0, "AMAPVoxGUI-", "AMAPVox-"),
+      version, ".jar")),
     mustWork = TRUE)
   args = paste(jvm.options, "-jar", jarPath)
   command = paste(c(shQuote(java), args), collapse = " ")

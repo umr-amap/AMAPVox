@@ -14,7 +14,7 @@ Description: Read, manipulate and write voxel spaces. Voxel spaces are
     in the article Vincent et al. (2017) <doi:10.23708/1AJNMP> and the
     technical note Vincent et al. (2021) <doi:10.23708/1AJNMP>.
 License: CeCILL (>=2)
-URL: https://github.com/umr-amap/AMAPVox
+URL: https://amapvox.org
 BugReports: https://github.com/umr-amap/AMAPVox/issues
 Depends:
     R (>= 4.0.0)

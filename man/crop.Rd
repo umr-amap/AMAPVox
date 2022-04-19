@@ -35,13 +35,14 @@ designates a layer with constant i (i-slice), j (j-slice) or k (k-slice).
 
 One may want to crop the voxel space on coordinates rather than grid index.
 To do so the voxel space must be first converted to an \code{sf} object and use
-the \link[sf:st_crop]{sf::st_crop} function.\preformatted{vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
+the \link[sf:st_crop]{sf::st_crop} function.\if{html}{\out{<div class="sourceCode r">}}\preformatted{vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 vxsp@data[, c("x", "y"):=getPosition(vxsp)[, .(x, y)]]
+library(sf)
 vx.sf <- sf::st_as_sf(vxsp@data, coords=c("x", "y"))
 vx.sf <- sf::st_crop(vx.sf, c(xmin = 4, ymin = 1, xmax = 5, ymax = 4))
 sf::st_bbox(vx.sf)
 vxsp@data <- sf::st_drop_geometry(vx.sf)
-}
+}\if{html}{\out{</div>}}
 }
 \examples{
 \dontrun{

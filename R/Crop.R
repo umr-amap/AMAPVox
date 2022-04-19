@@ -12,9 +12,10 @@
 #' One may want to crop the voxel space on coordinates rather than grid index.
 #' To do so the voxel space must be first converted to an `sf` object and use
 #' the [sf::st_crop] function.
-#' ```
+#' ```{r, eval=FALSE}
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' vxsp@data[, c("x", "y"):=getPosition(vxsp)[, .(x, y)]]
+#' library(sf)
 #' vx.sf <- sf::st_as_sf(vxsp@data, coords=c("x", "y"))
 #' vx.sf <- sf::st_crop(vx.sf, c(xmin = 4, ymin = 1, xmax = 5, ymax = 4))
 #' sf::st_bbox(vx.sf)

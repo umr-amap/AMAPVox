@@ -65,8 +65,8 @@ array or vertical profiles either above ground or below canopy.
 \examples{
 vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 vxsp <- plantAreaDensity(vxsp)
-lai <- plantAreaIndex(vxsp)
 \dontrun{
+lai <- plantAreaIndex(vxsp)
 names(lai)
 library(ggplot2)
 ggplot(data = lai[["pad_transmittance.pai.ag" ]], aes(x=pai, y=ground_distance)) +

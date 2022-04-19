@@ -5,6 +5,7 @@
 \alias{$,VoxelSpace-method}
 \alias{[[,VoxelSpace,ANY,missing-method}
 \alias{$<-,VoxelSpace-method}
+\alias{[[<-,VoxelSpace,ANY,missing,ANY-method}
 \alias{[[<-,VoxelSpace,ANY,missing-method}
 \title{Extract or Replace Parts of a VoxelSpace Object}
 \usage{
@@ -14,7 +15,7 @@
 
 \S4method{$}{VoxelSpace}(x, name) <- value
 
-\S4method{[[}{VoxelSpace,ANY,missing}(x, i, j) <- value
+\S4method{[[}{VoxelSpace,ANY,missing,ANY}(x, i, j) <- value
 
 \S4method{$}{VoxelSpace}(x, name) <- value
 }

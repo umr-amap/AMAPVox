@@ -10,3 +10,4 @@ git.log
 ^CRAN-RELEASE$
 ^doc$
 ^Meta$
+^CRAN-SUBMISSION$

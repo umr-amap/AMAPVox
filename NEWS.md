@@ -1,6 +1,6 @@
 # AMAPVox 0.10.0
 
-*2022-04-19*
+*2022-04-20*
 Added new functions "plantAreaDensity", "plantAreaIndex".
 Added new function "toRaster".
 Released on CRAN.

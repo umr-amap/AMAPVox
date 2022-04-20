@@ -41,9 +41,12 @@ vignettes/*.pdf
 # git log file
 git.log
 
-# CRAN release
+# CRAN related files
 CRAN-RELEASE
+CRAN-SUBMISSION
+cran-comments.md
 
+# other folders
 inst/doc
 /doc/
 /docs/

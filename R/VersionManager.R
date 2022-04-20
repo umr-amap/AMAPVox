@@ -11,8 +11,9 @@
 versionManager <- function(version="latest", check.update = TRUE) {
 
   # check internet connection
-  is.offline <- class(
-    try(curl::nslookup("amap-dev.cirad.fr"), silent = TRUE))[1L] == "try-error"
+  is.offline <- inherits(
+    try(curl::nslookup("amap-dev.cirad.fr"), silent = TRUE),
+    "try-error")
 
   # list local versions
   localVersions <- getLocalVersions()
@@ -36,8 +37,9 @@ versionManager <- function(version="latest", check.update = TRUE) {
   if (is.offline) {
     ## OFFLINE
     # resolve local version
-    if (!class(try(resolveLocalVersion(version, silent = TRUE),
-                   silent = TRUE)) == "try-error") {
+    if (!inherits(
+           try(resolveLocalVersion(version, silent = TRUE), silent = TRUE),
+           "try-error")) {
       localVersion <- resolveLocalVersion(version)
       if (compVersion(version, localVersion) != 0)
         warning(paste("We are offline, cannot check if version", version,
@@ -89,9 +91,10 @@ getRemoteVersions <- function() {
 
   # read AMAPVox download page
   downloadPage <- try(
-    rvest::read_html("https://amap-dev.cirad.fr/projects/amapvox/files"))
+    rvest::read_html("https://amap-dev.cirad.fr/projects/amapvox/files"),
+    silent = TRUE)
   # handle read_html failure
-  if (class(downloadPage)[1L] == "try-error") {
+  if (inherits(downloadPage, "try-error")) {
     stop(paste("AMAPVox download page is unreachable",
             "(https://amap-dev.cirad.fr/projects/amapvox/files).",
             "Please check your internet connexion or try again later."),
@@ -347,11 +350,12 @@ removeVersion <- function(version) {
   }
   # local version exists, uninstall it
   path <- localVersions$path[which(localVersions == version)]
-  if (class(try(unlink(path, recursive = TRUE), silent = TRUE)) != "try-error")
+  if (unlink(path, recursive = TRUE) == 0)
+  {
     message(paste("Version", version, "successfully removed",
                   "(", path, ")."))
-  else
+  } else {
     message(paste("Failed to delete folder", path,
-                  ", you may have to do so manually...")
-  )
+                  ", you may have to do so manually..."))
+  }
 }

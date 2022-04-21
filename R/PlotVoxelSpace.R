@@ -7,7 +7,8 @@
 #'
 #' @description plot a \code{\link{VoxelSpace-class}} object.
 #' @param x the object of class VoxelSpace to plot
-#' @param y Unused (inherited from R base)
+#' @param y a subset of voxel index. A data.table with `i, j, k` columns.
+#'   Missing parameter means whole voxel space.
 #' @param variable.name character, the name of the variable to plot
 #' @param palette character, a valid palette name (one of hcl.pals())
 #' @param bg.color character, a valid background color name (one of colors())
@@ -28,6 +29,8 @@
 #' # plot PAD
 #' plot(vxsp, variable.name = "PadBVTotal", palette = "YlOrRd")
 #' }
+#' # plot a subset
+#' plot(vxsp, vxsp@data[k > 4, .(i, j, k)])
 #' @export
 #' @method plot VoxelSpace
 setGeneric("plot", function(x, y, ...)
@@ -36,6 +39,25 @@ standardGeneric("plot"))
 #' @rdname plot
 setMethod("plot",
           signature(x = "VoxelSpace", y = "missing"),
+          function(x, y, variable.name = "nbSampling",
+                   palette = "viridis", bg.color = "lightgrey",
+                   width = 640, voxel.size = 5,
+                   unsampled.discard = TRUE, empty.discard = TRUE,
+                   ...) {
+            i <- j <- k <- NULL
+            return (
+              callGeneric(vxsp, vxsp@data[, .(i, j, k)],
+                          variable.name = variable.name,
+                          palette = palette, bg.color = bg.color,
+                          width = width, voxel.size = voxel.size,
+                          unsampled.discard = unsampled.discard,
+                          empty.discard = empty.discard,
+                          ...))
+          })
+
+#' @rdname plot
+setMethod("plot",
+          signature(x = "VoxelSpace", y = "data.table"),
           function(x, y, variable.name = "nbSampling",
                            palette = "viridis", bg.color = "lightgrey",
                            width = 640, voxel.size = 5,
@@ -53,8 +75,9 @@ setMethod("plot",
   }
   # must be a voxel space
   stopifnot(is.VoxelSpace(x))
-  # y not used
-  stopifnot(missing(y))
+  # y must be data.table with i, j, k columns
+  stopifnot(any(class(y) == "data.table"))
+  stopifnot(c("i", "j", "k") %in% names(y))
   # make sure variable exists
   stopifnot(variable.name %in% colnames(x@data))
   # make sure variable nbSampling exists if discard unsampled voxel is TRUE
@@ -63,7 +86,7 @@ setMethod("plot",
   stopifnot(empty.discard | ('nbEchos' %in% colnames(x@data)))
 
   # discard empty voxels
-  vx <- x@data
+  vx <- x@data[y, on=list(i, j, k)]
   nbSampling <- nbEchos <- NULL # due to NSE notes in R CMD check
   if (unsampled.discard) vx <- vx[nbSampling > 0]
   if (empty.discard) vx <- vx[nbEchos > 0]

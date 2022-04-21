@@ -1,6 +1,9 @@
 # AMAPVox 0.10.1
 
-*yyyy-mm-dd*
+*2022-04-21*
+Bugfix in "toRaster" function.
+Bugfix across several functions ("canopyHeight", "groundElevation", "plantAreaIndex") for merging/joinging data.table based on "on" instead of "key".
+Bugfix in "computeG" function that speed up calculation for large theta vector.
 Not released on CRAN.
 
 

@@ -11,6 +11,8 @@
 #' ( PAD plant area / voxel volume = m^2 / m^3).
 #'
 #' @param vxsp a \code{\link{VoxelSpace-class}} object.
+#' @param vx a subset of voxel index. A data.table with `i, j, k` columns.
+#'   Missing parameter means whole voxel space.
 #' @param lad the name of the probability density function of the leaf angle
 #' distribution. One of `AMAPVox:::leafAngleDistribution`.
 #' @param angle.name the name of the mean angle variable in the VoxelSpace
@@ -27,11 +29,36 @@
 #' @return A voxel space object with the requested PAD variables.
 #'
 #' @seealso [AMAPVox::computeG]
+#'
 #' @references VINCENT, Gregoire; PIMONT, François; VERLEY, Philippe, 2021,
 #' "A note on PAD/LAD estimators implemented in AMAPVox 1.7",
 #' \doi{10.23708/1AJNMP}, DataSuds, V1
+#'
+#' @examples
+#' # load a voxel file
+#' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
+#' # compute PAD
+#' pad <- plantAreaDensity(vxsp, variable.name = "attenuation_PPL_MLE")
+#' # merge pad variables into voxel space
+#' vxsp@data <- merge(vxsp@data, pad, on = list(i, j, k))
+#' grep("^pad", names(vxsp), value = TRUE) # print PAD variables in vxsp
+#' # PAD on a subset
+#' pad.i2j3 <- plantAreaDensity(vxsp, vxsp@data[i ==2 & j==3, .(i, j, k)])
+#' pad.i2j3[["ground_distance"]] <- vxsp@data[i ==2 & j==3]$ground_distance
+#' \dontrun{
+#' # plot vertical profile
+#' library(ggplot2)
+#' # meld data.table (wide-to-long reshaping)
+#' pad <- data.table::melt(pad.i2j3,
+#'   id.vars = "ground_distance",
+#'   measure.vars = c("pad_transmittance", "pad_attenuation_FPL_unbiasedMLE",
+#'     "pad_attenuation_PPL_MLE"))
+#' ggplot(data = pad, aes(x=value, y=ground_distance, color=variable)) +
+#'   geom_path() + geom_point()
+#' }
 #' @export
-plantAreaDensity <- function(vxsp, lad = "spherical",
+plantAreaDensity <- function(vxsp, vx,
+                             lad = "spherical",
                              angle.name = "angleMean",
                              variable.name = c("transmittance",
                                                "attenuation_FPL_unbiasedMLE",
@@ -41,6 +68,16 @@ plantAreaDensity <- function(vxsp, lad = "spherical",
 
   # must be a voxel space
   stopifnot(is.VoxelSpace(vxsp))
+
+  # vx subset missing == every voxel from vxsp
+  if (missing(vx)) {
+    i <- j <- k <- NULL # trick to get rid of R CMD check warning with data.table
+    vx <- vxsp@data[, list(i, j, k)]
+  }
+
+  # vx must be data.table with i, j, k columns
+  stopifnot(any(class(vx) == "data.table"))
+  stopifnot(c("i", "j", "k") %in% names(vx))
 
   # check leaf angle distribution
   stopifnot(lad %in% leafAngleDistribution)
@@ -58,8 +95,11 @@ plantAreaDensity <- function(vxsp, lad = "spherical",
   # by "tra" of "att"
   stopifnot(all(grepl("(^tra*)|(^att*)", variables)))
 
-  # pointer to voxels data.table
-  vx <- vxsp@data
+  # subset of voxels
+  vx.subset <- vxsp@data[vx, on = list(i, j, k)]
+
+  # pad data.table
+  pad.dt <- data.table::data.table(vx.subset[, list(i, j, k)])
 
   # loop over requested variables
   for (variable in variables) {
@@ -67,32 +107,32 @@ plantAreaDensity <- function(vxsp, lad = "spherical",
     nbSampling <- padtmp <- NULL # due to NSE notes in R CMD check
 
     # initialize PAD vector with NA
-    pad <- rep(NA, nrow(vxsp))
+    pad <- rep(NA, nrow(vx.subset))
 
     # index of voxels such as number of pulses greater than pulse.min
-    index <- vx[nbSampling >= pulse.min, which = TRUE]
+    index <- vx.subset[nbSampling >= pulse.min, which = TRUE]
 
     # compute G(θ)
-    gtheta <- computeG(vxsp[[angle.name]][index], lad, ...)
+    gtheta <- computeG(vx.subset[[angle.name]][index], lad, ...)
 
     # compute PAD
     if (grepl("^tra", variable)) {
       # from transmittance
-      pad[index] <- log(vx[index, get(variable)]) / (-gtheta)
+      pad[index] <- log(vx.subset[index, get(variable)]) / (-gtheta)
     } else {
       # from attenuation
-      pad[index] <- vx[index, get(variable)] / gtheta
+      pad[index] <- vx.subset[index, get(variable)] / gtheta
     }
 
     # cap PAD
     pad[which(pad > pad.max)] <- pad.max
 
-    # add PAD into data.table
+    # add PAD variable into PAD data.table
     pad.name <- paste0("pad_", variable)
-    vxsp[[pad.name]] <- pad
+    pad.dt[[pad.name]] <- pad
   }
 
-  return ( vxsp )
+  return ( pad.dt )
 }
 
 #' Plant Area Index (PAI)
@@ -146,7 +186,7 @@ plantAreaDensity <- function(vxsp, lad = "spherical",
 #'
 #' @examples
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
-#' vxsp <- plantAreaDensity(vxsp)
+#' vxsp@data <- merge(vxsp@data, plantAreaDensity(vxsp), on = list(i, j, k))
 #' \dontrun{
 #' lai <- plantAreaIndex(vxsp)
 #' names(lai)

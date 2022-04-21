@@ -107,8 +107,12 @@ canopyHeight <- function(vxsp, ...) {
 
   # canopy height model
   i <- j <- k <- ground_distance <- NULL # trick to avoid "no visible binding" note
-  chm <- merge(vxsp@data[canopy, list(i, j, ground_distance), on=list(i, j, k)],
-               vxsp@data[ground[!canopy], list(i, j, ground_distance)],
+  chm <- merge(vxsp@data[canopy,
+                         list(i, j, ground_distance),
+                         on=list(i, j, k)],
+               vxsp@data[ground[!canopy, on=list(i, j, k)],
+                         list(i, j, ground_distance),
+                         on=list(i, j, k)],
                all = TRUE)
   data.table::setnames(chm, "ground_distance", "canopy_height")
 

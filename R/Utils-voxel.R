@@ -11,14 +11,15 @@ setMethod("clear", signature(vxsp="VoxelSpace", vx="data.table"),
                              "attenuation_FPL_biasedMLE",
                              "attenuation_FPL_biasCorrection",
                              "attenuation_PPL_MLE")
+            i <- j <- k <- NULL # trick to avoid "no visible binding" note
             for (var in var.cleared) {
               if (var %in% names(vxsp)) {
-                vxsp@data[vx, (var):=0]
+                vxsp@data[vx, (var):=0, on=list(i, j, k)]
               }
             }
             # special case for transmittance, set to 1
             if ("transmittance" %in% names(vxsp)) {
-              vxsp@data[vx, ("transmittance"):= 1]
+              vxsp@data[vx, ("transmittance"):= 1, on=list(i, j, k)]
             }
 
           })

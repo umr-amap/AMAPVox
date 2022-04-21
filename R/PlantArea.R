@@ -195,7 +195,9 @@ plantAreaIndex <- function(vxsp, vx,
 
     # data.table of voxels with required variables for PAI calculation
     i <- j <- k <- ground_distance <- NULL # trick to get rid of R CMD check warning with data.table
-    dt <- vxsp@data[vx, list(i, j, k, ground_distance, pad=get(pad.variable))]
+    dt <- vxsp@data[vx,
+                    list(i, j, k, ground_distance, pad=get(pad.variable)),
+                    on = list(i, j, k)]
 
     # loop on PAI type
     for (pai.type in type) {

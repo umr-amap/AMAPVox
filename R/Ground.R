@@ -113,7 +113,8 @@ groundEnergy <- function(vxsp) {
 
   # ground energy
   i <- j <- k <- bsEntering <- bsPotential <- NULL # trick to avoid "no visible binding" note
-  vxsp@data[ground, list(i, j, ground_energy=bsEntering / bsPotential),
+  vxsp@data[ground,
+            list(i, j, ground_energy=bsEntering / bsPotential),
             on=list(i, j, k)]
 }
 
@@ -125,8 +126,10 @@ groundElevation <- function(vxsp) {
   ground <- ground(vxsp)
 
   # ground elevation
-  dem <- vxsp@data[ground, c("i", "j")]
-  dem[["ground_elevation"]] <- getPosition(vxsp, vxsp@data[ground])[["z"]]
+  i <- j <- k <- NULL # trick to avoid "no visible binding" note
+  dem <- vxsp@data[ground, list(i, j), on = list(i, j, k)]
+  dem[["ground_elevation"]] <- getPosition(vxsp,
+                                           vxsp@data[ground, on=list(i, j, k)])[["z"]]
 
   return (dem)
 }

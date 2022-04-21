@@ -3,6 +3,7 @@
 \name{plot}
 \alias{plot}
 \alias{plot,VoxelSpace,missing-method}
+\alias{plot,VoxelSpace,data.table-method}
 \title{Plot an object of class VoxelSpace}
 \usage{
 plot(x, y, ...)
@@ -19,11 +20,25 @@ plot(x, y, ...)
   empty.discard = TRUE,
   ...
 )
+
+\S4method{plot}{VoxelSpace,data.table}(
+  x,
+  y,
+  variable.name = "nbSampling",
+  palette = "viridis",
+  bg.color = "lightgrey",
+  width = 640,
+  voxel.size = 5,
+  unsampled.discard = TRUE,
+  empty.discard = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{the object of class VoxelSpace to plot}
 
-\item{y}{Unused (inherited from R base)}
+\item{y}{a subset of voxel index. A data.table with \verb{i, j, k} columns.
+Missing parameter means whole voxel space.}
 
 \item{...}{additional parameters which will be passed to
 \code{\link[rgl]{plot3d}}.}
@@ -59,6 +74,8 @@ plot(vxsp)
 # plot PAD
 plot(vxsp, variable.name = "PadBVTotal", palette = "YlOrRd")
 }
+# plot a subset
+plot(vxsp, vxsp@data[k > 4, .(i, j, k)])
 }
 \seealso{
 \code{\link[rgl]{plot3d}}

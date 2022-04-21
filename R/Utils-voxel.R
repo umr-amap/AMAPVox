@@ -117,12 +117,12 @@ toRaster <- function(vxsp, vx) {
   # layers name
   layers.name <- colnames(vx)[! colnames(vx) %in% c("i", "j")]
 
-  nx <- dim(vxsp)["x"]
-  ny <- dim(vxsp)["y"]
-  xmin <- AMAPVox::getMinCorner(vxsp)["x"]
-  ymin <- AMAPVox::getMinCorner(vxsp)["y"]
-  xmax <- AMAPVox::getMaxCorner(vxsp)["x"]
-  ymax <- AMAPVox::getMaxCorner(vxsp)["y"]
+  nx <- dim(vxsp)[1]
+  ny <- dim(vxsp)[2]
+  xmin <- AMAPVox::getMinCorner(vxsp)[1]
+  ymin <- AMAPVox::getMinCorner(vxsp)[2]
+  xmax <- AMAPVox::getMaxCorner(vxsp)[1]
+  ymax <- AMAPVox::getMaxCorner(vxsp)[2]
 
   # terra::raster and AMAPVox voxel space does not have same convention for
   # plot origin, so reorder cell index
@@ -133,7 +133,7 @@ toRaster <- function(vxsp, vx) {
 
   # loop on layers
   for (layer.name in layers.name) {
-    layer <- rep(NA, length.out <- nx * ny)
+    layer <- rep(NA, length.out = nx * ny)
     layer[ind] <- vx[[layer.name]]
     r[[layer.name]] <- terra::rast(nrows = ny, ncols = nx,
                 xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,

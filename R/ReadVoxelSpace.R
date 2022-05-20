@@ -33,6 +33,9 @@
 #' @rdname readVoxelSpace
 #' @description read a voxel file and cast it into a
 #'   \code{\link{VoxelSpace-class}} object.
+#'
+#'   Zipped voxel file is accepted. AMAPVox uses user cache directory to unzip
+#'   the file (\link{rappdirs::user_cache_dir}).
 #' @param f The path of the voxel file.
 #' @include Classes.R
 #' @seealso \code{\link{writeVoxelSpace}}
@@ -42,8 +45,20 @@
 #' @export
 readVoxelSpace <- function(f){
 
+  if (grepl("*.zip$", f)) {
+    # unzip first
+    cache.dir <- rappdirs::user_cache_dir("AMAPVox", "IRD")
+    cat("Unzip voxel file", basename(f), "in cache directory ", cache.dir, "\n")
+    f.unzip <- utils::unzip(f,
+                            junkpaths = TRUE,
+                            exdir = cache.dir)
+    vx.file <- normalizePath(f.unzip[1])
+  } else {
+    vx.file <- normalizePath(f)
+  }
+
   #lecture du header
-  conn <- file(f, open="r")
+  conn <- file(vx.file, open="r")
 
   # check 1st line VOXEL FILE
   firstLine <- readLines(conn, n=1)
@@ -106,7 +121,7 @@ readVoxelSpace <- function(f){
   vxsp@header <- parameters
 
   # read voxels
-  vxsp@data <- data.table::fread(f, header = TRUE, skip = nLineHeader)
+  vxsp@data <- data.table::fread(vx.file, header = TRUE, skip = nLineHeader)
 
   return (vxsp)
 }

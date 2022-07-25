@@ -73,9 +73,9 @@ vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPV
 plot(vxsp)
 # plot PAD
 plot(vxsp, variable.name = "PadBVTotal", palette = "YlOrRd")
-}
 # plot a subset
 plot(vxsp, vxsp@data[k > 4, .(i, j, k)])
+}
 }
 \seealso{
 \code{\link[rgl]{plot3d}}

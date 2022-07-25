@@ -35,7 +35,7 @@
 #'   \code{\link{VoxelSpace-class}} object.
 #'
 #'   Zipped voxel file is accepted. AMAPVox uses user cache directory to unzip
-#'   the file (\link{rappdirs::user_cache_dir}).
+#'   the file (\link[rappdirs]{user_cache_dir}).
 #' @param f The path of the voxel file.
 #' @include Classes.R
 #' @seealso \code{\link{writeVoxelSpace}}

@@ -28,9 +28,9 @@
 #' plot(vxsp)
 #' # plot PAD
 #' plot(vxsp, variable.name = "PadBVTotal", palette = "YlOrRd")
-#' }
 #' # plot a subset
 #' plot(vxsp, vxsp@data[k > 4, .(i, j, k)])
+#' }
 #' @export
 #' @method plot VoxelSpace
 setGeneric("plot", function(x, y, ...)
@@ -46,7 +46,7 @@ setMethod("plot",
                    ...) {
             i <- j <- k <- NULL
             return (
-              callGeneric(vxsp, vxsp@data[, .(i, j, k)],
+              callGeneric(x, x@data[, list(i, j, k)],
                           variable.name = variable.name,
                           palette = palette, bg.color = bg.color,
                           width = width, voxel.size = voxel.size,
@@ -86,6 +86,7 @@ setMethod("plot",
   stopifnot(empty.discard | ('nbEchos' %in% colnames(x@data)))
 
   # discard empty voxels
+  i <- j <- k <- NULL # trick to get rid of R CMD check warning with data.table
   vx <- x@data[y, on=list(i, j, k)]
   nbSampling <- nbEchos <- NULL # due to NSE notes in R CMD check
   if (unsampled.discard) vx <- vx[nbSampling > 0]

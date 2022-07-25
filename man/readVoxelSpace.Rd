@@ -15,7 +15,7 @@ read a voxel file and cast it into a
 \code{\link{VoxelSpace-class}} object.
 
 Zipped voxel file is accepted. AMAPVox uses user cache directory to unzip
-the file (\link{rappdirs::user_cache_dir}).
+the file (\link[rappdirs]{user_cache_dir}).
 }
 \examples{
 # load a voxel file

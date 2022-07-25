@@ -47,7 +47,9 @@ E.g: \code{vxsp <- plantAreaDensity(merge(vxsp1, vxsp2))}
 
 Merging several voxel spaces works as follow : vxsp1 and vxsp2 merged
 into vxsp12. vxsp12 & vxsp3 merged into vxsp123, etc. THe process can be
-syntethized with the \link[base:funprog]{base::Reduce} function.\if{html}{\out{<div class="sourceCode r">}}\preformatted{vxsp <- Reduce(merge, list(vxsp1, vxsp2, vxsp3))
+syntethized with the \link[base:funprog]{base::Reduce} function.
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{vxsp <- Reduce(merge, list(vxsp1, vxsp2, vxsp3))
 }\if{html}{\out{</div>}}
 }
 }

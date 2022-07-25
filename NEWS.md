@@ -1,6 +1,9 @@
 # AMAPVox 0.11.0
 
-*yyyy-MM-dd*
+*2022-07-25*
+Function readVoxelSpace can read zipped voxel file.
+Function plot accepts voxel subset in y parameter.
+Function plantAreaDensity returns separate data table and accepts voxel subset. 
 Not released on CRAN.
 
 # AMAPVox 0.10.1

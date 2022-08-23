@@ -31,9 +31,8 @@
 #'   AMAPVox::gui(java = "/path/to/java/1.8/bin/java")
 #'   ```
 #' @param version, either "latest" or a valid version number major.minor(.build)
-#'   if `version="latest"` and `check.update=FALSE` or no internet
-#'   connection it runs latest local version.
-#' @param check.update, check for newer version online and install it.
+#'   if `version="latest"` the function looks for latest remote version. If
+#'   there is no internet connection it runs latest local version.
 #' @param java Path to the java executable. Default 'java' value assumes that
 #'   java is correctly defined on the $PATH variable.
 #' @param jvm.options JVM (Java Virtual Machine) options. By default it
@@ -51,12 +50,12 @@
 #' }
 #' @include VersionManager.R
 #' @export
-gui <- function(version="latest", check.update = TRUE,
+gui <- function(version="latest",
                 java = "java", jvm.options = "-Xms2048m",
                 stdout = "") {
 
   # handle versions
-  version <- versionManager(version, check.update)
+  version <- versionManager(version)
 
   # look for java and check version
   res <- suppressWarnings(

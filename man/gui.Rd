@@ -5,20 +5,12 @@
 \alias{gui}
 \title{Run AMAPVox Graphical User Interface.}
 \usage{
-gui(
-  version = "latest",
-  check.update = TRUE,
-  java = "java",
-  jvm.options = "-Xms2048m",
-  stdout = ""
-)
+gui(version = "latest", java = "java", jvm.options = "-Xms2048m", stdout = "")
 }
 \arguments{
 \item{version, }{either "latest" or a valid version number major.minor(.build)
-if \code{version="latest"} and \code{check.update=FALSE} or no internet
-connection it runs latest local version.}
-
-\item{check.update, }{check for newer version online and install it.}
+if \code{version="latest"} the function looks for latest remote version. If
+there is no internet connection it runs latest local version.}
 
 \item{java}{Path to the java executable. Default 'java' value assumes that
 java is correctly defined on the $PATH variable.}

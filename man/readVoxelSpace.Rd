@@ -11,16 +11,16 @@ readVoxelSpace(f)
 \item{f}{The path of the voxel file.}
 }
 \description{
-read a voxel file and cast it into a
-\code{\link{VoxelSpace-class}} object.
+read a voxel file and cast it into a \code{\linkS4class{VoxelSpace}}
+object.
 
 Zipped voxel file is accepted. AMAPVox uses user cache directory to unzip
-the file (\link[rappdirs]{user_cache_dir}).
+the file (\code{\link[rappdirs:user_cache_dir]{rappdirs::user_cache_dir()}}).
 }
 \examples{
 # load a voxel file
 vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 }
 \seealso{
-\code{\link{writeVoxelSpace}}
+\code{\link[=writeVoxelSpace]{writeVoxelSpace()}}
 }

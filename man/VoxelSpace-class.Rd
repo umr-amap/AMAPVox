@@ -9,8 +9,8 @@ An object of class VoxelSpace.
 }
 \description{
 Class that holds the state variables of every voxel of the voxel
-space in a \code{\link{data.table}}, plus metadata from the voxel space
-header.
+space in a \code{\link[data.table:data.table-class]{data.table::data.table}} object, plus metadata from the
+voxel space header.
 }
 \section{Slots}{
 
@@ -23,5 +23,5 @@ header.
 }}
 
 \seealso{
-\code{\link{readVoxelSpace}}
+\code{\link[=readVoxelSpace]{readVoxelSpace()}}
 }

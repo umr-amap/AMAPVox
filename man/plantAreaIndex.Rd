@@ -13,19 +13,23 @@ plantAreaIndex(
 )
 }
 \arguments{
-\item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{a \code{\linkS4class{VoxelSpace}} object.}
 
 \item{vx}{a subset of voxel index. A data.table with \verb{i, j, k} columns.
 Missing parameter means whole voxel space.}
 
-\item{type}{a character vector, the type of PAI profile. \itemize{
-\item{\code{"av"} Averaged value on every voxel} \item{\code{"ag"} Above ground
-vertical profile} \item{\code{"bc"} Below canopy vertical profile} \item{\code{"xy"}
-Spatial profile} }}
+\item{type}{a character vector, the type of PAI profile.
+\itemize{
+\item \code{"av"} Averaged value on every voxel
+\item \code{"ag"} Above ground vertical profile
+\item \code{"bc"} Below canopy vertical profile
+\item \code{"xy"} Spatial profile
+}}
 
-\item{pattern.pad}{character string containing a \link[=regex]{regular expression}
-to be matched in the voxel space variable names, for selecting PAD
-variables. Typing the name of a specific PAD variable works just fine.}
+\item{pattern.pad}{character string containing a
+\link[base:regex]{regular expression} to be matched in the voxel space
+variable names, for selecting PAD variables. Typing the name of a specific
+PAD variable works just fine.}
 }
 \value{
 Returns a list of PAI profiles for requested PAD variables and PAI
@@ -79,5 +83,5 @@ lai <- plantAreaIndex(vxsp, vx)
 
 }
 \seealso{
-\link{plantAreaDensity}
+\code{\link[=plantAreaDensity]{plantAreaDensity()}}
 }

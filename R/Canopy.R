@@ -3,7 +3,7 @@
 #' @docType methods
 #' @rdname canopy
 #'
-#' @description Extract canopy from \code{\link{VoxelSpace-class}} object.
+#' @description Extract canopy from [`VoxelSpace-class`] object.
 #' The canopy layer is the set of highest voxels with number of hits greater
 #' than a user-defined threshold.
 #'
@@ -13,14 +13,14 @@
 #' in a voxel is enough to consider that there is some vegetation. Increasing
 #' this threshold will tend to lower the canopy level or introduce some gaps (
 #' i-j-cells with no vegetation). This `hit.min` filter is stronger than
-#' [AMAPVox::butterfly] since is does not discriminate isolated voxels.
+#' [butterfly()] since is does not discriminate isolated voxels.
 #' A reasonable value for `hit.min` cannot be suggested ad-hoc since it
 #' strongly depends on sampling intensity. Removing butterflies prior to
 #' extracting canopy is advisable.
 #'
 #' ## Gaps
 #'
-#' For a VoxelSpace with fully defined ground level (see [AMAPVox::ground]),
+#' For a VoxelSpace with fully defined ground level (see [ground()]),
 #' missing canopy cells can be interpreted as gaps. Conversely if both ground
 #' and canopy are missing for a i-j-cell, then it is inconclusive.
 #'
@@ -34,16 +34,16 @@
 #' Function `canopyHeight` returns ground distance at canopy level, including
 #' gaps.
 #'
-#' @return [data.table::data.table-class] object with voxel index either
+#' @return [`data.table::data.table-class`] object with voxel index either
 #' below canopy, canopy level or above canopy
 #'
-#' @param vxsp a \code{\link{VoxelSpace-class}} object.
+#' @param vxsp a [`VoxelSpace-class`] object.
 #' @param hit.min a positive integer, minimum number of hit/echo in a voxel
 #' to consider it contains vegetation.
 #' @param ... additional parameters which will be passed to `canopy` function.
 #' So far only `hit.min` parameter.
 #'
-#' @seealso [AMAPVox::butterfly], [AMAPVox::ground]
+#' @seealso [butterfly()], [ground()]
 #'
 #' @examples
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))

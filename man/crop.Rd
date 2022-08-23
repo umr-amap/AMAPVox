@@ -8,7 +8,7 @@
 crop(vxsp, imin = 0, imax = Inf, jmin = 0, jmax = Inf, kmin = 0, kmax = Inf)
 }
 \arguments{
-\item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{a \code{\linkS4class{VoxelSpace}} object.}
 
 \item{imin}{minimum i index of cropped area (inclusive)}
 
@@ -27,15 +27,15 @@ Cropped voxel space with updated i, j, k grid coordinates and
 updated header (min and max corner).
 }
 \description{
-Crop \code{\link{VoxelSpace-class}} object based on voxel i, j,
+Crop \code{\linkS4class{VoxelSpace}} object based on voxel i, j,
 k, index. If cropping index are missing, the function will automatically crop
 the voxel space by discarding outermost unsampled slices of voxels. A \emph{slice}
 designates a layer with constant i (i-slice), j (j-slice) or k (k-slice).
 \emph{unsampled} means that no pulse went through.
 
 One may want to crop the voxel space on coordinates rather than grid index.
-To do so the voxel space must be first converted to an \code{sf} object and use
-the \link[sf:st_crop]{sf::st_crop} function.
+To do so the voxel space must be first converted to an \code{\link[sf:sf]{sf::sf}}
+object and use the \code{\link[sf:st_crop]{sf::st_crop()}} function.
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 vxsp@data[, c("x", "y"):=getPosition(vxsp)[, .(x, y)]]

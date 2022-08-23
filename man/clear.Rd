@@ -17,22 +17,23 @@ clear(vxsp, vx)
 \S4method{clear}{VoxelSpace,matrix}(vxsp, vx)
 }
 \arguments{
-\item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{a \code{\linkS4class{VoxelSpace}} object.}
 
-\item{vx}{(i, j, k) voxel coordinates as a \link[data.table:data.table]{data.table::data.table} with
-i, j, k columns, a vector (i, j, k) or a matrix with i, j, k columns.}
+\item{vx}{(i, j, k) voxel coordinates as a \code{\link[data.table:data.table-class]{data.table::data.table}}
+with i, j, k columns, a vector (i, j, k) or a matrix with i, j, k columns.}
 }
 \description{
 Clear a set of voxels. Clearing means that the state variables
 of the selected voxels are altered as if they were \emph{clear} of any vegetation.
 Namely:
 \itemize{
-\item{number of echo set to zero}
-\item{intercepted beam surface set to zero (if variable is outputed)}
-\item{plant area density set to zero (if variable is outputed)}
-\item{transmittance set to one (if variable is outputed)}
-\item{any attenuation variable set to zero}
+\item number of echo set to zero
+\item intercepted beam surface set to zero (if variable is outputted)
+\item plant area density set to zero (if variable is outputted)
+\item transmittance set to one (if variable is outputted)
+\item any attenuation variable set to zero
 }
+
 Other state variables such as sampling intensity, mean angle, entering beam
 surface, etc. are unaltered. A cleared voxel is not the same as an unsampled
 voxel (not "crossed" by any beam).

@@ -31,14 +31,14 @@
 #'
 #' @docType methods
 #' @rdname readVoxelSpace
-#' @description read a voxel file and cast it into a
-#'   \code{\link{VoxelSpace-class}} object.
+#' @description read a voxel file and cast it into a [`VoxelSpace-class`]
+#' object.
 #'
 #'   Zipped voxel file is accepted. AMAPVox uses user cache directory to unzip
-#'   the file (\link[rappdirs]{user_cache_dir}).
+#'   the file ([rappdirs::user_cache_dir()]).
 #' @param f The path of the voxel file.
 #' @include Classes.R
-#' @seealso \code{\link{writeVoxelSpace}}
+#' @seealso [writeVoxelSpace()]
 #' @examples
 #' # load a voxel file
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))

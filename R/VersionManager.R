@@ -83,9 +83,9 @@ versionManager <- function(version="latest", check.update = TRUE) {
 #' @rdname getRemoteVersions
 #' @description List AMAPVox versions available for download from page
 #'   \url{https://amap-dev.cirad.fr/projects/amapvox/files}
-#' @return a \code{data.frame} with 2 variables: \code{$version} that stores
-#'   the version number and \code{$url} the URL of the associated ZIP file.
-#' @seealso \code{\link{getLocalVersions}}
+#' @return a `data.frame` with 2 variables: `$version` that stores
+#'   the version number and `$url` the URL of the associated ZIP file.
+#' @seealso [getLocalVersions()]
 #' @export
 getRemoteVersions <- function() {
 
@@ -126,12 +126,11 @@ getRemoteVersions <- function() {
 #' @rdname getLocalVersions
 #' @description List AMAPVox versions already installed on your computer by
 #'  the package. AMAPVox versions are installed in the user-specific data
-#'  directory, as specified by \code{\link[rappdirs]{user_data_dir}}.
-#' @return a \code{data.frame} with 2 variables: \code{$version} that stores
-#'   the version number and \code{$path} the local path of the AMAPVox
+#'  directory, as specified by [rappdirs::user_data_dir()].
+#' @return a `data.frame` with 2 variables: `$version` that stores
+#'   the version number and `$path` the local path of the AMAPVox
 #'   directory.
-#' @seealso \code{\link{getRemoteVersions}},
-#'   \code{\link[rappdirs]{user_data_dir}}
+#' @seealso [getRemoteVersions()], [rappdirs::user_data_dir()]
 #' @export
 getLocalVersions <- function() {
 
@@ -264,17 +263,16 @@ resolveLocalVersion <- function(version, silent = FALSE) {
 #' @rdname installVersion
 #' @description Install specific AMAPVox version on your computer.
 #'   AMAPVox versions are installed in the user-specific data
-#'   directory, as specified by \code{\link[rappdirs]{user_data_dir}}.
-#'   You should not worry to call directly the \code{install} function since
+#'   directory, as specified by [rappdirs::user_data_dir()].
+#'   You should not worry to call directly this function since
 #'   local installations are automatically handled by the version manager
-#'   when you launch AMAPVox GUI with \code{\link{gui}} function.
+#'   when you launch AMAPVox GUI with [gui()] function.
 #' @param version, a valid and existing AMAPVox remote version number
 #'   (major.minor.build)
 #' @param overwrite, whether existing local installation should be re-installed.
 #' @return the path of the AMAPVox installation directory.
-#' @seealso \code{\link{getLocalVersions}}, \code{\link{getRemoteVersions}},
-#'   \code{\link{removeVersion}}
-#' @seealso \code{\link[rappdirs]{user_data_dir}}
+#' @seealso [getLocalVersions()], [getRemoteVersions()], [removeVersion()]
+#' @seealso [rappdirs::user_data_dir()]
 #' @examples
 #' \dontrun{
 #' # install latest version
@@ -329,7 +327,7 @@ installVersion <- function(version, overwrite = FALSE) {
 #' @description Uninstall specific AMAPVox version from your computer.
 #' @param version, a valid and existing AMAPVox local version number
 #'   (major.minor.build)
-#' @seealso \code{\link{getLocalVersions}}, \code{\link{installVersion}}
+#' @seealso [getLocalVersions()], [installVersion()]
 #' @examples
 #' \dontrun{
 #' # uninstall oldest version from your computer

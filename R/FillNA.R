@@ -21,7 +21,7 @@
 #' suche voxels. An other option is to run again the function with larger
 #' radius or lower sampling threshold.
 #'
-#' @param vxsp a \code{\link{VoxelSpace-class}} object.
+#' @param vxsp a [`VoxelSpace-class`] object.
 #' @param variable.name a character, the name of a variable in the VoxelSpace
 #' @param variable.min a numeric, minimal value for the fill values
 #' @param variable.max a numeric, maximal value for the fill values

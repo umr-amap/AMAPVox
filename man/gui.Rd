@@ -27,7 +27,7 @@ java is correctly defined on the $PATH variable.}
 allocates 2Go of heap memory to AMAPVox.}
 
 \item{stdout}{where output to both stdout/stderr should be sent. Same as
-stdout & stderr options from function \code{\link{system2}}.}
+stdout & stderr options from function \code{\link[=system2]{system2()}}.}
 }
 \description{
 Run AMAPVox Graphical User Interface (GUI). The function embeds
@@ -43,23 +43,25 @@ or \href{https://aws.amazon.com/fr/corretto/}{Java 1.8 64-Bit Corretto}.
 OpenJDK 8 will not work since JavaFX is not included.
 You may check beforehand if java is installed on your system and
 which version.
-\preformatted{
-  system2("java", args = "-version")
-  }
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{system2("java", args = "-version")
+}\if{html}{\out{</div>}}
+
 If AMAPVox::gui keeps throwing errors after you have installed suitable
 Java 1.8 64-Bit, it means that Java 1.8 may not be properly detected by
 your system. In such case you may have to check and set the
 \code{JAVA_HOME} environment variable.
-\preformatted{
-  Sys.getenv("JAVA_HOME")
-  Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
-  system2("java", args = "-version")
-  }
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{Sys.getenv("JAVA_HOME")
+Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
+system2("java", args = "-version")
+}\if{html}{\out{</div>}}
+
 As a last resort you may change the \code{java} parameter of this function
 and set the full path to Java 1.8 binary.
-\preformatted{
-  AMAPVox::gui(java = "/path/to/java/1.8/bin/java")
-  }
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{AMAPVox::gui(java = "/path/to/java/1.8/bin/java")
+}\if{html}{\out{</div>}}
 }
 
 \examples{
@@ -71,6 +73,6 @@ AMAPVox::gui(version="1.6.4", check.update = FALSE)
 }
 }
 \seealso{
-\code{\link{getLocalVersions}}, \code{\link{getRemoteVersions}},
-\code{\link{installVersion}}, \code{\link{removeVersion}}
+\code{\link[=getLocalVersions]{getLocalVersions()}}, \code{\link[=getRemoteVersions]{getRemoteVersions()}}, \code{\link[=installVersion]{installVersion()}} and
+\code{\link[=removeVersion]{removeVersion()}}
 }

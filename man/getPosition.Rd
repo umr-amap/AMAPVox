@@ -20,10 +20,10 @@ getPosition(vxsp, vx)
 \S4method{getPosition}{VoxelSpace,missing}(vxsp, vx)
 }
 \arguments{
-\item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{a \code{\linkS4class{VoxelSpace}} object.}
 
-\item{vx}{(i, j, k) voxel coordinates as a \link[data.table:data.table]{data.table::data.table} with
-i, j, k columns, a vector (i, j, k) or a matrix with i, j, k columns.}
+\item{vx}{(i, j, k) voxel coordinates as a \code{\link[data.table:data.table-class]{data.table::data.table}}
+with i, j, k columns, a vector (i, j, k) or a matrix with i, j, k columns.}
 }
 \value{
 the x, y, z coordinates of the voxel center.

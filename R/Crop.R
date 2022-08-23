@@ -3,15 +3,15 @@
 #' @docType methods
 #' @rdname crop
 #'
-#' @description Crop \code{\link{VoxelSpace-class}} object based on voxel i, j,
+#' @description Crop [`VoxelSpace-class`] object based on voxel i, j,
 #' k, index. If cropping index are missing, the function will automatically crop
 #' the voxel space by discarding outermost unsampled slices of voxels. A *slice*
 #' designates a layer with constant i (i-slice), j (j-slice) or k (k-slice).
 #' *unsampled* means that no pulse went through.
 #'
 #' One may want to crop the voxel space on coordinates rather than grid index.
-#' To do so the voxel space must be first converted to an `sf` object and use
-#' the [sf::st_crop] function.
+#' To do so the voxel space must be first converted to an [`sf::sf`]
+#' object and use the [sf::st_crop()] function.
 #' ```{r, eval=FALSE}
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
 #' vxsp@data[, c("x", "y"):=getPosition(vxsp)[, .(x, y)]]
@@ -22,7 +22,7 @@
 #' vxsp@data <- sf::st_drop_geometry(vx.sf)
 #' ```
 #'
-#' @param vxsp a \code{\link{VoxelSpace-class}} object.
+#' @param vxsp a [`VoxelSpace-class`] object.
 #' @param imin minimum i index of cropped area (inclusive)
 #' @param imax maximum i index of cropped area (inclusive)
 #' @param jmin minimum j index of cropped area (inclusive)

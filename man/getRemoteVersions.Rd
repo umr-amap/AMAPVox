@@ -8,13 +8,13 @@
 getRemoteVersions()
 }
 \value{
-a \code{data.frame} with 2 variables: \code{$version} that stores
-the version number and \code{$url} the URL of the associated ZIP file.
+a \code{data.frame} with 2 variables: \verb{$version} that stores
+the version number and \verb{$url} the URL of the associated ZIP file.
 }
 \description{
 List AMAPVox versions available for download from page
 \url{https://amap-dev.cirad.fr/projects/amapvox/files}
 }
 \seealso{
-\code{\link{getLocalVersions}}
+\code{\link[=getLocalVersions]{getLocalVersions()}}
 }

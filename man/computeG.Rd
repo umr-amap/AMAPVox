@@ -86,5 +86,5 @@ coefficient and fraction of sunlit foliage. Agricultural and Forest
 Meteorology, 143(1), 106-122.
 }
 \seealso{
-\code{\link[=plotG]{plotG()}}
+\code{\link[=plotG]{plotG()}} for plotting G(theta) profiles
 }

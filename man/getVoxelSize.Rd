@@ -11,7 +11,7 @@ getVoxelSize(vxsp)
 \S4method{getVoxelSize}{VoxelSpace}(vxsp)
 }
 \arguments{
-\item{vxsp}{the \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{the \code{\linkS4class{VoxelSpace}} object.}
 }
 \value{
 the size of the voxel in meter, as a numerical vector.

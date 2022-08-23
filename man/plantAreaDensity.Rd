@@ -18,7 +18,7 @@ plantAreaDensity(
 )
 }
 \arguments{
-\item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{a \code{\linkS4class{VoxelSpace}} object.}
 
 \item{vx}{a subset of voxel index. A data.table with \verb{i, j, k} columns.
 Missing parameter means whole voxel space.}
@@ -39,7 +39,7 @@ the VoxelSpace object. Transmittance variables are expected to start with
 computing the PAD. PAD set to NA otherwise.}
 
 \item{...}{additional parameters which will be passed to the leaf angle
-distribution functions. Details in \link{computeG}.}
+distribution functions. Details in \code{\link[=computeG]{computeG()}}.}
 }
 \value{
 A voxel space object with the requested PAD variables.
@@ -81,5 +81,5 @@ VINCENT, Gregoire; PIMONT, François; VERLEY, Philippe, 2021,
 \doi{10.23708/1AJNMP}, DataSuds, V1
 }
 \seealso{
-\link{computeG}
+\code{\link[=computeG]{computeG()}}
 }

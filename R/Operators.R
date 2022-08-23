@@ -1,8 +1,8 @@
 #' Extract or Replace Parts of a VoxelSpace Object
 #'
-#' @description Operators acting on \code{VoxelSpace} object. If user attempts
+#' @description Operators acting on [`VoxelSpace-class`] object. If user attempts
 #'
-#' @param x A \code{VoxelSpace} object
+#' @param x a [`VoxelSpace-class`] object
 #' @param name A literal character string or a name (possibly backtick quoted).
 #' @param value typically an array-like R object of a similar class as x.
 #' @param i string, name of elements to extract.

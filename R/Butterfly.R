@@ -2,16 +2,15 @@
 #'
 #' @docType methods
 #' @rdname butterfly
-#' @description Identify butterflies from a \code{\link{VoxelSpace-class}} object.
+#' @description Identify butterflies from a [`VoxelSpace-class`] object.
 #'
 #' A butterfly refers to a non-empty isolated voxel. Non-empty means that there
 #' is one or more hits recorded in the voxel. Isolated means that voxels in the
-#' \href{https://en.wikipedia.org/wiki/Moore_neighborhood}{Moore neighborhood}
+#' [Moore neighborhood](https://en.wikipedia.org/wiki/Moore_neighborhood)
 #' of rank 1 are empty (no hit).
 #'
-#' @return a list of voxel index (i, j, k) identified as butterfly in a
-#' [data.table::data.table]
-#' @param vxsp a \code{\link{VoxelSpace-class}} object
+#' @return a list of voxel index (i, j, k) identified as butterfly.
+#' @param vxsp a [`VoxelSpace-class`] object
 #' @examples
 #' # load a voxel file
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
@@ -19,7 +18,7 @@
 #' btf <- butterfly(vxsp)
 #' # clear butterflies
 #' clear(vxsp, butterfly(vxsp))
-#' @seealso [AMAPVox::clear]
+#' @seealso [clear()]
 #' @export
 butterfly <- function(vxsp) {
 

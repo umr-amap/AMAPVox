@@ -14,7 +14,7 @@ getParameter(vxsp, what)
 \S4method{getParameter}{VoxelSpace,missing}(vxsp, what)
 }
 \arguments{
-\item{vxsp}{the \code{\link{VoxelSpace-class}} object}
+\item{vxsp}{the \code{\linkS4class{VoxelSpace}} object}
 
 \item{what}{the name of the parameter. If missing returns all parameters.}
 }
@@ -35,5 +35,5 @@ getParameter(vxsp, "mincorner")
 getParameter(vxsp)
 }
 \seealso{
-\code{\link{VoxelSpace-class}};
+\code{\linkS4class{VoxelSpace}}
 }

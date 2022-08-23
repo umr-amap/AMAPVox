@@ -8,30 +8,30 @@
 #'   See detailed section below.
 #' @section Java 1.8 64-Bit with JavaFX:
 #'   AMAPVox GUI relies on Java 1.8 64-Bit and JavaFX. In practice it requires
-#'   either \href{https://java.com/download/}{Java 1.8 64-Bit Oracle}
-#'   or \href{https://aws.amazon.com/fr/corretto/}{Java 1.8 64-Bit Corretto}.
+#'   either [Java 1.8 64-Bit Oracle](https://java.com/download/)
+#'   or [Java 1.8 64-Bit Corretto](https://aws.amazon.com/fr/corretto/).
 #'   OpenJDK 8 will not work since JavaFX is not included.
 #'   You may check beforehand if java is installed on your system and
 #'   which version.
-#'   \preformatted{
+#'   ```
 #'   system2("java", args = "-version")
-#'   }
+#'   ```
 #'   If AMAPVox::gui keeps throwing errors after you have installed suitable
 #'   Java 1.8 64-Bit, it means that Java 1.8 may not be properly detected by
 #'   your system. In such case you may have to check and set the
-#'   \code{JAVA_HOME} environment variable.
-#'   \preformatted{
+#'   `JAVA_HOME` environment variable.
+#'   ```
 #'   Sys.getenv("JAVA_HOME")
 #'   Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
 #'   system2("java", args = "-version")
-#'   }
-#'   As a last resort you may change the \code{java} parameter of this function
+#'   ```
+#'   As a last resort you may change the `java` parameter of this function
 #'   and set the full path to Java 1.8 binary.
-#'   \preformatted{
+#'   ```
 #'   AMAPVox::gui(java = "/path/to/java/1.8/bin/java")
-#'   }
+#'   ```
 #' @param version, either "latest" or a valid version number major.minor(.build)
-#'   if \code{version="latest"} and \code{check.update=FALSE} or no internet
+#'   if `version="latest"` and `check.update=FALSE` or no internet
 #'   connection it runs latest local version.
 #' @param check.update, check for newer version online and install it.
 #' @param java Path to the java executable. Default 'java' value assumes that
@@ -39,9 +39,9 @@
 #' @param jvm.options JVM (Java Virtual Machine) options. By default it
 #'   allocates 2Go of heap memory to AMAPVox.
 #' @param stdout where output to both stdout/stderr should be sent. Same as
-#' stdout & stderr options from function \code{\link{system2}}.
-#' @seealso \code{\link{getLocalVersions}}, \code{\link{getRemoteVersions}},
-#'   \code{\link{installVersion}}, \code{\link{removeVersion}}
+#' stdout & stderr options from function [system2()].
+#' @seealso [getLocalVersions()], [getRemoteVersions()], [installVersion()] and
+#'  [removeVersion()]
 #' @examples
 #' \dontrun{
 #' # install and run latest AMAPVox version

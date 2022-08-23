@@ -29,14 +29,14 @@ is.VoxelSpace(x)
 \method{names}{VoxelSpace}(x)
 }
 \arguments{
-\item{object}{a \code{\link{VoxelSpace-class}} object.}
+\item{object}{a \code{\linkS4class{VoxelSpace}} object.}
 
-\item{x}{a \code{\link{VoxelSpace-class}} object.}
+\item{x}{a \code{\linkS4class{VoxelSpace}} object.}
 
 \item{\dots}{further arguments passed to \code{print} function.}
 }
 \description{
-Tools inherited from base R for \code{\link{VoxelSpace-class}}
+Tools inherited from base R for \code{\linkS4class{VoxelSpace}}
 objects.
 }
 \section{Note on \code{length.VoxelSpace}}{
@@ -44,7 +44,7 @@ objects.
 AMAPVox allows to discard empty voxels in the voxel file. In such case
 \code{length.VoxelSpace} will return the expected number of voxels as if
 none were missing. As a  consequence the number of voxels stored in the
-\code{\link{VoxelSpace-class}} object may be inferior to the returned
+\code{\linkS4class{VoxelSpace}} object may be inferior to the returned
 value, namely \code{nrow(x) <= length(x)}
 }
 

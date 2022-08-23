@@ -8,46 +8,44 @@
 \method{merge}{VoxelSpace}(x, y, ...)
 }
 \arguments{
-\item{x, y}{\code{\link{VoxelSpace-class}} objects to be merged.}
+\item{x, y}{\code{\linkS4class{VoxelSpace}} objects to be merged.}
 
 \item{...}{Not used}
 }
 \value{
-A merged \code{\link{VoxelSpace-class}} object.
+A merged \code{\linkS4class{VoxelSpace}} object.
 }
 \description{
-Merge of two \code{\link{VoxelSpace-class}} object.
+Merge of two \code{\linkS4class{VoxelSpace}} object.
 Voxel spaces must have same sptial extension and resolution, and some
 shared column names.
 \subsection{Merging modes}{
 
-Variables \code{i, j, k & ground_distance} are merged.
+Variables \verb{i, j, k & ground_distance} are merged.
 
-Variables \code{nbEchos, nbSampling, lgTotal, bsEntering, bsIntercepted,
-  bsPotential, weightedEffectiveFreepathLength & weightedFreepathLength}
+Variables \verb{nbEchos, nbSampling, lgTotal, bsEntering, bsIntercepted, bsPotential, weightedEffectiveFreepathLength & weightedFreepathLength}
 are summed-up.
 
-Variables \code{sdLength, angleMean and distLaser} are weighted means with
+Variables \verb{sdLength, angleMean and distLaser} are weighted means with
 \code{nbSampling} (the number of pulses) as weights.
 
-Attenuation FPL variables \code{(attenuation_FPL_biasedMLE,
-  attenuation_FPL_biasCorrection, attenuation_FPL_unbiasedMLE) & lMeanTotal}
+Attenuation FPL variables (\verb{attenuation_FPL_biasedMLE, attenuation_FPL_biasCorrection, attenuation_FPL_unbiasedMLE) & lMeanTotal}
 are calculated analytically.
 
 Transmittance and attenuation variables (except the FPL attenuation
 variables listed above) are weighted means with bsEntering as weights.
 
 Any other variables will not be merged. In particular PAD variables
-are not merged and should be recalculated with \link{plantAreaDensity}
-on the merged voxel space.
-E.g: \code{vxsp <- plantAreaDensity(merge(vxsp1, vxsp2))}
+are not merged and should be recalculated with
+\code{\link[=plantAreaDensity]{plantAreaDensity()}} on the merged voxel space.
+E.g:\code{vxsp <- plantAreaDensity(merge(vxsp1, vxsp2))}
 }
 
 \subsection{Merging multiple voxel spaces}{
 
 Merging several voxel spaces works as follow : vxsp1 and vxsp2 merged
-into vxsp12. vxsp12 & vxsp3 merged into vxsp123, etc. THe process can be
-syntethized with the \link[base:funprog]{base::Reduce} function.
+into vxsp12. vxsp12 & vxsp3 merged into vxsp123, etc. The process can be
+synthesized with the \code{\link[=Reduce]{Reduce()}} function.
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{vxsp <- Reduce(merge, list(vxsp1, vxsp2, vxsp3))
 }\if{html}{\out{</div>}}

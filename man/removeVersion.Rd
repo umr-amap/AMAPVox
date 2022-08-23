@@ -21,5 +21,5 @@ removeVersion(head(getLocalVersions()$version, 1))
 }
 }
 \seealso{
-\code{\link{getLocalVersions}}, \code{\link{installVersion}}
+\code{\link[=getLocalVersions]{getLocalVersions()}}, \code{\link[=installVersion]{installVersion()}}
 }

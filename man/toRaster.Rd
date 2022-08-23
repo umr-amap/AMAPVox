@@ -8,16 +8,18 @@
 toRaster(vxsp, vx)
 }
 \arguments{
-\item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{a \code{\linkS4class{VoxelSpace}} object.}
 
-\item{vx}{a voxel space horizontal slice. A data.table with \verb{i, j} columns and
-least one additional variable, the value of the raster layer. Every column beside i and j will be converted into a raster layer.}
+\item{vx}{a voxel space horizontal slice. A data.table with \verb{i, j} columns
+and least one additional variable, the value of the raster layer. Every
+column beside i and j will be converted into a raster layer.}
 }
 \value{
-A \link[terra:SpatRaster-class]{terra::SpatRaster} object.
+a \code{\link[terra:SpatRaster-class]{terra::SpatRaster}} object.
 }
 \description{
-Converts a voxel space (i, j) layer into a \link[terra:SpatRaster-class]{terra::SpatRaster} object.
+Converts a voxel space (i, j) layer into a
+\code{\link[terra:SpatRaster-class]{terra::SpatRaster}} object.
 }
 \examples{
 \dontrun{

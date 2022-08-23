@@ -16,7 +16,7 @@ fillNA(
 )
 }
 \arguments{
-\item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{a \code{\linkS4class{VoxelSpace}} object.}
 
 \item{variable.name}{a character, the name of a variable in the VoxelSpace}
 

@@ -13,7 +13,7 @@ writeVoxelSpace(vxsp, f)
 \item{f}{a character string naming a file.}
 }
 \description{
-write a voxel file out of a \code{\link{VoxelSpace-class}}
+write a voxel file out of a \code{\linkS4class{VoxelSpace}}
 object.
 }
 \examples{
@@ -27,5 +27,5 @@ writeVoxelSpace(vxsp, tempfile("pattern"="amapvox_", fileext=".vox"))
 }
 }
 \seealso{
-\code{\link{readVoxelSpace}}
+\code{\link[=readVoxelSpace]{readVoxelSpace()}}
 }

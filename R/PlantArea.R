@@ -10,7 +10,7 @@
 #' PAD is defind as the plant area per unit volume
 #' ( PAD plant area / voxel volume = m^2 / m^3).
 #'
-#' @param vxsp a \code{\link{VoxelSpace-class}} object.
+#' @param vxsp a [`VoxelSpace-class`] object.
 #' @param vx a subset of voxel index. A data.table with `i, j, k` columns.
 #'   Missing parameter means whole voxel space.
 #' @param lad the name of the probability density function of the leaf angle
@@ -24,11 +24,11 @@
 #' @param pulse.min an integer, the minimal number of pulses in a voxel for
 #' computing the PAD. PAD set to NA otherwise.
 #' @param ... additional parameters which will be passed to the leaf angle
-#' distribution functions. Details in [AMAPVox::computeG].
+#' distribution functions. Details in [computeG()].
 #'
 #' @return A voxel space object with the requested PAD variables.
 #'
-#' @seealso [AMAPVox::computeG]
+#' @seealso [computeG()]
 #'
 #' @references VINCENT, Gregoire; PIMONT, François; VERLEY, Philippe, 2021,
 #' "A note on PAD/LAD estimators implemented in AMAPVox 1.7",
@@ -149,16 +149,18 @@ plantAreaDensity <- function(vxsp, vx,
 #'   perspectives : either an averaged PAI value, a two-dimensions (i, j) PAI
 #'   array or vertical profiles either above ground or below canopy.
 #'
-#' @param vxsp a \code{\link{VoxelSpace-class}} object.
+#' @param vxsp a [`VoxelSpace-class`] object.
 #' @param vx a subset of voxel index. A data.table with `i, j, k` columns.
 #'   Missing parameter means whole voxel space.
-#' @param type a character vector, the type of PAI profile. \itemize{
-#'   \item{`"av"` Averaged value on every voxel} \item{`"ag"` Above ground
-#'   vertical profile} \item{`"bc"` Below canopy vertical profile} \item{`"xy"`
-#'   Spatial profile} }
-#' @param pattern.pad character string containing a [regular expression][regex]
-#'   to be matched in the voxel space variable names, for selecting PAD
-#'   variables. Typing the name of a specific PAD variable works just fine.
+#' @param type a character vector, the type of PAI profile.
+#'   * `"av"` Averaged value on every voxel
+#'   * `"ag"` Above ground vertical profile
+#'   * `"bc"` Below canopy vertical profile
+#'   * `"xy"` Spatial profile
+#' @param pattern.pad character string containing a
+#'   [regular expression][base::regex] to be matched in the voxel space
+#'   variable names, for selecting PAD variables. Typing the name of a specific
+#'   PAD variable works just fine.
 #'
 #' @return Returns a list of PAI profiles for requested PAD variables and PAI
 #'   types.
@@ -182,7 +184,7 @@ plantAreaDensity <- function(vxsp, vx,
 #'   (i, j) column multiplied by voxel size along z (equivalent to multiplying
 #'   PAD by voxel volume and dividing by voxel ground surface).
 #'
-#' @seealso [AMAPVox::plantAreaDensity]
+#' @seealso [plantAreaDensity()]
 #'
 #' @examples
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))

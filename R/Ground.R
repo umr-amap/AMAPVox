@@ -3,7 +3,7 @@
 #' @docType methods
 #' @rdname ground
 #'
-#' @description Extract ground layer from \code{\link{VoxelSpace-class}} object.
+#' @description Extract ground layer from [`VoxelSpace-class`] object.
 #'
 #' ## Ground layer
 #'
@@ -32,10 +32,10 @@
 #' provided as a check function, to make sure that AMAPVox
 #' *digital elevation model* is consistent with the one provided in input.
 #'
-#' @return [data.table::data.table-class] object with voxel index either
+#' @return [`data.table::data.table-class`] object with voxel index either
 #' below ground, ground level or above ground.
 #'
-#' @param vxsp a \code{\link{VoxelSpace-class}} object.
+#' @param vxsp a [`VoxelSpace-class`] object.
 #'
 #' @examples
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))

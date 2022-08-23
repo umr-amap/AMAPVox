@@ -5,7 +5,7 @@
 #' sampling intensity but the user can choose any variable available in the
 #' voxel file.
 #'
-#' @description plot a \code{\link{VoxelSpace-class}} object.
+#' @description plot a [`VoxelSpace-class`] object.
 #' @param x the object of class VoxelSpace to plot
 #' @param y a subset of voxel index. A data.table with `i, j, k` columns.
 #'   Missing parameter means whole voxel space.
@@ -16,10 +16,9 @@
 #' @param voxel.size numeric, the size of voxel in pixels
 #' @param unsampled.discard logical, whether to discard unsampled voxel
 #' @param empty.discard logical, whether to discard empty voxel (no hit)
-#' @param ... additional parameters which will be passed to
-#'   \code{\link[rgl]{plot3d}}.
+#' @param ... additional parameters which will be passed to [rgl::plot3d()].
 #' @include Classes.R
-#' @seealso \code{\link[rgl]{plot3d}}
+#' @seealso [rgl::plot3d()]
 #' @examples
 #' \dontrun{
 #' # load a voxel file

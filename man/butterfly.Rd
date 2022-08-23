@@ -8,14 +8,13 @@
 butterfly(vxsp)
 }
 \arguments{
-\item{vxsp}{a \code{\link{VoxelSpace-class}} object}
+\item{vxsp}{a \code{\linkS4class{VoxelSpace}} object}
 }
 \value{
-a list of voxel index (i, j, k) identified as butterfly in a
-\link[data.table:data.table]{data.table::data.table}
+a list of voxel index (i, j, k) identified as butterfly.
 }
 \description{
-Identify butterflies from a \code{\link{VoxelSpace-class}} object.
+Identify butterflies from a \code{\linkS4class{VoxelSpace}} object.
 
 A butterfly refers to a non-empty isolated voxel. Non-empty means that there
 is one or more hits recorded in the voxel. Isolated means that voxels in the
@@ -31,5 +30,5 @@ btf <- butterfly(vxsp)
 clear(vxsp, butterfly(vxsp))
 }
 \seealso{
-\link{clear}
+\code{\link[=clear]{clear()}}
 }

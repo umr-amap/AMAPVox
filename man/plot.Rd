@@ -40,8 +40,7 @@ plot(x, y, ...)
 \item{y}{a subset of voxel index. A data.table with \verb{i, j, k} columns.
 Missing parameter means whole voxel space.}
 
-\item{...}{additional parameters which will be passed to
-\code{\link[rgl]{plot3d}}.}
+\item{...}{additional parameters which will be passed to \code{\link[rgl:plot3d]{rgl::plot3d()}}.}
 
 \item{variable.name}{character, the name of the variable to plot}
 
@@ -58,7 +57,7 @@ Missing parameter means whole voxel space.}
 \item{empty.discard}{logical, whether to discard empty voxel (no hit)}
 }
 \description{
-plot a \code{\link{VoxelSpace-class}} object.
+plot a \code{\linkS4class{VoxelSpace}} object.
 }
 \details{
 Plot an object of class VoxelSpace in a 3d device. By default it plots the
@@ -78,5 +77,5 @@ plot(vxsp, vxsp@data[k > 4, .(i, j, k)])
 }
 }
 \seealso{
-\code{\link[rgl]{plot3d}}
+\code{\link[rgl:plot3d]{rgl::plot3d()}}
 }

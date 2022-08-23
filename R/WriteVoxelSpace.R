@@ -2,12 +2,12 @@
 #'
 #' @docType methods
 #' @rdname writeVoxelSpace
-#' @description write a voxel file out of a \code{\link{VoxelSpace-class}}
+#' @description write a voxel file out of a [`VoxelSpace-class`]
 #'   object.
 #' @param vxsp the object of class VoxelSpace to write
 #' @param f a character string naming a file.
 #' @include Classes.R
-#' @seealso \code{\link{readVoxelSpace}}
+#' @seealso [readVoxelSpace()]
 #' @examples
 #' \dontrun{
 #' # load a voxel file

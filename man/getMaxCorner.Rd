@@ -11,7 +11,7 @@ getMaxCorner(vxsp)
 \S4method{getMaxCorner}{VoxelSpace}(vxsp)
 }
 \arguments{
-\item{vxsp}{the \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{the \code{\linkS4class{VoxelSpace}} object.}
 }
 \value{
 the x, y, z coordinates of the voxel space top right corner, as a

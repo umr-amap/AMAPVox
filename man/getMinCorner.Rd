@@ -11,7 +11,7 @@ getMinCorner(vxsp)
 \S4method{getMinCorner}{VoxelSpace}(vxsp)
 }
 \arguments{
-\item{vxsp}{the \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{the \code{\linkS4class{VoxelSpace}} object.}
 }
 \value{
 the x, y, z coordinates of the voxel space bottom left corner, as a

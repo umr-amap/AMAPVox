@@ -8,16 +8,15 @@
 getLocalVersions()
 }
 \value{
-a \code{data.frame} with 2 variables: \code{$version} that stores
-the version number and \code{$path} the local path of the AMAPVox
+a \code{data.frame} with 2 variables: \verb{$version} that stores
+the version number and \verb{$path} the local path of the AMAPVox
 directory.
 }
 \description{
 List AMAPVox versions already installed on your computer by
 the package. AMAPVox versions are installed in the user-specific data
-directory, as specified by \code{\link[rappdirs]{user_data_dir}}.
+directory, as specified by \code{\link[rappdirs:user_data_dir]{rappdirs::user_data_dir()}}.
 }
 \seealso{
-\code{\link{getRemoteVersions}},
-\code{\link[rappdirs]{user_data_dir}}
+\code{\link[=getRemoteVersions]{getRemoteVersions()}}, \code{\link[rappdirs:user_data_dir]{rappdirs::user_data_dir()}}
 }

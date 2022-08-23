@@ -20,14 +20,14 @@ groundEnergy(vxsp)
 groundElevation(vxsp)
 }
 \arguments{
-\item{vxsp}{a \code{\link{VoxelSpace-class}} object.}
+\item{vxsp}{a \code{\linkS4class{VoxelSpace}} object.}
 }
 \value{
-\link[data.table:data.table-class]{data.table::data.table} object with voxel index either
+\code{\link[data.table:data.table-class]{data.table::data.table}} object with voxel index either
 below ground, ground level or above ground.
 }
 \description{
-Extract ground layer from \code{\link{VoxelSpace-class}} object.
+Extract ground layer from \code{\linkS4class{VoxelSpace}} object.
 \subsection{Ground layer}{
 
 The ground layer is the set of voxels that are just above ground level. The

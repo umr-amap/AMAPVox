@@ -57,7 +57,7 @@ library(AMAPVox)
 Install and run latest AMAPVox GUI (with active internet connection)
 
 ```{r eval=FALSE}
-AMAPVox::gui()
+AMAPVox::run()
 ```
 
 After downloading latest version, AMAPVox GUI should start automatically:
@@ -65,7 +65,7 @@ After downloading latest version, AMAPVox GUI should start automatically:
 If you get error(s) about java version, please read help page
 
 ```{r}
-? AMAPVox::gui # section "Java 1.8 64-Bit with JavaFX"
+? AMAPVox::run # section "Java 1.8 64-Bit with JavaFX"
 ```
 
 List available remote versions:
@@ -79,7 +79,7 @@ Install specific version:
 ```{r eval=FALSE}
 AMAPVox::installVersion("1.7.6")
 # install and run specific version
-AMAPVox::gui("1.6.4", check.update = FALSE)
+AMAPVox::run("1.6.4", check.update = FALSE)
 ```
 
 List local versions:

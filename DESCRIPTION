@@ -48,8 +48,6 @@ RoxygenNote: 7.2.1
 SystemRequirements: Java 1.8 64-Bit (Oracle or Corretto)
 Collate: 
     'AMAPVox.R'
-    'VersionManager.R'
-    'AMAPVoxGUI.R'
     'Butterfly.R'
     'Canopy.R'
     'Classes.R'
@@ -63,5 +61,7 @@ Collate:
     'PlantArea.R'
     'PlotVoxelSpace.R'
     'ReadVoxelSpace.R'
+    'VersionManager.R'
+    'Run.R'
     'Utils-voxel.R'
     'WriteVoxelSpace.R'

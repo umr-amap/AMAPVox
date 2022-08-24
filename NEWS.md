@@ -1,7 +1,9 @@
 # AMAPVox 0.12.0
 
-*yyy-mm-dd*
-Not released on CRAN.
+*2022-08-24*
+Added new function "run" that either runs AMAPVox in batch mode or launches GUI
+Deleted gui/run check.update option, assuming that version set to "latest" implies to check for updates
+Released on CRAN.
 
 # AMAPVox 0.11.0
 

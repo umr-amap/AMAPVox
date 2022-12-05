@@ -238,9 +238,11 @@ merge.VoxelSpace <- function(x, y, ...) {
 
   # raw merge
   .SD <- .SDcols <- NULL # trick to get rid of `no visible binding` note
-  vx.raw <- data.table::merge.data.table(x@data[, .SD, .SDcols=variables.merged],
+  vx.raw <- data.table::merge.data.table(
+                  x@data[, .SD, .SDcols=variables.merged],
                   y@data[, .SD, .SDcols=variables.merged],
-                  all = TRUE, by = c("i", "j", "k"),
+                  all = TRUE,
+                  by = c("i", "j", "k"),
                   suffixes = c(".x", ".y"))
 
   i <- j <- k <- NULL # trick to get rid of `no visible binding` note

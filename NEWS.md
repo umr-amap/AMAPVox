@@ -2,7 +2,7 @@
 
 *2022-12-05*
 Fixed issue #2 with data.table.merge
-Not released on CRAN.
+Released on CRAN.
 
 # AMAPVox 0.12.0
 

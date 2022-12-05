@@ -1,3 +1,9 @@
+# AMAPVox 0.12.1
+
+*2022-12-05*
+Fixed issue #2 with data.table.merge
+Released on CRAN.
+
 # AMAPVox 0.12.0
 
 *2022-08-24*

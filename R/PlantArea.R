@@ -40,7 +40,7 @@
 #' # compute PAD
 #' pad <- plantAreaDensity(vxsp, variable.name = "attenuation_PPL_MLE")
 #' # merge pad variables into voxel space
-#' vxsp@data <- merge(vxsp@data, pad, on = list(i, j, k))
+#' vxsp@data <- merge(vxsp@data, pad, by = c("i", "j", "k"))
 #' grep("^pad", names(vxsp), value = TRUE) # print PAD variables in vxsp
 #' # PAD on a subset
 #' pad.i2j3 <- plantAreaDensity(vxsp, vxsp@data[i ==2 & j==3, .(i, j, k)])
@@ -188,7 +188,7 @@ plantAreaDensity <- function(vxsp, vx,
 #'
 #' @examples
 #' vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
-#' vxsp@data <- merge(vxsp@data, plantAreaDensity(vxsp), on = list(i, j, k))
+#' vxsp@data <- merge(vxsp@data, plantAreaDensity(vxsp), by = c("i", "j", "k"))
 #' \dontrun{
 #' lai <- plantAreaIndex(vxsp)
 #' names(lai)

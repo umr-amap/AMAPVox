@@ -11,3 +11,4 @@ git.log
 ^doc$
 ^Meta$
 ^CRAN-SUBMISSION$
+^pkgdown$

@@ -68,7 +68,7 @@ array or vertical profiles either above ground or below canopy.
 }
 \examples{
 vxsp <- readVoxelSpace(system.file("extdata", "tls_sample.vox", package = "AMAPVox"))
-vxsp@data <- merge(vxsp@data, plantAreaDensity(vxsp), on = list(i, j, k))
+vxsp@data <- merge(vxsp@data, plantAreaDensity(vxsp), by = c("i", "j", "k"))
 \dontrun{
 lai <- plantAreaIndex(vxsp)
 names(lai)

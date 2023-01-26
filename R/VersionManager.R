@@ -93,39 +93,27 @@ versionManager <- function(version="latest") {
 #'
 #' @docType methods
 #' @rdname getRemoteVersions
-#' @description List AMAPVox versions available for download from page
-#'   \url{https://amap-dev.cirad.fr/projects/amapvox/files}
+#' @description List AMAPVox versions available for download from AMAPVox Gitlab
+#'   package registry \url{https://forge.ird.fr/amap/amapvox/-/packages}
 #' @return a `data.frame` with 2 variables: `$version` that stores
 #'   the version number and `$url` the URL of the associated ZIP file.
 #' @seealso [getLocalVersions()]
 #' @export
 getRemoteVersions <- function() {
 
-  # read AMAPVox download page
-  downloadPage <- try(
-    rvest::read_html("https://amap-dev.cirad.fr/projects/amapvox/files"),
-    silent = TRUE)
-  # handle read_html failure
-  if (inherits(downloadPage, "try-error")) {
-    stop(paste("AMAPVox download page is unreachable",
-            "(https://amap-dev.cirad.fr/projects/amapvox/files).",
-            "Please check your internet connexion or try again later."),
-         call. = FALSE)
-  }
+  # get list of packages
+  url <- "https://forge.ird.fr/api/v4/projects/421/packages?package_type=generic"
+  req <- curl::curl_fetch_memory(url)
+  pkgs <- jsonlite::fromJSON(jsonlite::prettify(rawToChar(req$content)))
 
-  # extract all download files from HTML document
-  files <- downloadPage %>%
-    rvest::html_element("table") %>%
-    rvest::html_nodes(".filename") %>%
-    rvest::html_element("a") %>%
-    rvest::html_attr("href")
-  # extract AMAPVox zip files only
-  url <- paste0("https://amap-dev.cirad.fr",
-                grep("*AMAPVox-\\d+\\.\\d+\\.\\d+\\.zip$", files, value = TRUE))
-  # extract AMAPVox versions and sort them
-  version <- stringr::str_extract(url, "\\d+\\.\\d+\\.\\d+")
-  # create dataframe and sort it along version
-  zips <- data.frame(version, url)
+  # keep only AMAPVox packages
+  pkgs <- pkgs[pkgs$name == "amapvox", ]
+
+  # create dataframe (version, url) and sort it along version
+  url <- "https://forge.ird.fr/api/v4/projects/421/packages/generic/amapvox/"
+  zips <- data.frame(
+    version = pkgs$version,
+    url = paste0(url, pkgs$version, "/AMAPVox-", pkgs$version, ".zip"))
   zips <- zips[orderVersions(zips$version),]
   rownames(zips) <- NULL
   # return dataframe

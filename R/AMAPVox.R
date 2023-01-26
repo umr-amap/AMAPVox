@@ -24,15 +24,15 @@
 #' @name AMAPVox
 #'
 #' @importFrom methods callGeneric is new show
-#' @importFrom utils write.table
+#' @importFrom utils write.table download.file unzip
 #' @importFrom data.table data.table fread merge.data.table := .SD
 #' @importFrom stringr str_match str_trim str_squish str_starts str_split
 #'   str_remove_all str_extract
 #' @importFrom dplyr %>%
-#' @importFrom rvest read_html html_element html_nodes html_attr
 #' @importFrom rappdirs user_data_dir
-#' @importFrom curl nslookup
+#' @importFrom curl nslookup curl_fetch_memory
 #' @importFrom stats dbeta weighted.mean
+#' @importFrom jsonlite fromJSON prettify
 # commented since these packages are suggested instead of requested
 # @importFrom rgl par3d plot3d bgplot3d
 # @importFrom ggplot2 ggplot aes ggtitle geom_line xlab ylab

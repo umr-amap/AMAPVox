@@ -22,9 +22,9 @@ Imports:
     curl,
     data.table,
     dplyr,
+    jsonlite,
     methods,
     rappdirs,
-    rvest,
     stringr,
     utils 
 Suggests:

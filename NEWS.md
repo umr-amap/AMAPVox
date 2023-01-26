@@ -1,3 +1,9 @@
+# AMAPVox 0.13.0
+
+* 2022-01-26*
+Get AMAPVox binaries from forge.ird.fr with Gitlab API
+Not released on CRAN.
+
 # AMAPVox 0.12.1
 
 *2022-12-05*

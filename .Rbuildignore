@@ -9,6 +9,7 @@ git.log
 ^README\.md$
 ^CRAN-RELEASE$
 ^doc$
+^docs$
 ^Meta$
 ^CRAN-SUBMISSION$
 ^pkgdown$

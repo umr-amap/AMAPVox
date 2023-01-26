@@ -7,7 +7,7 @@ AMAPVox
 
 ## Description
 
-AMAPVox is an R package that provides a a set of functions for working with voxel spaces (read, write, plot, etc.). Voxel spaces are read from text-based output files of the [AMAPVox software](http://www.amapvox.org).
+AMAPVox is an R package that provides a a set of functions for working with voxel spaces (read, write, plot, merge, etc.). Voxel spaces are read from text-based output files of the [AMAPVox software](https://amapvox.org).
 
 ## Citation
 

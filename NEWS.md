@@ -1,6 +1,12 @@
+# AMAPVox 1.0.0
+
+*yyyy-MM-dd*
+Since binary AMAPVox 2.0, no need to install local Java VM, it is embedded within AMAPVox.
+Released on CRAN
+
 # AMAPVox 0.13.0
 
-* 2023-01-26*
+*2023-01-26*
 Get AMAPVox binaries from forge.ird.fr with Gitlab API
 Not released on CRAN.
 

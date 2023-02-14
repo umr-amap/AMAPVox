@@ -331,7 +331,8 @@ installVersion <- function(version, overwrite = FALSE) {
     url <- url[which(grepl(get_os(), url))]
     # unsupported OS
     if (url == '')
-      stop("Unsupported OS (", get_os(), ") Sorry! Email contact@amapvox.org to request specific binaries.")
+      stop("Unsupported OS (", get_os(),
+           ") Sorry! Email contact@amapvox.org to request specific binaries.")
   }
   # local destination
   zipfile <- normalizePath(
@@ -343,7 +344,10 @@ installVersion <- function(version, overwrite = FALSE) {
   # download zip
   utils::download.file(url, zipfile, method = "auto", mode="wb", timeout=300)
   # unzip
-  utils::unzip(zipfile, exdir = ifelse(is_v1(version), versionPath, binPath))
+  utils::unzip(zipfile,
+               # for linux-like system uses system unzip that should preserve file permissions
+               unzip = ifelse(get_os() == "windows", "internal", getOption("unzip")),
+               exdir = ifelse(is_v1(version), versionPath, binPath))
   # delete zip file
   file.remove(zipfile)
   message(paste("AMAPVox", version, "successfully installed in", versionPath))

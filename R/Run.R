@@ -74,7 +74,111 @@ run <- function(version="latest",
   # handle versions
   version <- versionManager(version)
 
+  # no JVM options
+  if(is.null(jvm.options)) jvm.options = ""
+
+  # local AMAPVox
+  localVersions <- getLocalVersions()
+  amapvox <- localVersions[which(localVersions == version), ]
+
   # look for java and check version
+  if (is_v1(version))
+    check.java(java)
+  else
+    java <- ifelse(get_os() == "windows",
+                   file.path(amapvox$path, "runtime", "bin", "java.exe"),
+                   file.path(amapvox$path, "lib", "runtime", "bin", "java"))
+
+  # Generate the execution expression
+  if (missing(xml) || is.null(xml)) {
+    # AMAPVox GUI
+    if (compVersion(version, "1.10.1") < 0) {
+      jar.path <- file.path(amapvox$path,
+                            paste0("AMAPVox-", version, ".jar"))
+    } else if (compVersion(version, "2.0.0") < 0) {
+      jar.path <- file.path(amapvox$path,
+                            paste0("AMAPVoxGUI-", version, ".jar"))
+    } else {
+      if (get_os() == "windows") {
+        jar.path <- file.path(amapvox$path,
+                              "app",
+                              paste0("AMAPVox-", version, ".jar"))
+      } else {
+        jar.path <- file.path(amapvox$path,
+                              "lib", "app",
+                              paste0("AMAPVox-", version, ".jar"))
+      }
+    }
+    # normalize path
+    jar.path <- normalizePath(jar.path, mustWork = TRUE)
+    # JVM options
+    args = ifelse(is_v1(version),
+                  paste(jvm.options, "-jar", jar.path),
+                  paste(jvm.options,
+                        "--add-opens javafx.graphics/javafx.scene=ALL-UNNAMED",
+                        "-jar", jar.path))
+  } else {
+    # AMAPVox batch mode
+    # configuration file must exist
+    stopifnot(all(file.exists(xml)))
+    if (is_v1(version)) {
+      jar.path <- file.path(amapvox$path,
+                            paste0("AMAPVox-", version, ".jar"))
+    } else {
+      if (get_os() == "windows") {
+        jar.path <- file.path(amapvox$path,
+                              "app",
+                              paste0("AMAPVox-", version, ".jar"))
+      } else {
+        jar.path <- file.path(amapvox$path,
+                              "lib", "app",
+                              paste0("AMAPVox-", version, ".jar"))
+      }
+    }
+    jar.path <- normalizePath(jar.path, mustWork = TRUE)
+    # validate number of threads and number of threads per task
+    stopifnot(all(is.wholenumber(nt), nt >= 0, is.wholenumber(ntt), ntt >= 0))
+    # jar options
+    jar.options = ifelse(
+      compVersion(version, "1.10.1") >= 0,
+      paste(paste0("--T=", nt), paste0("--TT=", ntt), xml),
+      paste(paste0("--execute-cfg=\"", paste(xml, collapse = " "), "\""),
+            paste0("--T=", nt), paste0("--T-TLS_VOX=", ntt)))
+    args = paste(jvm.options, "-jar", jar.path, jar.options)
+  }
+  # concatenate command
+  command = paste(c(shQuote(java), args), collapse = " ")
+
+  # run AMAPVox
+  message(paste("Running AMAPVox", version))
+  message(command)
+  if (get_os() == "windows")
+    system2(java, args = args, stdout = stdout, stderr = stdout, wait = TRUE,
+            invisible = FALSE)
+  else
+    system2(java, args = args, stdout = stdout, stderr = stdout, wait = TRUE)
+
+  return(invisible(command))
+}
+
+#' @export
+#' @rdname run
+gui <- function(version="latest",
+                java = "java", jvm.options = "-Xms2048m",
+                stdout = "") {
+  # call run() function
+  AMAPVox::run(version, xml= NULL, java, jvm.options, stdout)
+}
+
+# internal util function
+is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
+  abs(x - round(x)) < tol
+}
+
+# check java version for AMAPVox v1
+# must be Java 1.8 64 bit Oracle or Corretto (sic!)
+check.java <- function(java = "java") {
+
   res <- suppressWarnings(
     system2(java, args = "-version", stdout = NULL, stderr = NULL))
   if (res != 0) {
@@ -92,62 +196,4 @@ run <- function(version="latest",
            "Read help function for details.")
     }
   }
-
-  # no JVM options
-  if(is.null(jvm.options)) jvm.options = ""
-
-  localVersions <- getLocalVersions()
-  amapvox <- localVersions[which(localVersions == version), ]
-
-  # Generate the execution expression
-  if (missing(xml) || is.null(xml)) {
-    # AMAPVox GUI
-    jar.path <- normalizePath(
-      file.path(amapvox$path, paste0(
-        ifelse(compVersion(version, "1.10.1") >= 0, "AMAPVoxGUI-", "AMAPVox-"),
-        version, ".jar")),
-      mustWork = TRUE)
-    args = paste(jvm.options, "-jar", jar.path)
-  } else {
-    # AMAPVox batch mode
-    # configuration file must exist
-    stopifnot(all(file.exists(xml)))
-    jar.path <- normalizePath(
-      file.path(amapvox$path, paste0("AMAPVox-", version, ".jar")),
-      mustWork = TRUE)
-    # validate number of threads and number of threads per task
-    stopifnot(all(is.wholenumber(nt), nt >= 0, is.wholenumber(ntt), ntt >= 0))
-    # jar options
-    jar.options = ifelse(
-      compVersion(version, "1.10.1") >= 0,
-      paste(paste0("--T=", nt), paste0("--TT=", ntt), xml),
-      paste(paste0("--execute-cfg=\"", paste(xml, collapse = " "), "\""),
-            paste0("--T=", nt), paste0("--T-TLS_VOX=", ntt)))
-    args = paste(jvm.options, "-jar", jar.path, jar.options)
-  }
-  # concatenate command
-  command = paste(c(shQuote(java), args), collapse = " ")
-
-  # run AMAPVox
-  message(paste("Running AMAPVox", version))
-  message(command)
-  system2(java, args = args, stdout = stdout, stderr = stdout,
-          wait = TRUE, invisible = FALSE)
-  # message("Closing AMAPVox.")
-
-  return(invisible(command))
-}
-
-#' @export
-#' @rdname run
-gui <- function(version="latest",
-                java = "java", jvm.options = "-Xms2048m",
-                stdout = "") {
-  # call run() function
-  AMAPVox::run(version, xml= NULL, java, jvm.options, stdout)
-}
-
-# internal util function
-is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
-  abs(x - round(x)) < tol
 }

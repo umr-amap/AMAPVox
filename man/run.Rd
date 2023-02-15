@@ -26,8 +26,9 @@ there is no internet connection it runs latest local version.}
 \item{xml}{path(s) to AMAPVox XML configuration files. If missing or \code{NULL}
 AMAPVox launches the GUI.}
 
-\item{java}{path to the java executable. Default 'java' value assumes that
-java is correctly defined on the $PATH variable.}
+\item{java}{path to the java executable. Ignored for AMAPVox version >= 2.0
+since Java is embedded within AMAPVox binary. Default 'java' value assumes
+that java is correctly defined on the $PATH variable.}
 
 \item{jvm.options}{JVM (Java Virtual Machine) options. By default it
 allocates 2Go of heap memory to AMAPVox.}
@@ -44,25 +45,29 @@ stdout & stderr options from function \code{\link[=system2]{system2()}}.}
 \description{
 Run AMAPVox either in batch mode or with Graphical User
 Interface (GUI). The function embeds a version manager for installing
-locally any version available remotely. AMAPVox relies on Java 64 bit. It
-has been compiled with JDK 8 64-Bit Oracle. For running AMAPVox in batch
-mode, any version of Java 64-bit >= 8 should work. AMAPVox GUI relies
-additionally on JavaFX. Refer to following section for installing a
-suitable Java/JavaFX.
+locally any version available remotely.
 
-\code{gui} function as been kept for background compatibility. It is an
-alias of the \code{run} function.
+AMAPVox versions equal or prior to 1.10 require Java 1.8 on your Operating
+System. Refer to section \emph{Java 1.8 64-Bit} for details.
+
+\code{gui} function has been kept for background compatibility. It is an alias
+of the \code{run} function.
 }
-\section{Java 1.8 64-Bit with JavaFX}{
- AMAPVox GUI relies on Java 1.8 64-Bit
-and JavaFX. In practice it requires either \href{https://java.com/download/}{Java 1.8 64-Bit Oracle} or \href{https://aws.amazon.com/fr/corretto/}{Java 1.8 64-Bit Corretto}. OpenJDK 8 will not work
-since JavaFX is not included. You may check beforehand if java is installed
-on your system and which version.
+\section{Java 1.8 64-Bit}{
+ AMAPVox versions equal or prior to 1.10 rely on
+Java/JavaFX 64-Bit. It must be installed on the Operating System before
+running AMAPVox. In practice it requires either \href{https://java.com/download/}{Java 1.8 64-Bit Oracle} or \href{https://aws.amazon.com/fr/corretto/}{Java 1.8 64-Bit Corretto}. Mind that OpenJDK 8 will
+not work for AMAPVox GUI since JavaFX is not included in this distribution.
+Nonetheless for AMAPVox in batch mode, any version of Java 64-bit >= 8
+should work.
+
+You may check beforehand if java is installed on your system and which
+version.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{system2("java", args = "-version")
 }\if{html}{\out{</div>}}
 
-If AMAPVox::gui keeps throwing errors after you have installed suitable
+If AMAPVox::run keeps throwing errors after you have installed a suitable
 Java 1.8 64-Bit, it means that Java 1.8 may not be properly detected by
 your system. In such case you may have to check and set the \code{JAVA_HOME}
 environment variable.
@@ -72,19 +77,19 @@ Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
 system2("java", args = "-version")
 }\if{html}{\out{</div>}}
 
-As a last resort you may change the \code{java} parameter of
-this function and set the full path to Java 1.8 binary.
+As a last resort you may change the \code{java} parameter of this function and
+set the full path to Java 1.8 binary.
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{AMAPVox::run(java = "/path/to/java/1.8/bin/java")
+\if{html}{\out{<div class="sourceCode">}}\preformatted{AMAPVox::run("1.10.4", java = "/path/to/java/1.8/bin/java")
 }\if{html}{\out{</div>}}
 }
 
 \examples{
 \dontrun{
-# (install and )run latest AMAPVox version with GUI
+# (install and) run latest AMAPVox version with GUI
 AMAPVox::run()
-# (install and )run version 1.6.4 with GUI
-AMAPVox::run(version="1.6.4")
+# (install and) run version 2.0.0 with GUI
+AMAPVox::run(version="2.0.0")
 # run latest AMAPVox version with XML configuration
 AMAPVox::run(xml="/path/to/cfg.xml")
 # run multiple configurations

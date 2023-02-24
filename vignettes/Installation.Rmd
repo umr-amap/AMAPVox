@@ -27,10 +27,10 @@ the download of the JARs and manages multiple versions for the end user.
 
 **Operating system**: Windows (7 or above), Linux-based, Mac OS X. 64-Bit.
 
-**Java**: For AMAPVox >= 2.0 Java is embedded with AMAPVox binaries. For
-AMAPVox <= 1.10 the system requires Java 1.8 64-Bit with JavaFX. In practice either
-\href{https://java.com/download/}{Java 1.8 64-Bit Oracle} or
-\href{https://aws.amazon.com/fr/corretto/}{Java 1.8 64-Bit Corretto}.
+**Java**: For AMAPVox v2 or above, Java is embedded with AMAPVox binaries. For
+AMAPVox v1 the system requires Java 1.8 64-Bit with JavaFX. In practice either
+[Java 1.8 64-Bit Oracle](https://java.com/download/) or
+[Java 1.8 64-Bit Corretto](https://aws.amazon.com/fr/corretto/).
 
 **CPU**: one required but multi-core CPU recommended for multithreading execution.
 
@@ -67,13 +67,13 @@ After downloading latest version, AMAPVox GUI should start automatically:
 <center>![](rsc/amapvox-1st-screen.png){width=640px}</center>
 For AMAPVox <= 1.10, if you get error(s) about java version, please read help page
 
-```{r}
+```{r eval=FALSE}
 ? AMAPVox::run # section "Java 1.8 64-Bit with JavaFX"
 ```
 
 List available remote versions:
 
-```{r}
+```{r eval=FALSE}
 AMAPVox::getRemoteVersions()
 ```
 
@@ -87,7 +87,7 @@ AMAPVox::run("1.6.4", check.update = FALSE)
 
 List local versions:
 
-```{r}
+```{r eval=FALSE}
 AMAPVox::getLocalVersions()
 ```
 

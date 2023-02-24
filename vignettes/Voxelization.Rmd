@@ -34,31 +34,52 @@ This vignette goes through all the parameters of the voxelization configuration.
 ## Semantics
 
 Every field has its own jargon, LiDAR is no exception. Throughout the documents
-we will use different terms
+we will use different terms:
 
-- a shot or a pulse refers to a single light pulse going out from the laser. A shot
-is defined by an origin, a direction, a time
+- a shot or a pulse refers to a single light pulse going out from the laser. A
+shot is defined by an origin, a direction, a time and zero, one or more hits.
 - a hit or and echo occurs when the light beam hits and obstacle and returns
 some light that is recorded by the laser. It is associated to a pulse and there
 may be no hit, a single hit or multiple hits. Be aware that absence of hit does
-not mean that there were no obstacle on the way: the light might have been 
-diffracted or the laser failed to record the signal. we will refert to that situation
-as a "false empty shot". Conversely a hit may not always indicate that the
-light beam hit some vegetation (see section Butterfly remover for instance).
-- free path @Todo
-- free path length @Todo
-- path length @Todo
+not mean that there were no obstacle on the way: the light might have been
+diffracted or the laser failed to record the signal. We will refer to that
+situation as a "false empty shot". Conversely a hit may not always indicate that
+the light beam hit some vegetation (see section Butterfly remover for instance).
+- free path is the path from the shot origin to the hit. In a voxel, the free
+path refers to the path from the voxel entering point to the hit.
+- free path length is the length in meter of the free path
+- path length refers to the length of the path from the voxel entering point to
+the voxel exiting point, whether or not the pulse has been intercepted.
 
-## ALS input
+## LiDAR scans
 
-### Supported formats
+### LAS/LAZ point cloud
 
 - [LAS](https://en.wikipedia.org/wiki/LAS_file_format) file format;
 - LAZ file format (compressed LAS);
-- SHT format, home brew "shot" format, see details below.
 
 *LAS/LAZ* files can be manipulated by the [LAStools](http://lastools.org/)
 software or the [LidR](https://CRAN.R-project.org/package=lidR) R package.
+
+AMAPVox rebuilds shots geometry from LAS/LAZ point clouds.
+
+*Consistency checks*: AMAPVox can perform preliminary checks on the LAS/LAZ
+data, prior to the voxelization.
+
+First, it suggests to discard shots with inconsistent number of echoes or ranks.
+It check whether a subset of LAS points with same GPS time is consistent in
+terms of echo rank and number of echoes. Every LAS point of the subset should
+have a unique echo rank and the same number of echoes.
+
+Secondly, it may discard shots whose echoes are not collinear. The maximal
+deviation, user defined, is a tolerance in degree to strict collinearity.
+
+Theses checks are not mandatory but inconsistent shots will most likely lead to
+errors in the voxelization process. It is advised to enable them both in a first
+run just to make sure the point cloud is "clean" and then disable them since it
+is time consuming and pointless to perform the checks every time.
+
+### Text SHOT format
 
 *SHT or SHOT format* is a text based format, one shot per line, a shot being
 defined by an origin, a direction, the number of echoes and the echo ranges.
@@ -71,9 +92,27 @@ x0 y0 z0 xd yd zd 1 10
 etc.
 ```
 
-### Trajectory file
+### RIEGL scans
 
-For LAS and LAZ file, you need to provide a *trajectory file*.
+- RiSCAN single scan, RXP file format. A proprietary binary file format owned
+by RIEGL. Can be edited with RiSCAN Pro software. 
+- RiSCAN project, RSP file format. An aggregation of RXP scans in the same
+folder with an XML file project.xml that lists the file paths of the single
+scans, the SOP and POP matrix (see section Transformation for details on the
+transformation matrix)
+
+### LEICA formats
+
+- PTX / PTG file formats from LEICA Geosystems.
+
+### FARO formats
+
+- XYB from FARO
+
+## Trajectory file (LAS/LAZ)
+
+For LAS and LAZ file, you need to provide either a fixed scanner position or
+a *trajectory file*.
 
 A trajectory file is a text based format that contains GPS positions of the
 scanner at a given time.
@@ -107,46 +146,15 @@ Example:
 etc.
 ```
 
-### ALS consistency checks
+## Digital Terrain Model input
 
-AMAPVox can perform preliminary checks on the ALS data, prior to the voxelization.
+Digital Terrain Model is optional. If provided it will be used to compute
+distance to ground. Required if DTM filter (section Filter > DTM filter) or
+Ground energy output (section Output > Post-processing) are enabled.
 
-First, it suggests to discard shots with inconsistent number of echoes or ranks.
-It check whether a subset of LAS points with same GPS time is consistent in
-terms of echo rank and number of echoes. Every LAS point of the subset should
-have a unique echo rank and the same number of echoes.
-
-Secondly, it may discard shots whose echoes are not collinear. The maximal
-deviation, user defined, is a tolerance in degree to strict collinearity.
-
-Theses checks are not mandatory but inconsistent shots will most likely lead to
-errors in the voxelization process. It is advised to enable them both in a first
-run just to make sure the point cloud is "clean" and then disable them since it
-is time consuming and pointless to perform the checks every time.
-
-### Export LAS/LAZ file to SHOT file
-
-The button "Export ALS point cloud to lidar shots" converts LAS/LAZ file into
-the text based SHT format described above. It could be convenient to do so in
-terms of performance: 
-
-- your point cloud is cluttered with many inconsistent shots so you generate a
-cleaned-up data set.
-- if you plan to run many vozelization experiments with the same data set, then
-you skip reconstructing the shot geometry every time,
-
-## TLS input
-
-### Supported formats
-
-- RiSCAN single scan, RXP file format. A proprietary binary file format owned
-by RIEGL. Can be edited with RiSCAN Pro software. 
-- RiSCAN project, RSP file format. An aggregation of RXP scans in the same folder
-with an XML file project.xml that lists the file paths of the single scans, the
-SOP and POP matrix (see section Transformation for details on the
-transformation matrix)
-- PTX / PTG file formats from LEICA Geosystems.
-- XYB from FARO
+Expected format: [AAIGrid – Arc/Info ASCII
+Grid](https://gdal.org/drivers/raster/aaigrid.html#raster-aaigrid) No data
+values must be a numeric.
 
 ## Output parameters
 
@@ -159,16 +167,20 @@ rotation movements applied to 3D points (x, y, z).
 
 ### SOP matrix
 
-System Orientation and Position, TLS only.
-Each scan from Riscan Project has its own SOP matrix which is included in Riscan Pro project file.
-If a single scan (*.rxp) is selected, by clicking on the  « Open file » button next to POP matrix you can choose the Riscan Pro project file and it will automatically configure the POP matrix and the SOP matrix of that scan.
+System Orientation and Position, TLS only. Each scan from Riscan Project has its
+own SOP matrix which is included in Riscan Pro project file. If a single scan
+(*.rxp) is selected, by clicking on the  « Open file » button next to POP matrix
+you can choose the Riscan Pro project file and it will automatically configure
+the POP matrix and the SOP matrix of that scan.
 
 ### POP matrix
 
-Project Orientation and Position, TLS only
-Projection matrix of a Riscan Pro project, this is defined in the project file (*.rsp).
-That matrix is automatically filled when a Riscan Pro project file is open, being read in the file.
-Using single scan (*.rxp) voxelization, it is possible to defined POP matrix, either by opening a matrix file (see file formats in annexe), or by choosing a Riscan Pro project file.
+Project Orientation and Position, TLS only Projection matrix of a Riscan Pro
+project, this is defined in the project file (*.rsp). That matrix is
+automatically filled when a Riscan Pro project file is open, being read in the
+file. Using single scan (*.rxp) voxelization, it is possible to defined POP
+matrix, either by opening a matrix file (see file formats in annexe), or by
+choosing a Riscan Pro project file.
 
 ### VOP matrix
 
@@ -180,17 +192,84 @@ The final transformation matrix is the product of the three matrix.
 
 ## Voxel space
 
-@Todo
+Defines geographical extent and spatial resolution of the voxelized space.
+The geographical extent is a 3-dimensional rectangular cuboid, defined by (x, y,
+z) min and max coordinates. Spatial resolution is a (x, y, z) unitary vector
+giving the dimensions of a single voxel. A voxel is a rectangular cuboid and
+most commonly a cube. Voxel size is a critical parameter for estimating plant
+area density. It must be small enough so that the hypothesis of the vegetation
+being homogeneously distributed within the voxel holds true. But it must be
+large enough to include enough points to ensure reliable attenuation/PAD
+estimations.
 
 ## Filtering
 
-@Todo
+### Digital Terrain Model filter
+
+Digital Terrain Model filter discards every point that are below a given
+distance to the ground (the Offset parameter in meter). Enabling this filter
+implies that a Digital Terrain Model has been provided in the Input section.
+
+### Shot decimation
+
+Randomly downsample the scan by a float factor M ranging inside [0, 1[, the
+decimation factor. M = 0 means no shot discarded, M = 0.1 means 10% of the shots
+discarded, etc.
+
+### Shot angle filter
+
+Filter shots based on shot Zenith angle (also called polar angle) in degrees,
+i.e angle between zenith (origin at the ground) and shot direction.
+
+### False empty shot
+
+Riegl TLS scanners may include artifical empty shots for objects too close to
+the sensor (around 1m). This option allows to remove those "false" empty shots.
+
+### Point cloud filter
+
+Discard or retain subset of points from the input point cloud for the
+voxelization. For instance it allows to extract a tree from a forest patch or
+remove the wood of a tree to estimate leaf area density instead of plant area
+density. The point cloud is provided as a text file with 3 columns x, y, z the
+coordinates of the points.
+
+### Echo attribute filter
+
+For RIEGL scans only, filter echoes based on reflectance, amplitude or deviation
+values.
+
+### Classification filter
+
+For LAS/LAZ only, filter echoes based on LAS classification. By default discard
+class "2 - Ground".
 
 ## Weighting
 
-@Todo
+For multi-echoes sans, the weighting table defines energy attenuation for
+every hit of a pulse. AMAPVox calculates the amount of light entering,
+intercepted and exiting the voxels to derive attenuation and plant area density
+estimators. A partial hit implies that some light is intercepted and some light
+carries on. This information is sometimes provided in the scans as the returned
+intensity, but we have not find yet an approach that works in every situation
+(work in progress). Providing a statistical model of energy attenuation as a
+function of the return rank is an other option, not straightforward though.
+[Vincent et al., 2017](https://doi.org/10.1016/j.rse.2017.05.034) and [Vincent
+et al., 2022](https://doi.org/10.1016/j.rse.2022.113442) discuss pros and cons 
+of both approaches.
+
+As for now (2022), we consider that the best default option is to assume that
+the energy is evenly distributed among every hit of a pulse. Hence the suggested
+default weighting table with equal weights summing up to one for every pulse.
+The table remains editable for advanced users who would rather apply custom
+statistical model that fits better their data.
+
+No weighting table means that AMAPVox will only take into account the first
+return of a pulse. Exploratory approach "most intense return" has been
+implemented but not released. Fee free to request binaries for testing purpose.
 
 ## Scanner
 
-Either user predefined laser specifications or define custom specifications.
+Either user predefined laser specifications or define custom specifications. 
+Please contact us to include permanently your scanner specifications.
 

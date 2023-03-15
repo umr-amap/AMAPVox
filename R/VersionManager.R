@@ -115,12 +115,13 @@ getRemoteVersions <- function() {
                 files_path=paste(url, pkgs$id, "package_files", sep="/"))
 
   # list package files
-  zips <- rbindlist(apply(pkgs, 1, function(pkg) {
+  zips <- data.table::rbindlist(apply(pkgs, 1, function(pkg) {
     req <- curl::curl_fetch_memory(pkg$files_path)
     pkg.files <- jsonlite::fromJSON(jsonlite::prettify(rawToChar(req$content)))
-    data.table(version=pkg$version, file_name=pkg.files$file_name)
+    return( data.table::data.table(version=pkg$version, file_name=pkg.files$file_name) )
   }))
   url <- "https://forge.ird.fr/api/v4/projects/421/packages/generic/amapvox"
+  version <- file_name <- NULL # trick to avoid "no visible binding" note
   zips[, url:=paste(url, version, file_name, sep="/")][, file_name:=NULL]
 
   # sort versions

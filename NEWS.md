@@ -1,7 +1,7 @@
 # AMAPVox 1.0.0
 
-*yyyy-MM-dd*
-Since binary AMAPVox 2.0, no need to install local Java VM, it is embedded within AMAPVox.
+*2023-03-15*
+From binary AMAPVox 2.0, no need to install local Java VM, it is embedded within AMAPVox.
 Released on CRAN
 
 # AMAPVox 0.13.0

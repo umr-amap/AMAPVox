@@ -701,7 +701,7 @@ public class VoxelizationFrameController extends ConfigurationController {
             buttonHelpEchoFilterByAttributesController.showHelpDialog(resourceBundle.getString("help_byattribute_echo_filter"));
         });
 
-        checkboxEchoFilterByAttributes.disableProperty().bind(binding.not());
+        checkboxEchoFilterByAttributes.disableProperty().bind(binding);
         vboxEchoFilterByAttribute.disableProperty().bind(checkboxEchoFilterByAttributes.selectedProperty().not());
         buttonHelpByClassEchoFilter.setOnAction((ActionEvent event)
                 -> {

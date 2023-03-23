@@ -61,7 +61,7 @@ public class DirectionalTransmittance {
      * @param ladParams
      * @throws Exception
      */
-    public DirectionalTransmittance(File inputFile, LeafAngleDistribution.Type lad, double... ladParams) throws Exception {
+    public DirectionalTransmittance(File inputFile, String padVariable, LeafAngleDistribution.Type lad, double... ladParams) throws Exception {
 
         VoxelFileReader reader = new VoxelFileReader(inputFile);
         VoxelFileHeader header = reader.getHeader();
@@ -87,9 +87,10 @@ public class DirectionalTransmittance {
 
         Iterator<VoxelFileVoxel> iterator = reader.iterator();
 
-        int padColumn = reader.findColumn(OutputVariable.PLANT_AREA_DENSITY);
+        OutputVariable pad = OutputVariable.find(padVariable);
+        int padColumn = reader.findColumn(pad);
         if (padColumn < 0) {
-            throw new IOException("[directional transmittance] Output variable \"plant area density\" is missing");
+            throw new IOException("[directional transmittance] Output variable \"plant area density\" (" + padVariable + ") is missing");
         }
         int groundDistanceColumn = reader.findColumn(OutputVariable.GROUND_DISTANCE);
         if (groundDistanceColumn < 0) {

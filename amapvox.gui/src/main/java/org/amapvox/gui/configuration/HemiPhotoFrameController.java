@@ -19,6 +19,7 @@ import org.amapvox.canopy.hemi.HemiParameters;
 import org.amapvox.canopy.hemi.HemiPhotoCfg;
 import org.amapvox.lidar.commons.LidarScan;
 import java.io.File;
+import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -40,6 +41,8 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javax.vecmath.Point3d;
+import org.amapvox.voxelfile.VoxelFileHeader;
+import org.amapvox.voxelfile.VoxelFileReader;
 import org.apache.log4j.Logger;
 import org.controlsfx.validation.ValidationSupport;
 
@@ -73,6 +76,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
     private Button helpButtonHemiPhoto;
     @FXML
     private HelpButtonController helpButtonHemiPhotoController;
+    @FXML
+    private ComboBox<String> comboboxPADVariable;
     @FXML
     private CheckBox checkboxGenerateSectorsTextFileHemiPhoto;
     @FXML
@@ -153,7 +158,7 @@ public class HemiPhotoFrameController extends ConfigurationController {
 
         Util.setDragGestureEvents(textfieldHemiPhotoOutputBitmapFile);
         Util.setDragGestureEvents(textfieldHemiPhotoOutputTextFile);
-        Util.setDragGestureEvents(textfieldVoxelFilePathHemiPhoto, Util.isVoxelFile, Util.doNothing);
+        Util.setDragGestureEvents(textfieldVoxelFilePathHemiPhoto, Util.isVoxelFile, voxelFile -> updateVoxVariables(voxelFile));
 
         fileChooserSaveHemiPhotoOutputBitmapFile = new FileChooserContext("*.png");
         fileChooserSaveHemiPhotoOutputBitmapFile.fc.setTitle("Save bitmap file");
@@ -176,6 +181,7 @@ public class HemiPhotoFrameController extends ConfigurationController {
             rdbtnFromPAD.selectedProperty(),
             listViewHemiPhotoScans.itemsProperty(),
             textfieldVoxelFilePathHemiPhoto.textProperty(),
+            comboboxPADVariable.getSelectionModel().selectedIndexProperty(),
             listViewHemiPhotoSensorPositions.itemsProperty(),
             checkboxGenerateSectorsTextFileHemiPhoto.selectedProperty(),
             textfieldHemiPhotoOutputTextFile.textProperty(),
@@ -241,6 +247,13 @@ public class HemiPhotoFrameController extends ConfigurationController {
                 break;
             case PAD:
                 textfieldVoxelFilePathHemiPhoto.setText(hemiParameters.getVoxelFile().getAbsolutePath());
+                updateVoxVariables(hemiParameters.getVoxelFile());
+                String padVariable = hemiParameters.getPADVariable();
+                if (comboboxPADVariable.getItems().contains(padVariable)) {
+                    comboboxPADVariable.getSelectionModel().select(padVariable);
+                } else {
+                    LOGGER.warn("[Hemispherical photograph] Variable " + padVariable + " not found in voxel file " + hemiParameters.getVoxelFile().getName());
+                }
                 listViewHemiPhotoSensorPositions.getItems().setAll(hemiParameters.getSensorPositions());
                 break;
         }
@@ -258,6 +271,43 @@ public class HemiPhotoFrameController extends ConfigurationController {
 
         }
 
+    }
+
+    private void updateVoxVariables(File voxelFile) {
+
+        if (!VoxelFileReader.isValid(voxelFile)) {
+            comboboxPADVariable.getItems().clear();
+            comboboxPADVariable.setDisable(true);
+            return;
+        }
+
+        try {
+            VoxelFileHeader header = new VoxelFileReader(voxelFile).getHeader();
+            String[] parameters = header.getColumnNames();
+
+//            for (int i = 0; i < parameters.length; i++) {
+//
+//                parameters[i] = parameters[i].replaceAll(" ", "");
+//                parameters[i] = parameters[i].replaceAll("#", "");
+//            }
+            comboboxPADVariable.getItems().clear();
+            comboboxPADVariable.getItems().addAll(parameters);
+
+            // select column name containing 'pad'
+            try {
+                String pad = comboboxPADVariable.getItems().stream()
+                        .filter(column -> column.toLowerCase().contains("pad"))
+                        .findAny().get();
+                comboboxPADVariable.getSelectionModel().select(pad);
+            } catch (NoSuchElementException ex) {
+                LOGGER.warn("[Hemispherical photograph] Did not find any \"plant area density\" variable in voxel file " + voxelFile.getName());
+            }
+
+            comboboxPADVariable.setDisable(false);
+
+        } catch (Exception ex) {
+            LOGGER.error("[Hemispherical photograph] Cannot read voxel file", ex);
+        }
     }
 
     @FXML
@@ -279,7 +329,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
 
         if (selectedFile != null) {
             textfieldVoxelFilePathHemiPhoto.setText(selectedFile.getAbsolutePath());
-            LOGGER.debug("Hemispherical photo voxel file opened.");
+            updateVoxVariables(selectedFile);
+            LOGGER.debug("[Hemispherical photograph] Opened voxel file " + selectedFile.getName());
         }
     }
 
@@ -333,7 +384,7 @@ public class HemiPhotoFrameController extends ConfigurationController {
 
     @FXML
     private void onActionButtonRemovePositionHemiPhoto(ActionEvent event) {
-        
+
         ObservableList selectedItems = listViewHemiPhotoSensorPositions.getSelectionModel().getSelectedItems();
         listViewHemiPhotoSensorPositions.getItems().removeAll(selectedItems);
         LOGGER.debug("All view hemispherical photo sensor selected.");
@@ -389,6 +440,7 @@ public class HemiPhotoFrameController extends ConfigurationController {
             case 1:
                 hemiParameters.setMode(HemiParameters.Mode.PAD);
                 hemiParameters.setVoxelFile(new File(textfieldVoxelFilePathHemiPhoto.getText()));
+                hemiParameters.setPADVariable(comboboxPADVariable.getSelectionModel().getSelectedItem());
                 hemiParameters.setSensorPositions(listViewHemiPhotoSensorPositions.getItems());
                 break;
         }

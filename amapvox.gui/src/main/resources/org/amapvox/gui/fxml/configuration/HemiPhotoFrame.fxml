@@ -72,46 +72,48 @@
                                                     <content>
                                                         <VBox spacing="10.0" >
                                                             <children>
-                                                                <Label text="Input file (.vox)" />
+                                                                <Label text="Voxel file" />
                                                                 <HBox>
                                                                     <children>
                                                                         <TextField fx:id="textfieldVoxelFilePathHemiPhoto" prefHeight="25.0" HBox.hgrow="ALWAYS" />
                                                                         <Button mnemonicParsing="false" onAction="#onActionButtonOpenVoxelFileHemiPhoto" text="..." />
                                                                     </children>
                                                                 </HBox>
-                                                                <VBox >
+                                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
                                                                     <children>
-                                                                        <Label text="Sensor positions" />
-                                                                        <ListView fx:id="listViewHemiPhotoSensorPositions" prefHeight="250.0" />
-                                                                        <HBox spacing="10.0">
+                                                                        <Label text="PAD variable" />
+                                                                        <ComboBox fx:id="comboboxPADVariable" prefHeight="30.0" prefWidth="150.0" />
+                                                                    </children>
+                                                                </HBox>
+                                                                <Label text="Sensor positions" />
+                                                                <ListView fx:id="listViewHemiPhotoSensorPositions" prefHeight="250.0" />
+                                                                <HBox spacing="10.0">
+                                                                    <children>
+                                                                        <SelectableMenuButton fx:id="selectorHemiPhotoSensor" />
+                                                                        <HBox spacing="5.0">
                                                                             <children>
-                                                                                <SelectableMenuButton fx:id="selectorHemiPhotoSensor" />
-                                                                                <HBox spacing="5.0">
-                                                                                    <children>
-                                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonRemovePositionHemiPhoto">
-                                                                                            <graphic>
-                                                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                                                                                                    <image>
-                                                                                                        <Image url="@icons/remove.png" />
-                                                                                                    </image>
-                                                                                                </ImageView>
-                                                                                            </graphic>
-                                                                                        </Button>
-                                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonAddPositionHemiPhoto">
-                                                                                            <graphic>
-                                                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                                                                                                    <image>
-                                                                                                        <Image url="@icons/add.png" />
-                                                                                                    </image>
-                                                                                                </ImageView>
-                                                                                            </graphic>
-                                                                                        </Button>
-                                                                                    </children>
-                                                                                </HBox>
+                                                                                <Button mnemonicParsing="false" onAction="#onActionButtonRemovePositionHemiPhoto">
+                                                                                    <graphic>
+                                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                                            <image>
+                                                                                                <Image url="@../icons/remove.png" />
+                                                                                            </image>
+                                                                                        </ImageView>
+                                                                                    </graphic>
+                                                                                </Button>
+                                                                                <Button mnemonicParsing="false" onAction="#onActionButtonAddPositionHemiPhoto">
+                                                                                    <graphic>
+                                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                                            <image>
+                                                                                                <Image url="@../icons/add.png" />
+                                                                                            </image>
+                                                                                        </ImageView>
+                                                                                    </graphic>
+                                                                                </Button>
                                                                             </children>
                                                                         </HBox>
                                                                     </children>
-                                                                </VBox>
+                                                                </HBox>
                                                             </children>
                                                         </VBox>
                                                     </content>

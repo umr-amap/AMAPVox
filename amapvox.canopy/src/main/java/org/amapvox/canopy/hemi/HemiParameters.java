@@ -55,6 +55,7 @@ public class HemiParameters {
     
     //PAD mode
     private File voxelFile;
+    private String padVariable;
     //private Point3d sensorPosition;
     private List<Point3d> sensorPositions;
     
@@ -92,6 +93,14 @@ public class HemiParameters {
 
     public void setVoxelFile(File voxelFile) {
         this.voxelFile = voxelFile;
+    }
+    
+    public String getPADVariable() {
+        return padVariable;
+    }
+    
+    public void setPADVariable(String padVariable) {
+        this.padVariable = padVariable;
     }
 
     /*public Point3d getSensorPosition() {

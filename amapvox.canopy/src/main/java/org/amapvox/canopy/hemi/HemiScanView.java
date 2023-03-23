@@ -211,7 +211,10 @@ public class HemiScanView extends AVoxTask {
                 break;
 
             case PAD:
-                DirectionalTransmittance dt = new DirectionalTransmittance(parameters.getVoxelFile(), LeafAngleDistribution.Type.SPHERIC);
+                DirectionalTransmittance dt = new DirectionalTransmittance(
+                        parameters.getVoxelFile(),
+                        parameters.getPADVariable(),
+                        LeafAngleDistribution.Type.SPHERIC);
                 return hemiFromPAD(dt, parameters.getSensorPositions());
         }
         return null;

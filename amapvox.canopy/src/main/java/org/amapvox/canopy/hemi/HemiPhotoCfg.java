@@ -24,6 +24,7 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import org.amapvox.commons.AVoxTask;
 import org.amapvox.commons.Release;
+import org.amapvox.voxelisation.output.OutputVariable;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 
@@ -89,6 +90,10 @@ public class HemiPhotoCfg extends Configuration {
 
             if (inputFileSrc != null) {
                 parameters.setVoxelFile(new File(inputFileSrc));
+            }
+
+            if (null != inputFileElement.getAttribute("variable")) {
+                parameters.setPADVariable(inputFileElement.getAttributeValue("variable"));
             }
 
             List<Point3d> positions = new ArrayList<>();
@@ -215,8 +220,9 @@ public class HemiPhotoCfg extends Configuration {
 
             //input
             Element inputFileElement = new Element("input_file");
-            inputFileElement.setAttribute(new Attribute("type", "VOX"));
-            inputFileElement.setAttribute(new Attribute("src", parameters.getVoxelFile().getAbsolutePath()));
+            inputFileElement.setAttribute("type", "VOX");
+            inputFileElement.setAttribute("src", parameters.getVoxelFile().getAbsolutePath());
+            inputFileElement.setAttribute("variable", parameters.getPADVariable());
             processElement.addContent(inputFileElement);
 
             Element sensorPositionsElement = new Element("sensor-positions");
@@ -301,6 +307,17 @@ public class HemiPhotoCfg extends Configuration {
                             scanElement.addContent(matrix.toElement());
                         });
 
+                    }
+                }
+            },
+            // 2023-03-23
+            new Release("2.0.1") {
+                @Override
+                public void update(Element processElement) {
+                    
+                    Element inputFileElement = processElement.getChild("input_file");
+                    if (null != inputFileElement) {
+                        inputFileElement.setAttribute("variable", OutputVariable.PLANT_AREA_DENSITY.getShortName());
                     }
                 }
             }

@@ -103,7 +103,10 @@ public class CanopyAnalyzerSim extends AVoxTask {
             LOGGER.info("===== " + parameters.getInputFile().getAbsolutePath() + " =====");
 
             if (direcTransmittance == null) {
-                direcTransmittance = new DirectionalTransmittance(parameters.getInputFile(), LeafAngleDistribution.Type.SPHERIC);
+                direcTransmittance = new DirectionalTransmittance(
+                        parameters.getInputFile(),
+                        OutputVariable.PLANT_AREA_DENSITY.getShortName(),
+                        LeafAngleDistribution.Type.SPHERIC);
             }
 
             positions = parameters.getPositions();
@@ -212,7 +215,10 @@ public class CanopyAnalyzerSim extends AVoxTask {
             //*******fin du test
             LOGGER.info("===== " + parameters.getInputFile().getAbsolutePath() + " =====");
 
-            direcTransmittance = new DirectionalTransmittance(parameters.getInputFile(), LeafAngleDistribution.Type.SPHERIC);
+            direcTransmittance = new DirectionalTransmittance(
+                    parameters.getInputFile(), 
+                    OutputVariable.PLANT_AREA_DENSITY.getShortName(),
+                    LeafAngleDistribution.Type.SPHERIC);
 
             positions = parameters.getPositions();
 

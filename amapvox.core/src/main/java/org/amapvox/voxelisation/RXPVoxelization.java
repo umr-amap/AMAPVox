@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.Iterator;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+import org.amapvox.shot.Shot;
 import org.apache.log4j.Logger;
 
 /**
@@ -58,15 +59,35 @@ public class RXPVoxelization extends AbstractVoxelization {
 
                 @Override
                 public org.amapvox.shot.Shot next() throws Exception {
-                    RxpShot shot = iterator.next();
-                    Point3d location = new Point3d(shot.origin);
+                    RxpShot rxpShot = iterator.next();
+                    Point3d location = new Point3d(rxpShot.origin);
                     transformation.transform(location);
-                    Vector3d direction = shot.direction;
+                    Vector3d direction = rxpShot.direction;
                     transformation.transform(direction);
                     // do not fire yet, since task manager does not control
                     // multitask progress
                     fireProgress(fileName, rxpExtraction.progress(), fileSize);
-                    return new org.amapvox.shot.Shot(rxpExtraction.getShotID(), location, direction, shot.ranges);
+                    Shot shot = new Shot(rxpExtraction.getShotID(), location, direction, rxpShot.ranges);
+                    int nEcho = rxpShot.ranges.length;
+                    // add reflectance attributes
+                    if (null != rxpShot.reflectances) {
+                        for (int r = 0; r < nEcho; r++) {
+                            shot.getEcho(r).addFloat("reflectance", rxpShot.reflectances[r]);
+                        }
+                    }
+                    // add deviation attributes
+                    if (null != rxpShot.deviations) {
+                        for (int r = 0; r < nEcho; r++) {
+                            shot.getEcho(r).addFloat("deviation", rxpShot.deviations[r]);
+                        }
+                    }
+                    // add amplitude attributes
+                    if (null != rxpShot.amplitudes) {
+                        for (int r = 0; r < nEcho; r++) {
+                            shot.getEcho(r).addFloat("amplitude", rxpShot.amplitudes[r]);
+                        }
+                    }
+                    return shot;
                 }
             };
             voxelization.voxelization(it, -1);

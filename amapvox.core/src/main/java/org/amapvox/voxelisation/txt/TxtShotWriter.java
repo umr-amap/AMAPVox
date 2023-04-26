@@ -7,7 +7,6 @@ package org.amapvox.voxelisation.txt;
 
 import org.amapvox.commons.util.IteratorWithException;
 import org.amapvox.shot.Shot;
-import org.amapvox.voxelisation.las.LasShot;
 import org.amapvox.voxelisation.las.PointsToShot;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,9 +32,9 @@ public class TxtShotWriter {
 
             IteratorWithException<Shot> iterator = alsShotBuilder.iterator();
 
-            LasShot shot;
+            Shot shot;
 
-            while ((shot = (LasShot) iterator.next()) != null) {
+            while ((shot = (Shot) iterator.next()) != null) {
 
                 String line = shot.origin.x + " " + shot.origin.y + " " + shot.origin.z + " " + shot.direction.x + " " + shot.direction.y + " " + shot.direction.z + " " + shot.getEchoesNumber();
 
@@ -47,11 +46,11 @@ public class TxtShotWriter {
                     line += " " + "NaN";
                 }
 
-                for (int i = 0; i < shot.classifications.length; i++) {
-                    line += " " + shot.classifications[i];
+                for (int i = 0; i < shot.getEchoesNumber(); i++) {
+                    line += " " + shot.getEcho(i).getInteger("classification");
                 }
 
-                for (int i = shot.classifications.length; i < 7; i++) {
+                for (int i = shot.getEchoesNumber(); i < 7; i++) {
                     line += " " + "NaN";
                 }
 

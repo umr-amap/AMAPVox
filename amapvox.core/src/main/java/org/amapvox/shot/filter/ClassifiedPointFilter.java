@@ -6,15 +6,15 @@
 package org.amapvox.shot.filter;
 
 import org.amapvox.commons.util.filter.Filter;
-import org.amapvox.voxelisation.las.LasShot;
 import java.util.ArrayList;
 import java.util.List;
+import org.amapvox.shot.Echo;
 
 /**
  *
  * @author pverley
  */
-public class ClassifiedPointFilter implements Filter<LasShot.Echo> {
+public class ClassifiedPointFilter implements Filter<Echo> {
 
     private final List<Integer> classifiedPointsToDiscard;
 
@@ -36,9 +36,11 @@ public class ClassifiedPointFilter implements Filter<LasShot.Echo> {
     }
 
     @Override
-    public boolean accept(LasShot.Echo echo) {
-        LasShot shot = (LasShot) echo.shot;
-        return shot.classifications != null && !classifiedPointsToDiscard.contains(shot.classifications[echo.rank]);
+    public boolean accept(Echo echo) {
+        
+        Integer classification = echo.getInteger("classification");
+            
+        return (null == classification) || (!classifiedPointsToDiscard.contains(classification));
     }
 
 }

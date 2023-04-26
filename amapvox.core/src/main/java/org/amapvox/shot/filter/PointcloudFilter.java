@@ -17,17 +17,17 @@ import org.amapvox.commons.math.util.MatrixUtility;
 import org.amapvox.commons.spds.Octree;
 import org.amapvox.commons.util.filter.Filter;
 import org.amapvox.commons.util.io.file.CSVFile;
-import org.amapvox.shot.Shot;
 import org.amapvox.commons.Util;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
+import org.amapvox.shot.Echo;
 import org.apache.log4j.Logger;
 
 /**
  *
  * @author Julien Heurtebize (julienhtbe@gmail.com)
  */
-public class PointcloudFilter implements Filter<Shot.Echo> {
+public class PointcloudFilter implements Filter<Echo> {
 
     private final CSVFile pointcloudFile;
     private final float pointcloudErrorMargin;
@@ -72,12 +72,12 @@ public class PointcloudFilter implements Filter<Shot.Echo> {
     }
 
     @Override
-    public boolean accept(Shot.Echo echo) throws Exception {
+    public boolean accept(Echo echo) throws Exception {
 
         Point3d location = new Point3d(
-                echo.location.x,
-                echo.location.y,
-                echo.location.z);
+                echo.getLocation().x,
+                echo.getLocation().y,
+                echo.getLocation().z);
 
         boolean inside = octree.isPointBelongsToPointcloud(location, pointcloudErrorMargin, Octree.INCREMENTAL_SEARCH);
         return retain ? inside : !inside;

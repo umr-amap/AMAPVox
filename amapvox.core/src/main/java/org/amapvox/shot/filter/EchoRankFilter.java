@@ -16,13 +16,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
+import org.amapvox.shot.Echo;
 import org.apache.log4j.Logger;
 
 /**
  *
  * @author pverley
  */
-public class EchoRankFilter implements Filter<Shot.Echo> {
+public class EchoRankFilter implements Filter<Echo> {
 
     private final File file;
     private final Behavior behavior;
@@ -95,15 +96,15 @@ public class EchoRankFilter implements Filter<Shot.Echo> {
     }
 
     @Override
-    public boolean accept(Shot.Echo echo) throws Exception {
+    public boolean accept(Echo echo) throws Exception {
 
-        if (echo.rank >= 0 && null != echoes) {
-            int shotID = echo.shot.index;
+        if (echo.getRank() >= 0 && null != echoes) {
+            int shotID = echo.getShot().index;
             while (null != echoes && echoes.shotID < shotID) {
                 echoes = iterator.next();
             }
             if (null != echoes && echoes.shotID == shotID) {
-                Shot shot = echo.shot;
+                Shot shot = echo.getShot();
                 if (shot.getEchoesNumber() != echoes.retained.length) {
                     StringBuilder sb = new StringBuilder();
                     sb.append("Inconsistent number of echoes in filter ");
@@ -113,7 +114,7 @@ public class EchoRankFilter implements Filter<Shot.Echo> {
                     sb.append(", nColumn ").append(echoes.retained.length);
                     throw new java.lang.ArrayIndexOutOfBoundsException(sb.toString());
                 }
-                return echoes.retained[echo.rank];
+                return echoes.retained[echo.getRank()];
             }
         }
         // by default accept all echoes from shot not listed in CSV file

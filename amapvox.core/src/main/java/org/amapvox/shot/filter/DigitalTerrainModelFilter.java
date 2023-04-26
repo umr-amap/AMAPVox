@@ -7,13 +7,13 @@ package org.amapvox.shot.filter;
 
 import org.amapvox.commons.raster.asc.Raster;
 import org.amapvox.commons.util.filter.Filter;
-import org.amapvox.shot.Shot;
+import org.amapvox.shot.Echo;
 
 /**
  *
  * @author pverley
  */
-public class DigitalTerrainModelFilter implements Filter<Shot.Echo> {
+public class DigitalTerrainModelFilter implements Filter<Echo> {
 
     private final float minDistance;
     private Raster dtm;
@@ -37,9 +37,9 @@ public class DigitalTerrainModelFilter implements Filter<Shot.Echo> {
     }
 
     @Override
-    public boolean accept(Shot.Echo echo) throws Exception {
+    public boolean accept(Echo echo) throws Exception {
 
-        double distanceToGround = echo.location.z - dtm.getSimpleHeight((float) echo.location.x, (float) echo.location.y);
+        double distanceToGround = echo.getLocation().z - dtm.getSimpleHeight((float) echo.getLocation().x, (float) echo.getLocation().y);
         return distanceToGround >= minDistance;
     }
 

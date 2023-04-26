@@ -8,7 +8,6 @@ package org.amapvox.voxelisation.txt;
 import org.amapvox.commons.util.IteratorWithException;
 import org.amapvox.commons.util.LineCount;
 import org.amapvox.shot.Shot;
-import org.amapvox.voxelisation.las.LasShot;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +26,7 @@ public class TxtShotReader implements IteratorWithException<Shot> {
     private String line;
     private int shotId;
     private boolean hasNextCalled = false;
-    private LasShot shot;
+    private Shot shot;
     private final int nshot;
 
     TxtShotReader(File shotsFile) throws FileNotFoundException, IOException {
@@ -38,7 +37,7 @@ public class TxtShotReader implements IteratorWithException<Shot> {
         shotId = -1;
         nshot = LineCount.count(shotsFile.getAbsolutePath());
     }
-    
+
     public int getNShot() {
         return nshot;
     }
@@ -53,8 +52,8 @@ public class TxtShotReader implements IteratorWithException<Shot> {
     }
 
     @Override
-    public LasShot next() throws IOException {
-        
+    public Shot next() throws IOException {
+
         if (hasNextCalled) {
             hasNextCalled = false;
             return shot;
@@ -63,7 +62,7 @@ public class TxtShotReader implements IteratorWithException<Shot> {
         }
     }
 
-    private LasShot nextShot() throws IOException {
+    private Shot nextShot() throws IOException {
 
         line = reader.readLine();
         if (null == line) {
@@ -75,29 +74,31 @@ public class TxtShotReader implements IteratorWithException<Shot> {
         shotId++;
 
         String[] split = line.split(" ");
-        double xOrigin = Double.valueOf(split[0]);
-        double yOrigin = Double.valueOf(split[1]);
-        double zOrigin = Double.valueOf(split[2]);
+        double xOrigin = Double.parseDouble(split[0]);
+        double yOrigin = Double.parseDouble(split[1]);
+        double zOrigin = Double.parseDouble(split[2]);
 
-        double xDirection = Double.valueOf(split[3]);
-        double yDirection = Double.valueOf(split[4]);
-        double zDirection = Double.valueOf(split[5]);
+        double xDirection = Double.parseDouble(split[3]);
+        double yDirection = Double.parseDouble(split[4]);
+        double zDirection = Double.parseDouble(split[5]);
 
-        int nbEchos = Integer.valueOf(split[6]);
+        int nEcho = Integer.parseInt(split[6]);
 
-        double[] ranges = new double[nbEchos];
-        int[] classifications = new int[nbEchos];
+        double[] ranges = new double[nEcho];
+        int[] classifications = new int[nEcho];
 
         for (int i = 0; i < ranges.length; i++) {
             if ((14 + i) > split.length) {
                 throw new IOException("Columns missing inside shot file");
             }
-            ranges[i] = Double.valueOf(split[7 + i]);
-            classifications[i] = Integer.valueOf(split[14 + i]);
+            ranges[i] = Double.parseDouble(split[7 + i]);
+            classifications[i] = Integer.parseInt(split[14 + i]);
         }
 
-        LasShot shot = new LasShot(shotId, new Point3d(xOrigin, yOrigin, zOrigin), new Vector3d(xDirection, yDirection, zDirection), ranges);
-        shot.classifications = classifications;
+        Shot shot = new Shot(shotId, new Point3d(xOrigin, yOrigin, zOrigin), new Vector3d(xDirection, yDirection, zDirection), ranges);
+        for (int r = 0; r < nEcho; r++) {
+            shot.getEcho(r).addInteger("classification", classifications[r]);
+        }
 
         return shot;
     }

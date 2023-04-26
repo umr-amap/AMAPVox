@@ -53,6 +53,7 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 import org.amapvox.commons.AVoxTask;
 import org.amapvox.commons.Release;
+import org.amapvox.shot.Echo;
 import org.apache.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
@@ -98,7 +99,7 @@ public class VoxelizationCfg extends Configuration {
     protected Matrix4d popMatrix;
     protected Matrix4d vopMatrix;
     protected List<Filter<Shot>> shotFilters;
-    protected List<Filter<Shot.Echo>> echoFilters;
+    protected List<Filter<Echo>> echoFilters;
     protected DecimalFormat decimalFormat;
     private List<LidarScan> lidarScans;
     protected LidarType lidarType;
@@ -1002,11 +1003,11 @@ public class VoxelizationCfg extends Configuration {
         return shotFilters;
     }
 
-    public void addEchoFilter(Filter<Shot.Echo> filter) {
+    public void addEchoFilter(Filter<Echo> filter) {
         this.echoFilters.add(filter);
     }
 
-    public boolean removeEchoFilter(Filter<Shot.Echo> filter) {
+    public boolean removeEchoFilter(Filter<Echo> filter) {
         return this.echoFilters.remove(filter);
     }
 
@@ -1014,7 +1015,7 @@ public class VoxelizationCfg extends Configuration {
         this.shotFilters = shotFilters;
     }
 
-    public List<Filter<Shot.Echo>> getEchoFilters() {
+    public List<Filter<Echo>> getEchoFilters() {
         return echoFilters;
     }
 

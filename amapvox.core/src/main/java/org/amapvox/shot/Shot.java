@@ -72,13 +72,17 @@ public class Shot {
         } else {
             // empty shot
             LineSegment seg = new LineSegment(origin, direction, 999999);
-            echoes[0] = new Echo(-1, new Point3d(seg.getEnd()));
+            echoes[0] = new Echo(this, -1, new Point3d(seg.getEnd()));
         }
+    }
+    
+    public Echo getEcho(int rank) {
+        return echoes[rank];
     }
 
     private void updateEcho(int rank) {
         LineSegment seg = new LineSegment(origin, direction, ranges[rank]);
-        echoes[rank] = new Echo(rank, new Point3d(seg.getEnd()));
+        echoes[rank] = new Echo(this, rank, new Point3d(seg.getEnd()));
     }
 
     public void setRange(int rank, double range) {
@@ -152,18 +156,5 @@ public class Shot {
                 .append(dnf.format(point.x)).append(", ")
                 .append(dnf.format(point.y)).append(", ")
                 .append(dnf.format(point.z)).append(')').toString();
-    }
-
-    public class Echo {
-
-        public final int rank;
-        public final Point3d location;
-        public final Shot shot;
-
-        public Echo(int rank, Point3d location) {
-            this.rank = rank;
-            this.location = location;
-            this.shot = Shot.this;
-        }
     }
 }

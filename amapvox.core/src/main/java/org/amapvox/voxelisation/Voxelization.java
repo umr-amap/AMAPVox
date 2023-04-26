@@ -23,6 +23,7 @@ import javax.vecmath.Point3i;
 
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+import org.amapvox.shot.Echo;
 import org.apache.log4j.Logger;
 
 public class Voxelization extends org.amapvox.commons.util.Process implements Cancellable {
@@ -58,7 +59,7 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
     private LaserSpecification laserSpec;
 
     private final List<Filter<Shot>> shotFilters;
-    private final List<Filter<Shot.Echo>> echoFilters;
+    private final List<Filter<Echo>> echoFilters;
     private EchoesContext currentEchoesContext;
 
     private boolean padEnabled;
@@ -154,7 +155,7 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         return shotFilters;
     }
 
-    public List<Filter<Shot.Echo>> getEchoFilters() {
+    public List<Filter<Echo>> getEchoFilters() {
         return echoFilters;
     }
 
@@ -284,7 +285,7 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
             // look for first echo inside or beyond voxel0 (if any)
             int rank = 0;
             // by default first echo is null
-            Shot.Echo echo = null;
+            Echo echo = null;
             if (echoesContext.nEchoes > 0) {
                 // look for echoes located before voxel0
                 while ((rank < echoesContext.nEchoes) && (shot.getRange(rank) < voxelCrossing.length)) {
@@ -575,7 +576,7 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         }
     }
 
-    private boolean isEchoInsideVoxel(Shot.Echo echo, Point3i indexVoxel) {
+    private boolean isEchoInsideVoxel(Echo echo, Point3i indexVoxel) {
 
         Point3i indexEcho = findVoxel(echo);
 
@@ -810,20 +811,20 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
      * @param echo
      * @return the index of the voxel containing the echo.
      */
-    private Point3i findVoxel(Shot.Echo echo) {
+    private Point3i findVoxel(Echo echo) {
 
-        Point3i vcoord = voxelManager.getVoxelIndicesFromPoint(echo.location);
+        Point3i vcoord = voxelManager.getVoxelIndicesFromPoint(echo.getLocation());
         if (null != vcoord) {
-            boolean[] onFacet = isOnVoxelFacet(echo.location);
-            if (onFacet[0] && Math.signum(echo.shot.direction.x) > 0) {
+            boolean[] onFacet = isOnVoxelFacet(echo.getLocation());
+            if (onFacet[0] && Math.signum(echo.getShot().direction.x) > 0) {
                 //LOGGER.info("Special boundary condition on x " + echo.location);
                 vcoord.x = (int) Math.max(vcoord.x - 1, 0);
             }
-            if (onFacet[1] && Math.signum(echo.shot.direction.y) > 0) {
+            if (onFacet[1] && Math.signum(echo.getShot().direction.y) > 0) {
                 //LOGGER.info("Special boundary condition on y " + echo.location);
                 vcoord.y = (int) Math.max(vcoord.y - 1, 0);
             }
-            if (onFacet[2] && Math.signum(echo.shot.direction.z) > 0) {
+            if (onFacet[2] && Math.signum(echo.getShot().direction.z) > 0) {
                 //LOGGER.info("Special boundary condition on z " + echo.location);
                 vcoord.z = (int) Math.max(vcoord.z - 1, 0);
             }
@@ -831,10 +832,10 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         return vcoord;
     }
 
-    boolean retainEcho(Shot.Echo echo) throws Exception {
+    boolean retainEcho(Echo echo) throws Exception {
 
-        if (echo.rank >= 0 && echoFilters != null) {
-            for (Filter<Shot.Echo> filter : echoFilters) {
+        if (echo.getRank() >= 0 && echoFilters != null) {
+            for (Filter<Echo> filter : echoFilters) {
                 if (!filter.accept(echo)) {
                     return false;
                 }
@@ -874,7 +875,7 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         return true;
     }
 
-    boolean isInsideSameVoxel(Shot.Echo echo1, Shot.Echo echo2) {
+    boolean isInsideSameVoxel(Echo echo1, Echo echo2) {
 
         if (echo1 == null || echo2 == null) {
             return false;

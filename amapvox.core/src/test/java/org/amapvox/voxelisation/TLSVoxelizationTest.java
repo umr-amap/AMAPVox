@@ -5,10 +5,6 @@
  */
 package org.amapvox.voxelisation;
 
-import org.amapvox.voxelisation.LaserSpecification;
-import org.amapvox.voxelisation.Voxelization;
-import org.amapvox.voxelisation.VoxelizationCfg;
-import org.amapvox.voxelisation.VoxelSpace;
 import org.amapvox.commons.util.filter.Filter;
 import org.amapvox.commons.Matrix;
 import org.amapvox.commons.Voxel;
@@ -21,6 +17,7 @@ import java.util.List;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3i;
 import javax.vecmath.Vector3d;
+import org.amapvox.shot.Echo;
 import org.junit.Test;
 
 /**
@@ -442,29 +439,29 @@ public class TLSVoxelizationTest {
         shots.add(new Shot(4, new Point3d(4.5, 0.5, 0.5), new Vector3d(0, 0, 1), new double[]{1.d, 1.8d, 2.2d, 3.d}));
 
         // custom echo filter to discard afore-mentionned echoes
-        cfg.addEchoFilter(new Filter<Shot.Echo>() {
+        cfg.addEchoFilter(new Filter<Echo>() {
             @Override
             public void init() throws Exception {
                 // nothing to do
             }
 
             @Override
-            public boolean accept(Shot.Echo echo) throws Exception {
-                switch (echo.shot.index) {
+            public boolean accept(Echo echo) throws Exception {
+                switch (echo.getShot().index) {
                     case 0:
                         // discard 2nd echo
-                        return echo.rank != 1;
+                        return echo.getRank() != 1;
                     case 1:
                         // discard 3rd echo
-                        return echo.rank < 2;
+                        return echo.getRank() < 2;
                     case 2:
                         // discard all echoes
                         return false;
                     case 3:
                         // discard 3rd echo
-                        return echo.rank != 2;
+                        return echo.getRank() != 2;
                     case 4:
-                        return echo.rank == 0 || echo.rank > 2;
+                        return echo.getRank() == 0 || echo.getRank() > 2;
                     default:
                         return true;
                 }
@@ -595,29 +592,29 @@ public class TLSVoxelizationTest {
         shots.add(new Shot(4, new Point3d(4.5, 0.5, 0.5), new Vector3d(0, 0, 1), new double[]{1.d, 1.8d, 2.2d, 3.d}));
 
         // custom echo filter to discard afore-mentionned echoes
-        cfg.addEchoFilter(new Filter<Shot.Echo>() {
+        cfg.addEchoFilter(new Filter<Echo>() {
             @Override
             public void init() throws Exception {
                 // nothing to do
             }
 
             @Override
-            public boolean accept(Shot.Echo echo) throws Exception {
-                switch (echo.shot.index) {
+            public boolean accept(Echo echo) throws Exception {
+                switch (echo.getShot().index) {
                     case 0:
                         // discard 2nd echo
-                        return echo.rank != 1;
+                        return echo.getRank() != 1;
                     case 1:
                         // discard 3rd echo
-                        return echo.rank < 2;
+                        return echo.getRank() < 2;
                     case 2:
                         // discard all echoes
                         return false;
                     case 3:
                         // discard 3rd echo
-                        return echo.rank != 2;
+                        return echo.getRank() != 2;
                     case 4:
-                        return echo.rank == 0 || echo.rank > 2;
+                        return echo.getRank() == 0 || echo.getRank() > 2;
                     default:
                         return true;
                 }

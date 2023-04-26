@@ -271,10 +271,10 @@ public class PointsToShot extends Process implements IterableWithException<Shot>
                 continue;
             }
             try {
-                double easting = Double.valueOf(lineSplit[eastingIndex]);
-                double northing = Double.valueOf(lineSplit[northingIndex]);
-                double elevation = Double.valueOf(lineSplit[elevationIndex]);
-                double time = Double.valueOf(lineSplit[timeIndex]);
+                double easting = Double.parseDouble(lineSplit[eastingIndex]);
+                double northing = Double.parseDouble(lineSplit[northingIndex]);
+                double elevation = Double.parseDouble(lineSplit[elevationIndex]);
+                double time = Double.parseDouble(lineSplit[timeIndex]);
                 points.add(new TrajectoryPoint(easting, northing, elevation, time));
             } catch (NumberFormatException ex) {
                 StringBuilder msg = new StringBuilder();
@@ -293,7 +293,7 @@ public class PointsToShot extends Process implements IterableWithException<Shot>
         return points;
     }
 
-    private synchronized LasShot pointsToShot(final List<LasPoint> points, final int shotIndex) {
+    private synchronized Shot pointsToShot(final List<LasPoint> points, final int shotIndex) {
 
         if (points != null) {
 
@@ -327,14 +327,19 @@ public class PointsToShot extends Process implements IterableWithException<Shot>
                         : pt.i;
             });
 
-            // create new LAS shot
-            LasShot lasShot = new LasShot(
+            // create new shot
+            Shot shot = new Shot(
                     shotIndex,
                     origin, direction,
-                    ranges, classifications, intensities);
-            lasShot.time = lasPoint.t;
+                    ranges);
+            
+            // add specific properties
+            for (int r = 0; r < nEcho; r++) {
+                shot.getEcho(r).addInteger("classification", classifications[r]);
+                shot.getEcho(r).addFloat("intensity", intensities[r]);
+            }
 
-            return lasShot;
+            return shot;
         }
 
         return null;
@@ -586,7 +591,7 @@ public class PointsToShot extends Process implements IterableWithException<Shot>
 
         private int shotIndex;
         private int pointIndex;
-        private final BlockingQueue<LasShot> queue = new ArrayBlockingQueue<>(SHOT_BUFFER);
+        private final BlockingQueue<Shot> queue = new ArrayBlockingQueue<>(SHOT_BUFFER);
         private Exception error;
 
         @Override
@@ -595,7 +600,7 @@ public class PointsToShot extends Process implements IterableWithException<Shot>
         }
 
         @Override
-        public LasShot next() throws Exception {
+        public Shot next() throws Exception {
             if (null != error) {
                 throw error;
             }

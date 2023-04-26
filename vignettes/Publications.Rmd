@@ -17,13 +17,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-*Updated April 2022*
+*Updated April 2023*
 
 Your article is not listed ? Please let us know *contact at amapvox dot org*
 
 ```{r, setup, echo=FALSE}
 # libraries RefManageR
-require("RefManageR")  
+require("RefManageR", quietly = TRUE)  
 ```
 
 ```{r, echo=FALSE, eval=TRUE, results='asis'}

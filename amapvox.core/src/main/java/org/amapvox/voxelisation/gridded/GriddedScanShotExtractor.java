@@ -16,23 +16,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package org.amapvox.lidar.gridded;
+package org.amapvox.voxelisation.gridded;
 
+import java.awt.Color;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
-    import org.apache.commons.math3.geometry.euclidean.threed.SphericalCoordinates;
+import org.amapvox.commons.util.IterableWithException;
+import org.amapvox.commons.util.IteratorWithException;
+import org.amapvox.lidar.gridded.GriddedPointScan;
+import org.amapvox.lidar.gridded.LDoublePoint;
+import org.amapvox.lidar.gridded.LFloatPoint;
+import org.amapvox.lidar.gridded.LPoint;
+import org.amapvox.shot.Shot;
+import org.apache.commons.math3.geometry.euclidean.threed.SphericalCoordinates;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
  * @author Julien Heurtebize
  */
-public class LPointShotExtractor implements Iterable<LShot> {
+public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
     private final GriddedPointScan scan;
+    private final Matrix4d transformation;
 
     private boolean[] azimuts;
     private boolean[] zenithals;
@@ -57,8 +67,9 @@ public class LPointShotExtractor implements Iterable<LShot> {
 
     }
 
-    public LPointShotExtractor(GriddedPointScan scan) throws Exception {
+    public GriddedScanShotExtractor(GriddedPointScan scan, Matrix4d transformation) throws Exception {
         this.scan = scan;
+        this.transformation = transformation;
         if (scan.isReturnInvalidPoint()) {
             fillNoHit();
         }
@@ -66,7 +77,7 @@ public class LPointShotExtractor implements Iterable<LShot> {
 
     private void fillNoHit() throws Exception {
         
-        Logger.getLogger(LPointShotExtractor.class.getName()).info("Computing missing shots...");
+        Logger.getLogger(GriddedScanShotExtractor.class.getName()).info("Computing missing shots...");
 
         scan.computeExtremumsAngles();
         
@@ -77,16 +88,7 @@ public class LPointShotExtractor implements Iterable<LShot> {
         azimuts = new boolean[this.scan.getHeader().getNumCols()];
         zenithals = new boolean[this.scan.getHeader().getNumRows()];
 
-        //azimutsRegression  = new SimpleRegression[this.scan.getHeader().getNumCols()];
-        //zenithalsRegression = new SimpleRegression[this.scan.getHeader().getNumRows()];
-        //azimuts = new SimpleRegression[this.scan.getHeader().getNumCols()];
-        //zenithals = new SimpleRegression[this.scan.getHeader().getNumRows()];
-        Iterator<LPoint> iterator = scan.iterator();
-
-        while (iterator.hasNext()) {
-
-            LPoint point = iterator.next();
-
+        for (LPoint point : scan) {
             if (point.valid) {
 
                 double x, y, z;
@@ -202,20 +204,18 @@ public class LPointShotExtractor implements Iterable<LShot> {
                 }
             }
         }
-        Logger.getLogger(LPointShotExtractor.class.getName()).log(Level.INFO, "Filled {0} missing shots", nfill);
+        Logger.getLogger(GriddedScanShotExtractor.class.getName()).log(Level.INFO, "Filled {0} missing shots", nfill);
 
     }
 
     @Override
-    public Iterator<LShot> iterator() {
+    public IteratorWithException<Shot> iterator() {
         
         final Iterator<LPoint> pointIterator = scan.iterator();
 
-        Iterator<LShot> it = new Iterator<LShot>() {
+        IteratorWithException<Shot> it = new IteratorWithException<Shot>() {
 
-            int lastColumnIndex = -1;
-            double last = 0.0;
-            Vector3d lastVector = new Vector3d(0, 0, 0);
+            private int index = 0;
 
             @Override
             public boolean hasNext() {
@@ -223,9 +223,9 @@ public class LPointShotExtractor implements Iterable<LShot> {
             }
 
             @Override
-            public LShot next() {
+            public Shot next() throws Exception {
 
-                LShot shot;
+                Shot shot;
 
                 LPoint point = pointIterator.next();
 
@@ -244,45 +244,36 @@ public class LPointShotExtractor implements Iterable<LShot> {
                         //System.out.println(xDirection+"\t"+yDirection+"\t"+zDirection);
                     }
 
+                    Point3d origin = new Point3d(0.d, 0.d, 0.d);
+                    transformation.transform(origin);
+                    
                     Vector3d direction = new Vector3d(xDirection, yDirection, zDirection);
                     direction.normalize();
+                    transformation.transform(direction);
 
                     double range = Math.sqrt((xDirection * xDirection) + (yDirection * yDirection) + (zDirection * zDirection));
 
-                    shot = new LShot(new Point3d(0, 0, 0), direction, new double[]{range});
-                    shot.point = point;
+                    shot = new Shot(index++, origin, direction, new double[]{range});
+                    if (!Float.isNaN(point.intensity)) {
+                        shot.getEcho(0).addFloat("intensity", point.intensity);
+                    }
+                    if (point.red >= 0) {
+                        shot.getEcho(0).addInteger("color", new Color(point.red, point.green, point.blue).getRGB());
+                    }
                     return shot;
-
-                    //test
-                    //recalculate shot
-                    /*double azimutalAngle = (scan.getAzim_min() - ((point.columnIndex - scan.getColIndexAzimMin()) * scan.getAzimutalStepAngle()));
-                    double elevationAngle = (scan.getElev_min() - ((point.rowIndex - scan.getRowIndexElevMin()) * scan.getElevationStepAngle()));
-                    
-                    SphericalCoordinates sc = new SphericalCoordinates(azimutalAngle, elevationAngle);
-
-                    Vector3d testDirection = new Vector3d(sc.toCartesian());
-                    testDirection.normalize();
-                    
-                    Vec3D theoreticalVector = new Vec3D(testDirection.x, testDirection.y, testDirection.z);
-                    Vec3D obtainedVector = new Vec3D(direction.x, direction.y, direction.z);
-                    
-                    double angle = Math.acos(Vec3D.dot(theoreticalVector, obtainedVector)/((Vec3D.length(obtainedVector) * Vec3D.length(theoreticalVector))));
-                    double degreesAngle = Math.toDegrees(angle);*/
-                    //System.out.println(degreesAngle);
                 } else if (scan.isReturnInvalidPoint()) {
-                    //recalculate shot
-                    //double azimutalAngle = (scan.getAzim_min() - ((point.columnIndex - scan.getColIndexAzimMin()) * scan.getAzimutalStepAngle()));
-                    //double elevationAngle = (scan.getElev_min() - ((point.rowIndex - scan.getRowIndexElevMin()) * scan.getElevationStepAngle()));
-
+                    
+                    Point3d origin = new Point3d(0.d, 0.d, 0.d);
+                    transformation.transform(origin);
+                    
                     SphericalCoordinates sc = new SphericalCoordinates(1, angles[point.rowIndex][point.columnIndex].azimut, angles[point.rowIndex][point.columnIndex].zenith);
                     //SphericalCoordinates sc = angles[point.rowIndex][point.columnIndex];
                     Vector3d direction = new Vector3d(sc.getCartesian().getX(), sc.getCartesian().getY(), sc.getCartesian().getZ());
                     direction.normalize();
+                    transformation.transform(direction);
 
-                    shot = new LShot(new Point3d(0, 0, 0), direction, new double[]{});
-                    shot.point = point;
+                    shot = new Shot(index++, origin, direction, new double[]{});
                     return shot;
-                    //shot = correctSlope(shot);
                 }
                 return null;
             }

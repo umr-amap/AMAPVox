@@ -6,8 +6,8 @@
 package org.amapvox.lidar.converter;
 
 import org.amapvox.commons.math.util.SphericalCoordinates;
-import org.amapvox.lidar.gridded.LPointShotExtractor;
-import org.amapvox.lidar.gridded.LShot;
+//import org.amapvox.lidar.gridded.LPointShotExtractor;
+//import org.amapvox.lidar.gridded.LShot;
 import org.amapvox.lidar.leica.ptg.PTGScan;
 import java.io.BufferedWriter;
 import java.io.File;

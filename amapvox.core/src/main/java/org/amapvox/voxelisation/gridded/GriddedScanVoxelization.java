@@ -11,11 +11,6 @@ import org.amapvox.shot.Shot;
 import org.amapvox.voxelisation.VoxelizationTask;
 import org.amapvox.voxelisation.VoxelizationCfg;
 import org.amapvox.lidar.gridded.GriddedPointScan;
-import org.amapvox.lidar.gridded.LPointShotExtractor;
-import org.amapvox.lidar.gridded.LShot;
-import java.util.Iterator;
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
 import org.apache.log4j.Logger;
 
 /**
@@ -40,33 +35,9 @@ public abstract class GriddedScanVoxelization extends AbstractVoxelization {
         GriddedPointScan gpScan = newGriddedScan();
         gpScan.openScanFile(getLidarScan().getFile());
 
-        Iterator<LShot> iterator = new LPointShotExtractor(gpScan).iterator();
+        IteratorWithException<Shot> it = new GriddedScanShotExtractor(gpScan, transformation).iterator();
 
-        IteratorWithException<Shot> it = new IteratorWithException<>() {
-
-            private int index = 0;
-
-            @Override
-            public boolean hasNext() throws Exception {
-                return iterator.hasNext();
-            }
-
-            @Override
-            public Shot next() throws Exception {
-                LShot shot = iterator.next();
-                if (shot != null) {
-                    Point3d location = new Point3d(shot.origin);
-                    transformation.transform(location);
-                    Vector3d direction = shot.direction;
-                    transformation.transform(direction);
-                    return new Shot(index++, location, direction, shot.ranges);
-                } else {
-                    return null;
-                }
-            }
-        };
-
-        voxelization.voxelization(it, gpScan.getEndRowIndex() * gpScan.getEndColumnIndex());
+        voxelization.voxelization(it, gpScan.getHeader().getNumCols() * gpScan.getHeader().getNumRows());
 
         fireSucceeded();
 

@@ -7,7 +7,7 @@ package org.amapvox.voxelisation.txt;
 
 import org.amapvox.commons.util.IteratorWithException;
 import org.amapvox.shot.Shot;
-import org.amapvox.voxelisation.las.PointsToShot;
+import org.amapvox.voxelisation.las.LasShotExtractor;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -18,10 +18,10 @@ import java.io.FileWriter;
  */
 public class TxtShotWriter {
     
-    private final PointsToShot alsShotBuilder;
+    private final LasShotExtractor lasShotExtractor;
     
-    public TxtShotWriter(PointsToShot alsShotBuilder) {
-        this.alsShotBuilder = alsShotBuilder;
+    public TxtShotWriter(LasShotExtractor lasShotExtractor) {
+        this.lasShotExtractor = lasShotExtractor;
     }
     
     public void write(File file) throws Exception {
@@ -30,7 +30,7 @@ public class TxtShotWriter {
 
             writer.write("xOrigin yOrigin zOrigin xDirection yDirection zDirection nbEchoes r1 r2 r3 r4 r5 r6 r7 c1 c2 c3 c4 c5 c6 c7\n");
 
-            IteratorWithException<Shot> iterator = alsShotBuilder.iterator();
+            IteratorWithException<Shot> iterator = lasShotExtractor.iterator();
 
             Shot shot;
 

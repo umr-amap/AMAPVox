@@ -35,7 +35,7 @@ public class LasVoxelization extends AbstractVoxelization {
                 : new Matrix4d(cfg.getVopMatrix());
 
         // LAS shot builder
-        PointsToShot alsShotBuilder = new PointsToShot(
+        LasShotExtractor lasShotExtractor = new LasShotExtractor(
                 cfg.getTrajectoryFile(), cfg.getScannerPosition(),
                 getLidarScan().getFile(), vop,
                 cfg.isEchoConsistencyCheckEnabled(), cfg.isEchoConsistencyWarningEnabled(),
@@ -43,12 +43,12 @@ public class LasVoxelization extends AbstractVoxelization {
                 cfg.getCollinearityMaxDeviation());
 
         // add listener to monitor progress of the ALS shot builder
-        alsShotBuilder.addProcessingListener(parent);
+        lasShotExtractor.addProcessingListener(parent);
         // initializes the ALS shot builder
-        alsShotBuilder.init();
+        lasShotExtractor.init();
 
         // voxelisation
-        voxelization.voxelization(alsShotBuilder.iterator(), alsShotBuilder.getNShot());
+        voxelization.voxelization(lasShotExtractor.iterator(), lasShotExtractor.getNShot());
         return null;
     }
 }

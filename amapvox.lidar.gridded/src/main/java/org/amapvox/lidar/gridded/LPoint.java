@@ -28,22 +28,22 @@ public abstract class LPoint {
     /**
      * Intensity value from 0 to 1.
      */
-    public float intensity;
+    public float intensity = Float.NaN;
 
     /**
      * Red color value from 0 to 255.
      */
-    public int red;
+    public int red = -1;
 
     /**
      * Green color value from 0 to 255.
      */
-    public int green;
+    public int green = -1;
 
     /**
      * Blue color value from 0 to 255.
      */
-    public int blue;
+    public int blue = -1;
     
     /**
      * Row index in the grid.

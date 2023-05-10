@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
  * @author Julien Heurtebize (julienhtbe@gmail.com)
  * @author Philippe Verley
  */
-public class PointsToShot extends Process implements IterableWithException<Shot>, Cancellable {
+public class LasShotExtractor extends Process implements IterableWithException<Shot>, Cancellable {
 
     // LAS points
     private final File inputFile;
@@ -70,9 +70,9 @@ public class PointsToShot extends Process implements IterableWithException<Shot>
     private int nshot;
 
     // logger
-    private final static Logger LOGGER = Logger.getLogger(PointsToShot.class);
+    private final static Logger LOGGER = Logger.getLogger(LasShotExtractor.class);
 
-    public PointsToShot(CSVFile trajectoryFile, Point3d scannerPosition,
+    public LasShotExtractor(CSVFile trajectoryFile, Point3d scannerPosition,
             File inputFile, Matrix4d vopMatrix,
             boolean echoConsistencyCheckEnabled, boolean echoConsistencyWarningEnabled,
             boolean collinearityCheckEnabled, boolean collinearityWarningEnabled,

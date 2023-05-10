@@ -35,13 +35,12 @@ import org.amapvox.shot.filter.ClassifiedPointFilter;
 import org.amapvox.shot.filter.DigitalTerrainModelFilter;
 import org.amapvox.shot.filter.EchoAttributeFilter;
 import org.amapvox.shot.filter.EchoRangeFilter;
-import org.amapvox.shot.filter.EchoRankFilter;
 import org.amapvox.shot.filter.PointcloudFilter;
 import org.amapvox.shot.filter.ShotAttributeFilter;
 import org.amapvox.shot.filter.ShotDecimationFilter;
 import org.amapvox.voxelisation.LaserSpecification;
 import org.amapvox.voxelisation.txt.TxtShotWriter;
-import org.amapvox.voxelisation.las.PointsToShot;
+import org.amapvox.voxelisation.las.LasShotExtractor;
 import org.amapvox.voxelisation.VoxelizationCfg;
 import org.amapvox.voxelisation.output.OutputVariable;
 import org.amapvox.lidar.commons.LidarScan;
@@ -2089,7 +2088,7 @@ public class VoxelizationFrameController extends ConfigurationController {
             }
         }
 
-        PointsToShot pts = new PointsToShot(trajectoryFile, null, alsFile, vopMatrix,
+        LasShotExtractor pts = new LasShotExtractor(trajectoryFile, null, alsFile, vopMatrix,
                 checkboxLasConsistency.isSelected(), rdbtnLasConsistencyWarn.isSelected(),
                 checkboxLasCollinearity.isSelected(), rdbtnLasCollinearityWarn.isSelected(),
                 Double.valueOf(textfieldMaxDeviation.getText()));

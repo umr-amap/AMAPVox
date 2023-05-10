@@ -5,8 +5,6 @@
  */
 package org.amapvox.lidar.converter;
 
-import org.amapvox.lidar.gridded.LPointShotExtractor;
-import org.amapvox.lidar.gridded.LShot;
 import org.amapvox.lidar.leica.ptg.PTGScan;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,12 +12,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Iterator;
 import java.util.Locale;
 import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+import org.amapvox.commons.util.IteratorWithException;
+import org.amapvox.shot.Shot;
+import org.amapvox.voxelisation.gridded.GriddedScanShotExtractor;
 
 /**
  *
@@ -75,30 +75,31 @@ public class PTGScanConversion {
 
         File outputTxtFile = new File(outputDirectory.getAbsolutePath() + File.separator + scan.file.getName() + ".txt");
 
-        try ( BufferedWriter writer = new BufferedWriter(new FileWriter(outputTxtFile))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputTxtFile))) {
             PTGScan ptgScan = new PTGScan();
             ptgScan.openScanFile(scan.file);
 
-            LPointShotExtractor shots = new LPointShotExtractor(ptgScan);
-            for (LShot shot : shots) {
+            GriddedScanShotExtractor shots = new GriddedScanShotExtractor(ptgScan, transfMatrix);
+            IteratorWithException<Shot> it = shots.iterator();
+            while (it.hasNext()) {
+                Shot shot = it.next();
                 shot.direction.normalize();
-
                 Point3d origin = new Point3d(shot.origin);
                 transfMatrix.transform(origin);
                 Vector3d direction = shot.direction;
                 transfMatrix.transform(direction);
                 direction.normalize();
 
-                for (int i = 0; i < shot.ranges.length; i++) {
+                for (int i = 0; i < shot.getEchoesNumber(); i++) {
 
-                    double x = origin.x + direction.x * shot.ranges[i];
-                    double y = origin.y + direction.y * shot.ranges[i];
-                    double z = origin.z + direction.z * shot.ranges[i];
+                    double x = origin.x + direction.x * shot.getRange(i);
+                    double y = origin.y + direction.y * shot.getRange(i);
+                    double z = origin.z + direction.z * shot.getRange(i);
 
                     if (exportIntensity) {
-                        writer.write(x + " " + y + " " + z + " " + (i + 1) + " " + shot.ranges.length + " " + shot.point.intensity + "\n");
+                        writer.write(x + " " + y + " " + z + " " + (i + 1) + " " + shot.getEchoesNumber() + " " + shot.getEcho(i).getFloat("intensity") + "\n");
                     } else {
-                        writer.write(x + " " + y + " " + z + " " + (i + 1) + " " + shot.ranges.length + "\n");
+                        writer.write(x + " " + y + " " + z + " " + (i + 1) + " " + shot.getEchoesNumber() + "\n");
                     }
 
                 }
@@ -186,7 +187,7 @@ public class PTGScanConversion {
          */
         File outputTxtFile = new File(outputDirectory.getAbsolutePath() + File.separator + scan.file.getName() + ".txt");
 
-        try ( BufferedWriter writer = new BufferedWriter(new FileWriter(outputTxtFile))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputTxtFile))) {
 
             /**
              * Transformation*
@@ -219,16 +220,12 @@ public class PTGScanConversion {
             PTGScan ptgScan = new PTGScan();
             ptgScan.openScanFile(scan.file);
 
-            LPointShotExtractor shots = new LPointShotExtractor(ptgScan);
-            Iterator<LShot> iterator = shots.iterator();
-
+            GriddedScanShotExtractor shots = new GriddedScanShotExtractor(ptgScan, transfMatrix);
+            IteratorWithException<Shot> it = shots.iterator();
             int shotID = 0;
-
-            while (iterator.hasNext()) {
-
-                LShot shot = iterator.next();
+            while (it.hasNext()) {
+                Shot shot = it.next();
                 shot.direction.normalize();
-
                 Point3d origin = new Point3d(shot.origin);
                 transfMatrix.transform(origin);
                 Vector3d direction = shot.direction;
@@ -237,7 +234,7 @@ public class PTGScanConversion {
 
                 short empty = 1;
 
-                if (shot.ranges.length > 0) {
+                if (shot.getEchoesNumber() > 0) {
                     empty = 0;
                 }
 

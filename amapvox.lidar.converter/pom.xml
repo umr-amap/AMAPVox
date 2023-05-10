@@ -21,6 +21,12 @@
         
         <dependency>
             <groupId>org.amapvox</groupId>
+            <artifactId>amapvox-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.amapvox</groupId>
             <artifactId>commons-math</artifactId>
             <version>${project.version}</version>
         </dependency>

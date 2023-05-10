@@ -20,8 +20,15 @@ package org.amapvox.lidar.gridded;
 
 /**
  * An implementation of the {@link LPoint} class.
+ *
  * @author Julien Heurtebize
  */
-public class LEmptyPoint extends LPoint{
-    
+public class LEmptyPoint extends LPoint {
+
+    public LEmptyPoint(int col, int row) {
+        this.columnIndex = col;
+        this.rowIndex = row;
+        this.valid = false;
+    }
+
 }

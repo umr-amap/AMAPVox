@@ -651,7 +651,7 @@ public class VoxelizationCfg extends Configuration {
                 scanElement.setAttribute("src", scan.getFile().getAbsolutePath());
 
                 if (lidarType == LidarType.PTX) {
-                    scanElement.setAttribute("offset", String.valueOf(((PTXLidarScan) scan).getScan().offset));
+                    scanElement.setAttribute("offset", String.valueOf(((PTXLidarScan) scan).getScan().getOffset()));
                     scanElement.setAttribute("numRows", String.valueOf(((PTXLidarScan) scan).getScan().getHeader().getNumRows()));
                     scanElement.setAttribute("numCols", String.valueOf(((PTXLidarScan) scan).getScan().getHeader().getNumCols()));
                 }

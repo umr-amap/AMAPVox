@@ -28,6 +28,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,25 +56,19 @@ import java.util.logging.Logger;
  */
 public class PTXScan extends GriddedPointScan {
 
-    private long currentLineIndex;
+    // offset to scan point data in PTX file
+    final private long offset;
 
-    private static final int HEADER_SIZE = 10;
+    // whether PTX scan has been cached in heap memory
+    final private AtomicBoolean cached = new AtomicBoolean(false);
 
-    /**
-     * The line indice representing offset to point data record of the scan.
-     */
-    public long offset;
-
-    /**
-     * The number of points of the scan, computed as (columns number) * (rows
-     * number), which includes invalid points.
-     */
-    public long nbPoints;
+    // LPoint array, without empty point
+    final private LPoint[][] points;
 
     /**
      * Initialize a new PTXScan, meaning a single scan into the file
      *
-     * @param file The ptx file
+     * @param file The PTX file
      * @param header Header of the specific scan
      * @param offset Offset to point data record into the file
      */
@@ -83,13 +79,19 @@ public class PTXScan extends GriddedPointScan {
         this.file = file;
         this.header = header;
         this.offset = offset;
-        this.nbPoints = header.getNumCols() * header.getNumRows();
+        this.returnMissingPoint = true;
+
+        points = new LPoint[header.getNumCols()][header.getNumRows()];
 
         startRowIndex = 0;
         endRowIndex = header.getNumRows() - 1;
 
         startColumnIndex = 0;
         endColumnIndex = header.getNumCols() - 1;
+    }
+    
+    public long getOffset() {
+        return offset;
     }
 
     private void skipLines(BufferedReader reader, long nbLinesToSkip) throws IOException {
@@ -100,6 +102,54 @@ public class PTXScan extends GriddedPointScan {
 
             reader.readLine();
             nbLinesSkipped++;
+        }
+    }
+
+    synchronized private void cacheScan(File file) throws FileNotFoundException, IOException {
+
+        if (cached.get()) {
+            return;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            // skip previous scans and current scan header
+            skipLines(reader, offset);
+            // init line, row and col index
+            int nline = header.getNumCols() * header.getNumRows();
+            int iline = 0;
+            int row = -1;
+            int col = 0;
+            // loop over lines
+            String line;
+            while ((line = reader.readLine()) != null && iline < nline) {
+                row++;
+                iline++;
+                if (row >= header.getNumRows()) {
+                    row = 0;
+                    col++;
+                }
+                String[] split = line.split(" ");
+                LDoublePoint point = new LDoublePoint();
+                point.x = Double.parseDouble(split[0]);
+                point.y = Double.parseDouble(split[1]);
+                point.z = Double.parseDouble(split[2]);
+                point.valid = !(point.x == 0 && point.y == 0 && point.z == 0);
+                // only fill valid points
+                if (point.valid) {
+                    point.rowIndex = row;
+                    point.columnIndex = col;
+                    if (split.length > 3) {
+                        point.intensity = Float.parseFloat(split[3]);
+                        if (split.length > 6) {
+                            point.red = Integer.parseInt(split[4]);
+                            point.green = Integer.parseInt(split[5]);
+                            point.blue = Integer.parseInt(split[6]);
+                        }
+                    }
+                    points[col][row] = point;
+                }
+            }
+            cached.set(true);
         }
     }
 
@@ -121,150 +171,15 @@ public class PTXScan extends GriddedPointScan {
     @Override
     public Iterator<LPoint> iterator() {
 
-        Iterator it = null;
-        final BufferedReader reader;
-
-        try {
-            reader = new BufferedReader(new FileReader(file));
-
-            it = new Iterator<LPoint>() {
-
-                LPoint currentPoint;
-                long totalLinesRead = 0;
-
-                int currentColumnIndex = 0;
-                int currentRowIndex = -1;
-
-                final int finalColumnIndex = endColumnIndex; //end column index is included
-                final int finalRowIndex = endRowIndex; //end row index is included
-
-                boolean initialized = false;
-                boolean isFinish = false;
-
-                private String readLine(BufferedReader reader) throws IOException {
-
-                    String line = reader.readLine();
-
-                    currentRowIndex++;
-                    totalLinesRead++;
-
-                    if (currentRowIndex >= header.getNumRows()) {
-                        currentRowIndex = 0;
-                        currentColumnIndex++;
-                    }
-
-                    return line;
-                }
-
-                @Override
-                public boolean hasNext() {
-
-                    try {
-
-                        LPoint point;
-
-                        if (!initialized) {
-
-                            skipLines(reader, offset);
-
-                            initialized = true;
-                        }
-
-                        if (totalLinesRead == nbPoints) {
-
-                            reader.close();
-                            return false;
-                        }
-
-                        String currentLine;
-
-                        do {
-                            if (isFinish) {
-                                reader.close();
-                                return false;
-                            }
-
-                            currentLine = readLine(reader);
-
-                            if (currentLine == null) {
-                                reader.close();
-                                return false;
-                            }
-
-                            if (currentColumnIndex >= finalColumnIndex && (currentRowIndex) >= finalRowIndex) {
-                                isFinish = true;
-                            }
-
-                        } while ((currentRowIndex) < startRowIndex
-                                || (currentRowIndex) > finalRowIndex
-                                || currentColumnIndex < startColumnIndex);
-
-                        String[] split = currentLine.split(" ");
-
-                        point = new LDoublePoint();
-
-                        ((LDoublePoint) point).x = Double.valueOf(split[0]);
-                        ((LDoublePoint) point).y = Double.valueOf(split[1]);
-                        ((LDoublePoint) point).z = Double.valueOf(split[2]);
-
-                        if (((LDoublePoint) point).x == 0 && ((LDoublePoint) point).y == 0 && ((LDoublePoint) point).z == 0) {
-
-                            if (!returnInvalidPoint) {
-                                hasNext();
-                            } else {
-
-                                point = new LEmptyPoint();
-
-                                point.rowIndex = currentRowIndex;
-                                point.columnIndex = currentColumnIndex;
-
-                                point.valid = false;
-
-                                currentPoint = point;
-                            }
-                        } else {
-                            point.valid = true;
-
-                            point.rowIndex = currentRowIndex;
-                            point.columnIndex = currentColumnIndex;
-
-                            if (split.length > 3) {
-
-                                point.intensity = Float.valueOf(split[3]);
-
-                                if (split.length > 6) {
-                                    point.red = Integer.valueOf(split[4]);
-                                    point.green = Integer.valueOf(split[5]);
-                                    point.blue = Integer.valueOf(split[6]);
-                                }
-                            }
-
-                            currentPoint = point;
-                        }
-
-                    } catch (IOException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
-                        try {
-                            reader.close();
-                        } catch (IOException ex) {
-                            Logger.getLogger(PTXScan.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        return false;
-                    }
-
-                    return true;
-                }
-
-                @Override
-                public LPoint next() {
-                    return currentPoint;
-                }
-            };
-
-        } catch (FileNotFoundException ex) {
-            throw new RuntimeException(ex);
+        if (!cached.get()) {
+            try {
+                cacheScan(file);
+            } catch (IOException ex) {
+                Logger.getLogger(PTXScan.class.getName()).log(Level.SEVERE, null, ex);
+                throw new RuntimeException(ex);
+            }
         }
-
-        return it;
+        return new CachedPTXScanIterator();
     }
 
     @Override
@@ -280,4 +195,37 @@ public class PTXScan extends GriddedPointScan {
         return (PTXHeader) header;
     }
 
+    private class CachedPTXScanIterator implements Iterator<LPoint> {
+
+        final private int size, nrow, ncol;
+        private int cursor;
+
+        CachedPTXScanIterator() {
+            nrow = endRowIndex - startRowIndex + 1;
+            ncol = endColumnIndex - startColumnIndex + 1;
+            size = nrow * ncol;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return cursor != size;
+        }
+
+        @Override
+        public LPoint next() {
+
+            int i = cursor;
+            if (i >= size) {
+                throw new NoSuchElementException();
+            }
+            int col = i / nrow;
+            int row = i - col * nrow;
+            col += startColumnIndex;
+            row += startRowIndex;
+            cursor = i + 1;
+            return (null != points[col][row])
+                    ? points[col][row]
+                    : new LEmptyPoint(col, row);
+        }
+    }
 }

@@ -19,6 +19,8 @@
 package org.amapvox.lidar.gridded;
 
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
     import org.apache.commons.math3.geometry.euclidean.threed.SphericalCoordinates;
@@ -63,9 +65,11 @@ public class LPointShotExtractor implements Iterable<LShot> {
     }
 
     private void fillNoHit() throws Exception {
+        
+        Logger.getLogger(LPointShotExtractor.class.getName()).info("Computing missing shots...");
 
         scan.computeExtremumsAngles();
-
+        
         scan.openScanFile(scan.getFile());
 
         angles = new SimpleSpherCoords[this.scan.getHeader().getNumRows()][this.scan.getHeader().getNumCols()];
@@ -113,6 +117,7 @@ public class LPointShotExtractor implements Iterable<LShot> {
 
         int lastValidRowIndex = -1;
         int lastValidColumnIndex = -1;
+        int nfill = 0;
 
         for (int row = 0; row < angles.length; row++) {
 
@@ -189,6 +194,7 @@ public class LPointShotExtractor implements Iterable<LShot> {
                     }
 
                     angles[row][column] = new SimpleSpherCoords(azimut, zenithal);
+                    nfill++;
 
                 } else {
                     lastValidRowIndex = row;
@@ -196,12 +202,13 @@ public class LPointShotExtractor implements Iterable<LShot> {
                 }
             }
         }
+        Logger.getLogger(LPointShotExtractor.class.getName()).log(Level.INFO, "Filled {0} missing shots", nfill);
 
     }
 
     @Override
     public Iterator<LShot> iterator() {
-
+        
         final Iterator<LPoint> pointIterator = scan.iterator();
 
         Iterator<LShot> it = new Iterator<LShot>() {

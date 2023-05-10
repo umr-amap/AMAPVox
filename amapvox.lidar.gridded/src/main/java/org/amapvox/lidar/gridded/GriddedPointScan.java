@@ -98,22 +98,17 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     protected int rowIndexElevMax = -1;
 
     /**
-     * Is the iterator should return invalid points (missed returns of lidar
-     * shots) ?
+     * Should iterator return missing points ? (shot without return) 
      */
-    protected boolean returnInvalidPoint;
+    protected boolean returnMissingPoint;
 
     /**
      * Bonded gridded point scan file.
      */
     protected File file;
 
-    protected int currentColIndex;
-
     public GriddedPointScan() {
         header = new PointScanHeader();
-        returnInvalidPoint = false;
-        currentColIndex = 0;
     }
 
     public abstract void openScanFile(File file) throws FileNotFoundException, IOException, Exception;
@@ -122,186 +117,89 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     public abstract Iterator<LPoint> iterator();
 
     /**
-     * Compute minimum and maximum azimutal and elevation angles of the scan.
+     * Compute minimum and maximum azimuthal and elevation angles of the scan.
      */
     public void computeExtremumsAngles() {
 
-        Statistic minAzimutalAngle = new Statistic();
-        Statistic maxAzimutalAngle = new Statistic();
-
+        //compute min & max azimutal angle
         resetRowLimits();
         resetColumnLimits();
-
-        //compute min azimutal angle
         int i;
-
+        double[] azimuth = new double[header.getNumCols()];
         for (i = 0; i < header.getNumCols(); i++) {
 
             setUpColumnToRead(i);
 
-            Iterator<LPoint> iterator = this.iterator();
-
-            while (iterator.hasNext()) {
-
-                LPoint point = iterator.next();
-
-                SphericalCoordinates sc;
-
-                if (header.isPointInFloatFormat()) {
-
-                    LFloatPoint floatPoint = (LFloatPoint) point;
-                    sc = new SphericalCoordinates(new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
-                } else {
-                    LDoublePoint doublePoint = (LDoublePoint) point;
-                    sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
+            Statistic azimuthStatistics = new Statistic();
+            for (LPoint point : this) {
+                if (point.valid) {
+                    SphericalCoordinates sc;
+                    if (header.isPointInFloatFormat()) {
+                        LFloatPoint floatPoint = (LFloatPoint) point;
+                        sc = new SphericalCoordinates(new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
+                    } else {
+                        LDoublePoint doublePoint = (LDoublePoint) point;
+                        sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
+                    }
+                    azimuthStatistics.addValue(sc.getTheta());
                 }
-
-                minAzimutalAngle.addValue(sc.getTheta());
             }
+            azimuth[i] = azimuthStatistics.getMean();
+        }
 
-            if (minAzimutalAngle.getNbValues() > 0) {
-                break;
+        azim_min = Float.MAX_VALUE;
+        azim_max = -1.f * Float.MAX_VALUE;
+        for (i = 0; i < azimuth.length; i++) {
+            // min
+            if (azimuth[i] < azim_min) {
+                azim_min = azimuth[i];
+                colIndexAzimMin = i;
+            }
+            // max
+            if (azimuth[i] > azim_max) {
+                azim_max = azimuth[i];
+                colIndexAzimMax = i;
             }
         }
 
-        azim_min = minAzimutalAngle.getMean();
-        colIndexAzimMin = i;
-
-        //compute max azimutal angle
-//        for (i = colIndexAzimMin+100; i < header.getNumCols(); i+=100) {
-//            
-//            setUpColumnToRead(i);
-//            
-//            Iterator<LPoint> iterator = this.iterator();
-//
-//            while(iterator.hasNext()){
-//
-//                LPoint point = iterator.next();
-//
-//                SphericalCoordinates sc = new SphericalCoordinates();
-//
-//                if(header.isPointInFloatFormat()){
-//
-//                    LFloatPoint floatPoint = (LFloatPoint)point;
-//                    sc.toSpherical(new Point3d(floatPoint.x, floatPoint.y, floatPoint.z));
-//                }else{
-//                    LDoublePoint doublePoint = (LDoublePoint)point;
-//                    sc.toSpherical(new Point3d(doublePoint.x, doublePoint.y, doublePoint.z));
-//                }
-//
-//                maxAzimutalAngle.addValue(sc.getAzimuth());
-//            }
-//            
-//            if(maxAzimutalAngle.getNbValues() > 0){
-//                break;
-//            }
-//        }
-//        
-//        azim_max = maxAzimutalAngle.getMean();
-//        colIndexAzimMax = i;
-        for (i = header.getNumCols() - 1; i >= 0; i--) {
-
-            setUpColumnToRead(i);
-
-            Iterator<LPoint> iterator = this.iterator();
-
-            while (iterator.hasNext()) {
-
-                LPoint point = iterator.next();
-
-                SphericalCoordinates sc;
-
-                if (header.isPointInFloatFormat()) {
-
-                    LFloatPoint floatPoint = (LFloatPoint) point;
-                    sc = new SphericalCoordinates(new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
-                } else {
-                    LDoublePoint doublePoint = (LDoublePoint) point;
-                    sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
-                }
-
-                maxAzimutalAngle.addValue(sc.getTheta());
-            }
-
-            if (maxAzimutalAngle.getNbValues() > 0) {
-                break;
-            }
-        }
-
-        azim_max = maxAzimutalAngle.getMean();
-        colIndexAzimMax = i;
-
-        //compute min zenithal angle
-        //compute max azimutal angle
+        // compute min & max zenithal angle
         resetColumnLimits();
-
-        Statistic minZenithalAngle = new Statistic();
-        Statistic maxZenithalAngle = new Statistic();
-
+        double[] zenith = new double[header.getNumRows()];
         for (i = 0; i < header.getNumRows(); i++) {
 
             setUpRowToRead(i);
 
-            Iterator<LPoint> iterator = this.iterator();
-
-            while (iterator.hasNext()) {
-
-                LPoint point = iterator.next();
-
-                SphericalCoordinates sc;
-
-                if (header.isPointInFloatFormat()) {
-
-                    LFloatPoint floatPoint = (LFloatPoint) point;
-                    sc = new SphericalCoordinates(new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
-                } else {
-                    LDoublePoint doublePoint = (LDoublePoint) point;
-                    sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
+            Statistic zenithStatistics = new Statistic();
+            for (LPoint point : this) {
+                if (point.valid) {
+                    SphericalCoordinates sc;
+                    if (header.isPointInFloatFormat()) {
+                        LFloatPoint floatPoint = (LFloatPoint) point;
+                        sc = new SphericalCoordinates(new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
+                    } else {
+                        LDoublePoint doublePoint = (LDoublePoint) point;
+                        sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
+                    }
+                    zenithStatistics.addValue(sc.getPhi());
                 }
-
-                minZenithalAngle.addValue(sc.getPhi());
             }
-
-            if (minZenithalAngle.getNbValues() > 0) {
-                break;
-            }
+            zenith[i] = zenithStatistics.getMean();
         }
 
-        elev_min = minZenithalAngle.getMean();
-        rowIndexElevMin = i;
-
-        for (i = header.getNumRows() - 1; i >= 0; i--) {
-
-            setUpRowToRead(i);
-
-            Iterator<LPoint> iterator = this.iterator();
-
-            while (iterator.hasNext()) {
-
-                LPoint point = iterator.next();
-
-                SphericalCoordinates sc;
-
-                if (header.isPointInFloatFormat()) {
-
-                    LFloatPoint floatPoint = (LFloatPoint) point;
-                    sc = new SphericalCoordinates(new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
-                } else {
-                    LDoublePoint doublePoint = (LDoublePoint) point;
-                    sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
-                }
-
-                maxZenithalAngle.addValue(sc.getPhi());
+        elev_min = Float.MAX_VALUE;
+        elev_max = -1.f * Float.MAX_VALUE;
+        for (i = 0; i < zenith.length; i++) {
+            // min
+            if (zenith[i] < elev_min) {
+                elev_min = zenith[i];
+                rowIndexElevMin = i;
             }
-
-            if (maxZenithalAngle.getNbValues() > 0) {
-                break;
+            // max
+            if (zenith[i] > elev_max) {
+                elev_max = zenith[i];
+                rowIndexElevMax = i;
             }
-
         }
-
-        elev_max = maxZenithalAngle.getMean();
-        rowIndexElevMax = i;
 
         resetRowLimits();
         resetColumnLimits();
@@ -437,7 +335,7 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * @return true if invalid points are returned, false otherwise
      */
     public boolean isReturnInvalidPoint() {
-        return returnInvalidPoint;
+        return returnMissingPoint;
     }
 
     /**
@@ -450,7 +348,7 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * otherwise
      */
     public void setReturnInvalidPoint(boolean returnInvalidPoint) {
-        this.returnInvalidPoint = returnInvalidPoint;
+        this.returnMissingPoint = returnInvalidPoint;
     }
 
     /**
@@ -654,8 +552,7 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
         return elevationStepAngle;
     }
 
-    public int getCurrentColIndex() {
-        return currentColIndex;
-    }
-
+//    public int getCurrentColIndex() {
+//        return currentColIndex;
+//    }
 }

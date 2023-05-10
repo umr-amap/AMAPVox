@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 public class XYBScan extends GriddedPointScan {
     
     public XYBScan() {
-        this.returnInvalidPoint = false;
+        this.returnMissingPoint = false;
     }
 
     @Override

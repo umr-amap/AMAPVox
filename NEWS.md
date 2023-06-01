@@ -1,8 +1,8 @@
 # AMAPVox 1.0.1
 
-*yyyy-MM-dd*
-...
-Not released on CRAN
+*2023-06-01*
+Fixed issue #5, unzip failed on Windows and AMAPVox did not run
+Released on CRAN
 
 # AMAPVox 1.0.0
 

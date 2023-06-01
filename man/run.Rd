@@ -47,16 +47,16 @@ Run AMAPVox either in batch mode or with Graphical User
 Interface (GUI). The function embeds a version manager for installing
 locally any version available remotely.
 
-AMAPVox versions equal or prior to 1.10 require Java 1.8 on your Operating
-System. Refer to section \emph{Java 1.8 64-Bit} for details.
+AMAPVox versions equal or prior to 1.10 require Java 8 on your Operating
+System. Refer to section \emph{Java 8 64-Bit} for details.
 
 \code{gui} function has been kept for background compatibility. It is an alias
 of the \code{run} function.
 }
-\section{Java 1.8 64-Bit}{
+\section{Java 8 64-Bit}{
  AMAPVox versions equal or prior to 1.10 rely on
 Java/JavaFX 64-Bit. It must be installed on the Operating System before
-running AMAPVox. In practice it requires either \href{https://java.com/download/}{Java 1.8 64-Bit Oracle} or \href{https://aws.amazon.com/fr/corretto/}{Java 1.8 64-Bit Corretto}. Mind that OpenJDK 8 will
+running AMAPVox. In practice it requires either \href{https://java.com/download/}{Java 8 64-Bit Oracle} or \href{https://aws.amazon.com/fr/corretto/}{Java 8 64-Bit Corretto}. Mind that OpenJDK 8 will
 not work for AMAPVox GUI since JavaFX is not included in this distribution.
 Nonetheless for AMAPVox in batch mode, any version of Java 64-bit >= 8
 should work.
@@ -68,19 +68,19 @@ version.
 }\if{html}{\out{</div>}}
 
 If AMAPVox::run keeps throwing errors after you have installed a suitable
-Java 1.8 64-Bit, it means that Java 1.8 may not be properly detected by
+Java 8 64-Bit, it means that Java 8 may not be properly detected by
 your system. In such case you may have to check and set the \code{JAVA_HOME}
 environment variable.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{Sys.getenv("JAVA_HOME")
-Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
+Sys.setenv(JAVA_HOME="path/to/java/8/bin")
 system2("java", args = "-version")
 }\if{html}{\out{</div>}}
 
 As a last resort you may change the \code{java} parameter of this function and
-set the full path to Java 1.8 binary.
+set the full path to Java 8 binary.
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{AMAPVox::run("1.10.4", java = "/path/to/java/1.8/bin/java")
+\if{html}{\out{<div class="sourceCode">}}\preformatted{AMAPVox::run("1.10.4", java = "/path/to/java/8/bin/java")
 }\if{html}{\out{</div>}}
 }
 

@@ -177,14 +177,16 @@ toRaster <- function(vxsp, vx) {
 #'   Any other variables will not be merged. In particular PAD variables
 #'   are not merged and should be recalculated with
 #'   [plantAreaDensity()] on the merged voxel space.
-#'   E.g:`vxsp <- plantAreaDensity(merge(vxsp1, vxsp2))`
-#'
+#'   ```
+#'   vxsp <- plantAreaDensity(merge(vxsp1, vxsp2))
+#'   ```
+
 #'   ## Merging multiple voxel spaces
 #'
 #'   Merging several voxel spaces works as follow : vxsp1 and vxsp2 merged
 #'   into vxsp12. vxsp12 & vxsp3 merged into vxsp123, etc. The process can be
 #'   synthesized with the [Reduce()] function.
-#'   ```r
+#'   ```
 #'   vxsp <- Reduce(merge, list(vxsp1, vxsp2, vxsp3))
 #'   ```
 #'

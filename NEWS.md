@@ -1,7 +1,8 @@
 # AMAPVox 1.0.1
 
 *2023-06-01*
-Fixed issue #5, unzip failed on Windows and AMAPVox did not run
+Fixed issue #5, unzip failed on Windows and AMAPVox did not run.
+Fixed Java specifications in DESCRIPTION.
 Released on CRAN
 
 # AMAPVox 1.0.0

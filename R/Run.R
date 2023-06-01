@@ -6,15 +6,15 @@
 #'   Interface (GUI). The function embeds a version manager for installing
 #'   locally any version available remotely.
 #'
-#'   AMAPVox versions equal or prior to 1.10 require Java 1.8 on your Operating
-#'   System. Refer to section *Java 1.8 64-Bit* for details.
+#'   AMAPVox versions equal or prior to 1.10 require Java 8 on your Operating
+#'   System. Refer to section *Java 8 64-Bit* for details.
 #'
 #'   `gui` function has been kept for background compatibility. It is an alias
 #'   of the `run` function.
-#' @section Java 1.8 64-Bit: AMAPVox versions equal or prior to 1.10 rely on
+#' @section Java 8 64-Bit: AMAPVox versions equal or prior to 1.10 rely on
 #'   Java/JavaFX 64-Bit. It must be installed on the Operating System before
-#'   running AMAPVox. In practice it requires either [Java 1.8 64-Bit
-#'   Oracle](https://java.com/download/) or [Java 1.8 64-Bit
+#'   running AMAPVox. In practice it requires either [Java 8 64-Bit
+#'   Oracle](https://java.com/download/) or [Java 8 64-Bit
 #'   Corretto](https://aws.amazon.com/fr/corretto/). Mind that OpenJDK 8 will
 #'   not work for AMAPVox GUI since JavaFX is not included in this distribution.
 #'   Nonetheless for AMAPVox in batch mode, any version of Java 64-bit >= 8
@@ -26,18 +26,18 @@
 #'   system2("java", args = "-version")
 #'   ```
 #'   If AMAPVox::run keeps throwing errors after you have installed a suitable
-#'   Java 1.8 64-Bit, it means that Java 1.8 may not be properly detected by
+#'   Java 8 64-Bit, it means that Java 8 may not be properly detected by
 #'   your system. In such case you may have to check and set the `JAVA_HOME`
 #'   environment variable.
 #'   ```
 #'   Sys.getenv("JAVA_HOME")
-#'   Sys.setenv(JAVA_HOME="path/to/java/1.8/bin")
+#'   Sys.setenv(JAVA_HOME="path/to/java/8/bin")
 #'   system2("java", args = "-version")
 #'   ```
 #'   As a last resort you may change the `java` parameter of this function and
-#'   set the full path to Java 1.8 binary.
+#'   set the full path to Java 8 binary.
 #'   ```
-#'   AMAPVox::run("1.10.4", java = "/path/to/java/1.8/bin/java")
+#'   AMAPVox::run("1.10.4", java = "/path/to/java/8/bin/java")
 #'   ```
 #' @param version, either "latest" or a valid version number major.minor(.build)
 #'   if `version="latest"` the function looks for latest remote version. If
@@ -181,23 +181,23 @@ is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
 }
 
 # check java version for AMAPVox v1
-# must be Java 1.8 64 bit Oracle or Corretto (sic!)
+# must be Java 8 64 bit Oracle or Corretto (sic!)
 check.java <- function(java = "java") {
 
   res <- suppressWarnings(
     system2(java, args = "-version", stdout = NULL, stderr = NULL))
   if (res != 0) {
     stop(paste("R did not find 'java' command.",
-               " Make sure Java 1.8 64-Bit is properly installed"))
+               " Make sure Java 8 64-Bit is properly installed"))
   } else {
     # java is installed, make sure it is Java 8 64-Bit
     jvrs <- system2(java, args = "-version", stdout = TRUE, stderr = TRUE)
-    # java 1.8.0 64-Bit Oracle or Corretto for JavaFX support
+    # java 8 64-Bit Oracle or Corretto for JavaFX support
     if (!(grepl("1\\.8\\.0", jvrs[1])
           & (grepl("Java\\(TM\\)", jvrs[2]) | grepl("Corretto", jvrs[2]))
           & grepl("64\\-[bB]it", jvrs[3]))) {
       stop("unsupported java version\n", paste("  ", jvrs, "\n"),
-           "Must be Java 1.8 64-Bit, Oracle or Corretto.\n",
+           "Must be Java 8 64-Bit, Oracle or Corretto.\n",
            "Read help function for details.")
     }
   }

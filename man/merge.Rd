@@ -38,7 +38,9 @@ variables listed above) are weighted means with bsEntering as weights.
 Any other variables will not be merged. In particular PAD variables
 are not merged and should be recalculated with
 \code{\link[=plantAreaDensity]{plantAreaDensity()}} on the merged voxel space.
-E.g:\code{vxsp <- plantAreaDensity(merge(vxsp1, vxsp2))}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{vxsp <- plantAreaDensity(merge(vxsp1, vxsp2))
+}\if{html}{\out{</div>}}
 }
 
 \subsection{Merging multiple voxel spaces}{
@@ -47,7 +49,7 @@ Merging several voxel spaces works as follow : vxsp1 and vxsp2 merged
 into vxsp12. vxsp12 & vxsp3 merged into vxsp123, etc. The process can be
 synthesized with the \code{\link[=Reduce]{Reduce()}} function.
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{vxsp <- Reduce(merge, list(vxsp1, vxsp2, vxsp3))
+\if{html}{\out{<div class="sourceCode">}}\preformatted{vxsp <- Reduce(merge, list(vxsp1, vxsp2, vxsp3))
 }\if{html}{\out{</div>}}
 }
 }

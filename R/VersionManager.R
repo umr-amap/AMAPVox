@@ -347,7 +347,7 @@ installVersion <- function(version, overwrite = FALSE) {
   # unzip
   utils::unzip(zipfile,
                # for linux-like system uses system unzip that should preserve file permissions
-               unzip = ifelse(get_os() == "windows", "internal", getOption("unzip")),
+               unzip = getOption("unzip"),
                exdir = ifelse(is_v1(version), versionPath, binPath))
   # delete zip file
   file.remove(zipfile)

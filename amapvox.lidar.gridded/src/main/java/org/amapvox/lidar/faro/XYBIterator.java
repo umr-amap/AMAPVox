@@ -119,12 +119,12 @@ public class XYBIterator implements Iterator<LPoint>, AutoCloseable {
             str = br.readLine();
             nByteHeader += str.length() + 1;
             String[] strRows = clean(str).split(" ");
-            header.setNumRows(Integer.valueOf(strRows[1]));
+            header.setNAzimuth(Integer.valueOf(strRows[1]));
             // 4th line, number of colums
             str = br.readLine();
             nByteHeader += str.length() + 1;
             String[] strCols = clean(str).split(" ");
-            header.setNumCols(Integer.valueOf(strCols[1]));
+            header.setNZenith(Integer.valueOf(strCols[1]));
             // 5th line, 4 zero bytes (000000 000000 000000 000000)
             nByteHeader += 4;
             // set header size

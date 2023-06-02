@@ -235,8 +235,8 @@ public class VoxelizationCfg extends Configuration {
                     int numRows = Integer.valueOf(scanElement.getAttributeValue("numRows"));
                     int numCols = Integer.valueOf(scanElement.getAttributeValue("numCols"));
                     PTXHeader header = new PTXHeader();
-                    header.setNumRows(numRows);
-                    header.setNumCols(numCols);
+                    header.setNAzimuth(numRows);
+                    header.setNZenith(numCols);
                     header.setPointInDoubleFormat(true);
                     PTXScan scan = new PTXScan(f, header, offset);
                     lidarScans.add(new PTXLidarScan(f, mat, scan, count++));
@@ -652,8 +652,8 @@ public class VoxelizationCfg extends Configuration {
 
                 if (lidarType == LidarType.PTX) {
                     scanElement.setAttribute("offset", String.valueOf(((PTXLidarScan) scan).getScan().getOffset()));
-                    scanElement.setAttribute("numRows", String.valueOf(((PTXLidarScan) scan).getScan().getHeader().getNumRows()));
-                    scanElement.setAttribute("numCols", String.valueOf(((PTXLidarScan) scan).getScan().getHeader().getNumCols()));
+                    scanElement.setAttribute("numRows", String.valueOf(((PTXLidarScan) scan).getScan().getHeader().getNAzimuth()));
+                    scanElement.setAttribute("numCols", String.valueOf(((PTXLidarScan) scan).getScan().getHeader().getNZenith()));
                 }
                 Matrix sop = Matrix.valueOf(scan.getMatrix());
                 sop.setId("sop");

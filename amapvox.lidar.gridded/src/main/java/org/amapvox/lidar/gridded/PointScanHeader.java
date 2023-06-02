@@ -28,46 +28,46 @@ import javax.vecmath.Matrix4d;
 public class PointScanHeader {
 
     /**
-     * Number of columns in the scan
+     * Number of zenithal pulses in the scan
      */
-    protected int numCols;
+    private int nzenith;
 
     /**
-     * Number of rows in the scan
+     * Number of azimuthal pulses in the scan
      */
-    protected int numRows;
+    private int nazimuth;
 
     /**
-     * 4x4 transformation matrix, the default value is identity,
+     * 4x4 transformation matrix, the default value is identity.
      * <p>
      * It can be another value after the scan have been registered</p>
      */
-    protected Matrix4d transfMatrix;
+    private Matrix4d transfMatrix;
 
     /**
      * Are points stored in float format (4 bytes)?
      */
-    protected boolean pointInFloatFormat;
+    private boolean pointInFloatFormat;
 
     /**
      * Are points stored in double format (8 bytes)?
      */
-    protected boolean pointInDoubleFormat;
+    private boolean pointInDoubleFormat;
 
     /**
      * Are points have intensity value?
      */
-    protected boolean pointContainsIntensity;
+    private boolean pointContainsIntensity;
 
     /**
      * Are points have color values (red-green-blue)?
      */
-    protected boolean pointContainsRGB;
+    private boolean pointContainsRGB;
 
     /**
      * Size of a point in bytes, including positions and other attributes
      */
-    protected int pointSize;
+    private int pointSize;
 
     public PointScanHeader() {
         transfMatrix = new Matrix4d();
@@ -75,39 +75,39 @@ public class PointScanHeader {
     }
 
     /**
-     * Get number of columns of the scan.
+     * Get number of zenithal pulses in the scan. Vertical sweep.
      *
-     * @return The number of columns.
+     * @return The number of pulses in the zenithal sweep.
      */
-    public int getNumCols() {
-        return numCols;
+    public int getNZenith() {
+        return nzenith;
     }
 
     /**
-     * Set number of columns of the scan.
+     * Set number of zenithal pulses in the scan. Vertical sweep.
      *
-     * @param numCols The number of columns
+     * @param nzenith The number of pulses in the zenithal sweep.
      */
-    public void setNumCols(int numCols) {
-        this.numCols = numCols;
+    public void setNZenith(int nzenith) {
+        this.nzenith = nzenith;
     }
 
     /**
-     * Get number of rows of the scan
+     * Get number of azimuthal pulses in the scan. Horizontal rotation.
      *
-     * @return The number of rows
+     * @return The number of pulses in the azimuthal rotation.
      */
-    public int getNumRows() {
-        return numRows;
+    public int getNAzimuth() {
+        return nazimuth;
     }
 
     /**
-     * Set number of rows of the scan
+     * Set number of azimuthal pulses in the scan. Horizontal rotation.
      *
-     * @param numRows The number of rows
+     * @param nazimuth The number of pulses in the azimuthal rotation.
      */
-    public void setNumRows(int numRows) {
-        this.numRows = numRows;
+    public void setNAzimuth(int nazimuth) {
+        this.nazimuth = nazimuth;
     }
 
     /**
@@ -129,7 +129,7 @@ public class PointScanHeader {
     }
 
     /**
-     * Is point is in float format {@link #pointInFloatFormat}
+     * Is point in float format {@link #pointInFloatFormat}
      *
      * @return true if point is in float format, false otherwise
      */
@@ -147,7 +147,7 @@ public class PointScanHeader {
     }
 
     /**
-     * Is point is in double format {@link #pointInDoubleFormat}
+     * Is point in double format {@link #pointInDoubleFormat}
      *
      * @return true if point is in double format, false otherwise
      */
@@ -165,7 +165,7 @@ public class PointScanHeader {
     }
 
     /**
-     * Is point contains intensity attribute ? {@link #pointContainsIntensity}
+     * Does point contain intensity attribute ? {@link #pointContainsIntensity}
      *
      * @return true if point contains intensity value, false otherwise
      */
@@ -174,7 +174,7 @@ public class PointScanHeader {
     }
 
     /**
-     * Set that point format contains intensity attribute
+     * Set whether point format contains intensity attribute.
      *
      * @param pointContainsIntensity
      */
@@ -183,16 +183,16 @@ public class PointScanHeader {
     }
 
     /**
-     * Is point contains rgb attribute ? {@link #pointContainsRGB}
+     * Does point contain RGB attribute ? {@link #pointContainsRGB}
      *
-     * @return true if point contains rgb value, false otherwise
+     * @return true if point contains RGB value, false otherwise
      */
     public boolean isPointContainsRGB() {
         return pointContainsRGB;
     }
 
     /**
-     * Set that point format contains rgb attribute
+     * Set whether point format contains RGB attribute
      *
      * @param pointContainsRGB
      */
@@ -210,7 +210,7 @@ public class PointScanHeader {
     }
 
     /**
-     * Update point size based on current defined atributes and storage format
+     * Update point size based on current defined attributes and storage format
      */
     public void updatePointSize() {
 
@@ -235,8 +235,8 @@ public class PointScanHeader {
     public String toString() {
 
         return "Transformation matrix:\n" + transfMatrix.toString()
-                + "Column number:\t\t" + numCols + "\n"
-                + "Row number:\t\t" + numRows + "\n"
+                + "Number of pulses in vertical sweep:\t\t" + nzenith + "\n"
+                + "Number of pulses in horizontal rotation:\t\t" + nazimuth + "\n"
                 + "Point storage format:\t" + ((isPointInDoubleFormat()) ? "Double" : "Float") + "\n"
                 + "Contains intensity:\t" + ((isPointContainsIntensity()) ? "Yes" : "No") + "\n"
                 + "Contains RGB:\t\t" + ((isPointContainsRGB()) ? "Yes" : "No");

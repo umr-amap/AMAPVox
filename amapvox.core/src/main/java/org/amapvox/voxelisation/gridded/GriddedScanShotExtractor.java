@@ -76,17 +76,17 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
     }
 
     private void fillNoHit() throws Exception {
-        
+
         Logger.getLogger(GriddedScanShotExtractor.class.getName()).info("Computing missing shots...");
 
-        scan.computeExtremumsAngles();
-        
+        scan.computeMinMaxAngles();
+
         scan.openScanFile(scan.getFile());
 
-        angles = new SimpleSpherCoords[this.scan.getHeader().getNumRows()][this.scan.getHeader().getNumCols()];
+        angles = new SimpleSpherCoords[this.scan.getHeader().getNAzimuth()][this.scan.getHeader().getNZenith()];
 
-        azimuts = new boolean[this.scan.getHeader().getNumCols()];
-        zenithals = new boolean[this.scan.getHeader().getNumRows()];
+        azimuts = new boolean[this.scan.getHeader().getNZenith()];
+        zenithals = new boolean[this.scan.getHeader().getNAzimuth()];
 
         for (LPoint point : scan) {
             if (point.valid) {
@@ -108,18 +108,26 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
                 SphericalCoordinates sc = new SphericalCoordinates(new Vector3D(dir.x, dir.y, dir.z));
 
-                angles[point.rowIndex][point.columnIndex] = new SimpleSpherCoords();
-                angles[point.rowIndex][point.columnIndex].azimut = sc.getTheta();
-                angles[point.rowIndex][point.columnIndex].zenith = sc.getPhi();
+                angles[point.azimuthIndex][point.zenithIndex] = new SimpleSpherCoords();
+                angles[point.azimuthIndex][point.zenithIndex].azimut = sc.getTheta();
+                angles[point.azimuthIndex][point.zenithIndex].zenith = sc.getPhi();
 
-                azimuts[point.columnIndex] = true;
-                zenithals[point.rowIndex] = true;
+                azimuts[point.zenithIndex] = true;
+                zenithals[point.azimuthIndex] = true;
             }
         }
 
         int lastValidRowIndex = -1;
         int lastValidColumnIndex = -1;
         int nfill = 0;
+
+        for (int row = 0; row < angles.length; row += 10) {
+            for (int column = 0; column < angles[0].length; column += 10) {
+                if (null != angles[row][column]) {
+                    System.out.println("row " + row + " col " + column + " azimuth " + angles[row][column].azimut + " zenith " + angles[row][column].zenith);
+                }
+            }
+        }
 
         for (int row = 0; row < angles.length; row++) {
 
@@ -152,13 +160,13 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                         for (int i = row + 1, j = row - 1; i < angles.length || j >= 0; i++, j--) {
 
                             if (i < angles.length && angles[i][column] != null) {
-                                zenithal = (angles[i][column].zenith + ((i - row) * scan.getElevationStepAngle()));
+                                zenithal = (angles[i][column].zenith + ((i - row) * scan.getZenithalStepAngle()));
                                 azimuts[column] = true;
                                 break;
                             }
 
                             if (j >= 0 && angles[j][column] != null) {
-                                zenithal = (angles[j][column].zenith - ((row - j) * scan.getElevationStepAngle()));
+                                zenithal = (angles[j][column].zenith - ((row - j) * scan.getZenithalStepAngle()));
                                 azimuts[column] = true;
                                 break;
                             }
@@ -183,14 +191,14 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                         }
                     }*/
                     if (Double.isNaN(azimut)) {
-                        azimut = (scan.getAzim_min() - ((column - scan.getColIndexAzimMin()) * scan.getAzimutalStepAngle()));
+                        azimut = (scan.getAzimMin() - ((column - scan.getIndexAzimMin()) * scan.getAzimuthalStepAngle()));
                     }
 
                     if (Double.isNaN(zenithal)) {
                         if (lastValidRowIndex != -1) {
-                            zenithal = (angles[lastValidRowIndex][lastValidColumnIndex].zenith - ((row - lastValidRowIndex) * scan.getElevationStepAngle()));
+                            zenithal = (angles[lastValidRowIndex][lastValidColumnIndex].zenith - ((row - lastValidRowIndex) * scan.getZenithalStepAngle()));
                         } else {
-                            zenithal = (scan.getElev_min() - ((row - scan.getRowIndexElevMin()) * scan.getElevationStepAngle()));
+                            zenithal = (scan.getZenithMin() - ((row - scan.getIndexZenithMin()) * scan.getZenithalStepAngle()));
                         }
 
                     }
@@ -210,7 +218,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
     @Override
     public IteratorWithException<Shot> iterator() {
-        
+
         final Iterator<LPoint> pointIterator = scan.iterator();
 
         IteratorWithException<Shot> it = new IteratorWithException<Shot>() {
@@ -246,7 +254,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
                     Point3d origin = new Point3d(0.d, 0.d, 0.d);
                     transformation.transform(origin);
-                    
+
                     Vector3d direction = new Vector3d(xDirection, yDirection, zDirection);
                     direction.normalize();
                     transformation.transform(direction);
@@ -262,11 +270,11 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                     }
                     return shot;
                 } else if (scan.isReturnInvalidPoint()) {
-                    
+
                     Point3d origin = new Point3d(0.d, 0.d, 0.d);
                     transformation.transform(origin);
-                    
-                    SphericalCoordinates sc = new SphericalCoordinates(1, angles[point.rowIndex][point.columnIndex].azimut, angles[point.rowIndex][point.columnIndex].zenith);
+
+                    SphericalCoordinates sc = new SphericalCoordinates(1, angles[point.azimuthIndex][point.zenithIndex].azimut, angles[point.azimuthIndex][point.zenithIndex].zenith);
                     //SphericalCoordinates sc = angles[point.rowIndex][point.columnIndex];
                     Vector3d direction = new Vector3d(sc.getCartesian().getX(), sc.getCartesian().getY(), sc.getCartesian().getZ());
                     direction.normalize();

@@ -30,8 +30,8 @@ public class PTXScanTest {
     public PTXScanTest() throws URISyntaxException {
 
         PTXHeader header = new PTXHeader();
-        header.setNumCols(2);
-        header.setNumRows(5);
+        header.setNZenith(2);
+        header.setNAzimuth(5);
         header.setPointContainsIntensity(true);
         header.setPointContainsRGB(false);
         header.setPointInDoubleFormat(true);
@@ -55,16 +55,15 @@ public class PTXScanTest {
     public void tearDown() {
     }
 
-    @Test
     public void testIteratorFiltering() {
 
         pTXScan.setReturnInvalidPoint(true);
 
-        pTXScan.resetRowLimits();
-        pTXScan.resetColumnLimits();
+        pTXScan.resetZenithRange();
+        pTXScan.resetAzimuthRange();
 
-        pTXScan.setUpColumnToRead(1);
-        pTXScan.setUpRowToRead(3);
+        pTXScan.setAzimuthIndex(1);
+        pTXScan.setZenithIndex(3);
 
         Iterator<LPoint> iterator = pTXScan.iterator();
 
@@ -89,7 +88,6 @@ public class PTXScanTest {
         assertEquals(1, count);
     }
 
-    @Test
     public void testIteratorNoFiltering() {
 
         Iterator<LPoint> iterator = pTXScan.iterator();

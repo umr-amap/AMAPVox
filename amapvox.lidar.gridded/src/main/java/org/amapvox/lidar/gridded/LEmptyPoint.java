@@ -25,9 +25,9 @@ package org.amapvox.lidar.gridded;
  */
 public class LEmptyPoint extends LPoint {
 
-    public LEmptyPoint(int col, int row) {
-        this.columnIndex = col;
-        this.rowIndex = row;
+    public LEmptyPoint(int iazimuth, int izenith) {
+        this.azimuthIndex = iazimuth;
+        this.zenithIndex = izenith;
         this.valid = false;
     }
 

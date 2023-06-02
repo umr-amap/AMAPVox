@@ -48,10 +48,10 @@ import org.amapvox.lidar.leica.ptx.PTXScan;
  * As the ptg scan file is a gridded point format, you can select the row,
  * columns you want to read with the following methods :
  * <ul>
- * <li>{@link #setUpColumnToRead(int) setUpColumnToRead(int columnIndex)},</li>
- * <li>{@link #setUpColumnsToRead(int, int) setUpColumnsToRead(int startColumnIndex, int endColumnIndex)},</li>
- * <li>{@link #setUpRowToRead(int) setUpRowToRead(int rowIndex)},</li>
- * <li>{@link #setUpRowsToRead(int, int) setUpRowsToRead(int startRowIndex, int endRowIndex)}</li>
+ * <li>{@link #setAzimuthIndex(int) setUpColumnToRead(int columnIndex)},</li>
+ * <li>{@link #setAzimuthRange(int, int) setUpColumnsToRead(int startColumnIndex, int endColumnIndex)},</li>
+ * <li>{@link #setZenithIndex(int) setUpRowToRead(int rowIndex)},</li>
+ * <li>{@link #setZenithRange(int, int) setUpRowsToRead(int startRowIndex, int endRowIndex)}</li>
  * </ul>
  *
  * @author Julien Heurtebize
@@ -172,10 +172,10 @@ public class PTGScan extends GriddedPointScan {
                         ((PTGHeader) header).setText(getNextString(dis));
                         break;
                     case "%%cols":
-                        ((PTGHeader) header).setNumCols(getNextInt(dis));
+                        ((PTGHeader) header).setNZenith(getNextInt(dis));
                         break;
                     case "%%rows":
-                        ((PTGHeader) header).setNumRows(getNextInt(dis));
+                        ((PTGHeader) header).setNAzimuth(getNextInt(dis));
                         break;
                     case "%%rows_total":
                         ((PTGHeader) header).setRowsTotal(getNextInt(dis));
@@ -240,8 +240,8 @@ public class PTGScan extends GriddedPointScan {
             header.updatePointSize();
             headerByteLength = nbByteRead;
 
-            resetColumnLimits();
-            resetRowLimits();
+            resetAzimuthRange();
+            resetZenithRange();
         }
     }
 
@@ -327,10 +327,10 @@ public class PTGScan extends GriddedPointScan {
             dis.mark(Integer.MAX_VALUE);
             dis.skipBytes((int) headerByteLength);
 
-            offsets = new long[header.getNumCols()];
+            offsets = new long[header.getNZenith()];
 
             //get columns offsets list
-            for (int i = 0; i < header.getNumCols(); i++) {
+            for (int i = 0; i < header.getNZenith(); i++) {
 
                 offsets[i] = getNextLong(dis);
                 offsetSize += 8;
@@ -368,7 +368,7 @@ public class PTGScan extends GriddedPointScan {
             return;
         }
 
-        points = new LPoint[header.getNumCols()][header.getNumRows()];
+        points = new LPoint[header.getNZenith()][header.getNAzimuth()];
 
         readColumnsOffsets();
 
@@ -417,15 +417,15 @@ public class PTGScan extends GriddedPointScan {
                         point.blue = blue;
                     }
 
-                    point.rowIndex = row;
-                    point.columnIndex = col;
+                    point.azimuthIndex = row;
+                    point.zenithIndex = col;
 
                     points[col][row] = point;
 
                 } else {
                     //skipBytes(dis, header.getPointSize());
                 }
-            } while (col < header.getNumCols());
+            } while (col < header.getNZenith());
             cached.set(true);
         }
     }
@@ -435,7 +435,7 @@ public class PTGScan extends GriddedPointScan {
         try {
             col++;
 
-            if (col < header.getNumCols()) {
+            if (col < header.getNZenith()) {
 
                 if (nbByteRead != offsets[col]) {
                     dis.reset();
@@ -443,7 +443,7 @@ public class PTGScan extends GriddedPointScan {
                     nbByteRead = offsets[col];
                 }
 
-                int nbValidityBytes = (int) Math.ceil(header.getNumRows() / 8.0);
+                int nbValidityBytes = (int) Math.ceil(header.getNAzimuth() / 8.0);
                 validPoints = new boolean[nbValidityBytes * 8];
 
                 for (int j = 0, count = 0; j < nbValidityBytes; j++, count += 8) {
@@ -487,10 +487,10 @@ public class PTGScan extends GriddedPointScan {
      * As the ptg scan file is a gridded point format, you can select the row,
      * columns you want to read with the following methods :
      * <ul>
-     * <li>{@link #setUpColumnToRead(int) setUpColumnToRead(int columnIndex)},</li>
-     * <li>{@link #setUpColumnsToRead(int, int) setUpColumnsToRead(int startColumnIndex, int endColumnIndex)},</li>
-     * <li>{@link #setUpRowToRead(int) setUpRowToRead(int rowIndex)},</li>
-     * <li>{@link #setUpRowsToRead(int, int) setUpRowsToRead(int startRowIndex, int endRowIndex)}</li>
+     * <li>{@link #setAzimuthIndex(int) setUpColumnToRead(int columnIndex)},</li>
+     * <li>{@link #setAzimuthRange(int, int) setUpColumnsToRead(int startColumnIndex, int endColumnIndex)},</li>
+     * <li>{@link #setZenithIndex(int) setUpRowToRead(int rowIndex)},</li>
+     * <li>{@link #setZenithRange(int, int) setUpRowsToRead(int startRowIndex, int endRowIndex)}</li>
      * </ul>
      * Those methods should be called before to get the iterator.
      *
@@ -516,8 +516,8 @@ public class PTGScan extends GriddedPointScan {
         private int cursor;
 
         CachedPTGScanIterator() {
-            nrow = endRowIndex - startRowIndex + 1;
-            ncol = endColumnIndex - startColumnIndex + 1;
+            nrow = endZenithIndex - startZenithIndex + 1;
+            ncol = endAzimuthIndex - startAzimuthIndex + 1;
             size = nrow * ncol;
         }
 
@@ -535,8 +535,8 @@ public class PTGScan extends GriddedPointScan {
             }
             int col = i / nrow;
             int row = i - col * nrow;
-            col += startColumnIndex;
-            row += startRowIndex;
+            col += startAzimuthIndex;
+            row += startZenithIndex;
             cursor = i + 1;
             return (null != points[col][row])
                     ? points[col][row]

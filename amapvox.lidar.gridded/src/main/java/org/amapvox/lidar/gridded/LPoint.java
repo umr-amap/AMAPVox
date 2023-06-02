@@ -48,15 +48,15 @@ public abstract class LPoint {
     /**
      * Row index in the grid.
      */
-    public int rowIndex;
+    public int azimuthIndex;
 
     /**
      * Column index in the grid.
      */
-    public int columnIndex;
+    public int zenithIndex;
 
     /**
-     * Is the point valid or not (is the lidar shot got an answer) ?
+     * Is the point a hit (valid = true) or no return (valid = false) ?
      */
     public boolean valid = true;
 

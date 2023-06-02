@@ -11,7 +11,7 @@ import javax.vecmath.Matrix4d;
 
 /**
  *
- * @author calcul
+ * @author Philippe Verley
  */
 public class PTXLidarScan extends LidarScan {
 

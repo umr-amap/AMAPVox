@@ -44,10 +44,10 @@ import java.util.logging.Logger;
  * As the ptx scan file is a gridded point format, you can select the row,
  * columns you want to read with the following methods :
  * <ul>
- * <li>{@link #setUpColumnToRead(int) setUpColumnToRead(int columnIndex)},</li>
- * <li>{@link #setUpColumnsToRead(int, int) setUpColumnsToRead(int startColumnIndex, int endColumnIndex)},</li>
- * <li>{@link #setUpRowToRead(int) setUpRowToRead(int rowIndex)},</li>
- * <li>{@link #setUpRowsToRead(int, int) setUpRowsToRead(int startRowIndex, int endRowIndex)}</li>
+ * <li>{@link #setAzimuthIndex(int) setUpColumnToRead(int columnIndex)},</li>
+ * <li>{@link #setAzimuthRange(int, int) setUpColumnsToRead(int startColumnIndex, int endColumnIndex)},</li>
+ * <li>{@link #setZenithIndex(int) setUpRowToRead(int rowIndex)},</li>
+ * <li>{@link #setZenithRange(int, int) setUpRowsToRead(int startRowIndex, int endRowIndex)}</li>
  * </ul>
  * <p>
  * The ptx scan file may contains multiple scans</p>
@@ -81,13 +81,13 @@ public class PTXScan extends GriddedPointScan {
         this.offset = offset;
         this.returnMissingPoint = true;
 
-        points = new LPoint[header.getNumCols()][header.getNumRows()];
+        points = new LPoint[header.getNAzimuth()][header.getNZenith()];
 
-        startRowIndex = 0;
-        endRowIndex = header.getNumRows() - 1;
+        startZenithIndex = 0;
+        endZenithIndex = header.getNAzimuth() - 1;
 
-        startColumnIndex = 0;
-        endColumnIndex = header.getNumCols() - 1;
+        startAzimuthIndex = 0;
+        endAzimuthIndex = header.getNZenith() - 1;
     }
     
     public long getOffset() {
@@ -115,18 +115,18 @@ public class PTXScan extends GriddedPointScan {
             // skip previous scans and current scan header
             skipLines(reader, offset);
             // init line, row and col index
-            int nline = header.getNumCols() * header.getNumRows();
+            int nline = header.getNZenith() * header.getNAzimuth();
             int iline = 0;
-            int row = -1;
-            int col = 0;
+            int iazimuth = 0;
+            int izenith = -1;
             // loop over lines
             String line;
             while ((line = reader.readLine()) != null && iline < nline) {
-                row++;
+                izenith++;
                 iline++;
-                if (row >= header.getNumRows()) {
-                    row = 0;
-                    col++;
+                if (izenith >= header.getNZenith()) {
+                    izenith = 0;
+                    iazimuth++;
                 }
                 String[] split = line.split(" ");
                 LDoublePoint point = new LDoublePoint();
@@ -136,8 +136,8 @@ public class PTXScan extends GriddedPointScan {
                 point.valid = !(point.x == 0 && point.y == 0 && point.z == 0);
                 // only fill valid points
                 if (point.valid) {
-                    point.rowIndex = row;
-                    point.columnIndex = col;
+                    point.azimuthIndex = iazimuth;
+                    point.zenithIndex = izenith;
                     if (split.length > 3) {
                         point.intensity = Float.parseFloat(split[3]);
                         if (split.length > 6) {
@@ -146,7 +146,7 @@ public class PTXScan extends GriddedPointScan {
                             point.blue = Integer.parseInt(split[6]);
                         }
                     }
-                    points[col][row] = point;
+                    points[iazimuth][izenith] = point;
                 }
             }
             cached.set(true);
@@ -159,10 +159,10 @@ public class PTXScan extends GriddedPointScan {
      * gridded point format, you can select the row, columns you want to read
      * with the following methods :
      * <ul>
-     * <li>{@link #setUpColumnToRead(int) setUpColumnToRead(int columnIndex)},</li>
-     * <li>{@link #setUpColumnsToRead(int, int) setUpColumnsToRead(int startColumnIndex, int endColumnIndex)},</li>
-     * <li>{@link #setUpRowToRead(int) setUpRowToRead(int rowIndex)},</li>
-     * <li>{@link #setUpRowsToRead(int, int) setUpRowsToRead(int startRowIndex, int endRowIndex)}</li>
+     * <li>{@link #setAzimuthIndex(int)},</li>
+     * <li>{@link #setAzimuthRange(int, int)},</li>
+     * <li>{@link #setZenithIndex(int)},</li>
+     * <li>{@link #setZenithRange(int, int)}</li>
      * </ul>
      * All those methods should be called before to get the iterator.
      *
@@ -197,13 +197,13 @@ public class PTXScan extends GriddedPointScan {
 
     private class CachedPTXScanIterator implements Iterator<LPoint> {
 
-        final private int size, nrow, ncol;
+        final private int size, nzenith, nazimuth;
         private int cursor;
 
         CachedPTXScanIterator() {
-            nrow = endRowIndex - startRowIndex + 1;
-            ncol = endColumnIndex - startColumnIndex + 1;
-            size = nrow * ncol;
+            nzenith = endZenithIndex - startZenithIndex + 1;
+            nazimuth = endAzimuthIndex - startAzimuthIndex + 1;
+            size = nzenith * nazimuth;
         }
 
         @Override
@@ -218,14 +218,14 @@ public class PTXScan extends GriddedPointScan {
             if (i >= size) {
                 throw new NoSuchElementException();
             }
-            int col = i / nrow;
-            int row = i - col * nrow;
-            col += startColumnIndex;
-            row += startRowIndex;
+            int iazimuth = i / nzenith;
+            int izenith = i - iazimuth * nzenith;
+            iazimuth += startAzimuthIndex;
+            izenith += startZenithIndex;
             cursor = i + 1;
-            return (null != points[col][row])
-                    ? points[col][row]
-                    : new LEmptyPoint(col, row);
+            return (null != points[iazimuth][izenith])
+                    ? points[iazimuth][izenith]
+                    : new LEmptyPoint(iazimuth, izenith);
         }
     }
 }

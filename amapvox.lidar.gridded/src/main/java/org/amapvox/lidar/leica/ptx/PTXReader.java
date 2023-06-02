@@ -34,7 +34,7 @@ import javax.vecmath.Point3d;
 
 /**
  *
- * @author Julien Heurtebize
+ * @author Julien Heurtebize, Philippe Verley
  */
 public class PTXReader extends LidarProjectReader {
 
@@ -73,7 +73,7 @@ public class PTXReader extends LidarProjectReader {
             PTXScan scan = nextScan;
             if (null != scan) {
                 // move to next scan
-                long npoint = scan.getHeader().getNumCols() * scan.getHeader().getNumRows();
+                long npoint = scan.getHeader().getNZenith() * scan.getHeader().getNAzimuth();
                 long ilineSkipped = 0;
                 while (!cancelled
                         && (ilineSkipped < npoint)
@@ -102,51 +102,51 @@ public class PTXReader extends LidarProjectReader {
         try {
             PTXHeader header = new PTXHeader();
 
-            header.setNumRows(Integer.valueOf(getNextLine(reader)));
-            header.setNumCols(Integer.valueOf(getNextLine(reader)));
+            header.setNAzimuth(Integer.parseInt(getNextLine(reader)));
+            header.setNZenith(Integer.parseInt(getNextLine(reader)));
             header.setPointInDoubleFormat(true);
 
             String[] registeredPos = getNextLine(reader).split(" ");
-            header.setScannerRegisteredPosition(new Point3d(Double.valueOf(registeredPos[0]),
-                    Double.valueOf(registeredPos[1]),
-                    Double.valueOf(registeredPos[2])));
+            header.setScannerRegisteredPosition(new Point3d(Double.parseDouble(registeredPos[0]),
+                    Double.parseDouble(registeredPos[1]),
+                    Double.parseDouble(registeredPos[2])));
 
             String[] registeredAxisX = getNextLine(reader).split(" ");
-            header.setScannerRegisteredAxisX(new Point3d(Double.valueOf(registeredAxisX[0]),
-                    Double.valueOf(registeredAxisX[1]),
-                    Double.valueOf(registeredAxisX[2])));
+            header.setScannerRegisteredAxisX(new Point3d(Double.parseDouble(registeredAxisX[0]),
+                    Double.parseDouble(registeredAxisX[1]),
+                    Double.parseDouble(registeredAxisX[2])));
 
             String[] registeredAxisY = getNextLine(reader).split(" ");
-            header.setScannerRegisteredAxisY(new Point3d(Double.valueOf(registeredAxisY[0]),
-                    Double.valueOf(registeredAxisY[1]),
-                    Double.valueOf(registeredAxisY[2])));
+            header.setScannerRegisteredAxisY(new Point3d(Double.parseDouble(registeredAxisY[0]),
+                    Double.parseDouble(registeredAxisY[1]),
+                    Double.parseDouble(registeredAxisY[2])));
 
             String[] registeredAxisZ = getNextLine(reader).split(" ");
-            header.setScannerRegisteredAxisZ(new Point3d(Double.valueOf(registeredAxisZ[0]),
-                    Double.valueOf(registeredAxisZ[1]),
-                    Double.valueOf(registeredAxisZ[2])));
+            header.setScannerRegisteredAxisZ(new Point3d(Double.parseDouble(registeredAxisZ[0]),
+                    Double.parseDouble(registeredAxisZ[1]),
+                    Double.parseDouble(registeredAxisZ[2])));
 
             String[] transfMatrixRow0 = getNextLine(reader).split(" ");
             String[] transfMatrixRow1 = getNextLine(reader).split(" ");
             String[] transfMatrixRow2 = getNextLine(reader).split(" ");
             String[] transfMatrixRow3 = getNextLine(reader).split(" ");
 
-            double m00 = Double.valueOf(transfMatrixRow0[0]);
-            double m01 = Double.valueOf(transfMatrixRow1[0]);
-            double m02 = Double.valueOf(transfMatrixRow2[0]);
-            double m03 = Double.valueOf(transfMatrixRow3[0]);
-            double m10 = Double.valueOf(transfMatrixRow0[1]);
-            double m11 = Double.valueOf(transfMatrixRow1[1]);
-            double m12 = Double.valueOf(transfMatrixRow2[1]);
-            double m13 = Double.valueOf(transfMatrixRow3[1]);
-            double m20 = Double.valueOf(transfMatrixRow0[2]);
-            double m21 = Double.valueOf(transfMatrixRow1[2]);
-            double m22 = Double.valueOf(transfMatrixRow2[2]);
-            double m23 = Double.valueOf(transfMatrixRow3[2]);
-            double m30 = Double.valueOf(transfMatrixRow0[3]);
-            double m31 = Double.valueOf(transfMatrixRow1[3]);
-            double m32 = Double.valueOf(transfMatrixRow2[3]);
-            double m33 = Double.valueOf(transfMatrixRow3[3]);
+            double m00 = Double.parseDouble(transfMatrixRow0[0]);
+            double m01 = Double.parseDouble(transfMatrixRow1[0]);
+            double m02 = Double.parseDouble(transfMatrixRow2[0]);
+            double m03 = Double.parseDouble(transfMatrixRow3[0]);
+            double m10 = Double.parseDouble(transfMatrixRow0[1]);
+            double m11 = Double.parseDouble(transfMatrixRow1[1]);
+            double m12 = Double.parseDouble(transfMatrixRow2[1]);
+            double m13 = Double.parseDouble(transfMatrixRow3[1]);
+            double m20 = Double.parseDouble(transfMatrixRow0[2]);
+            double m21 = Double.parseDouble(transfMatrixRow1[2]);
+            double m22 = Double.parseDouble(transfMatrixRow2[2]);
+            double m23 = Double.parseDouble(transfMatrixRow3[2]);
+            double m30 = Double.parseDouble(transfMatrixRow0[3]);
+            double m31 = Double.parseDouble(transfMatrixRow1[3]);
+            double m32 = Double.parseDouble(transfMatrixRow2[3]);
+            double m33 = Double.parseDouble(transfMatrixRow3[3]);
 
             Matrix4d transfMatrix = new Matrix4d();
             transfMatrix.set(new double[]{
@@ -158,7 +158,7 @@ public class PTXReader extends LidarProjectReader {
 
             header.setTransfMatrix(transfMatrix);
 
-            if (header.getNumCols() * header.getNumRows() != 0) {
+            if (header.getNZenith() * header.getNAzimuth() != 0) {
 
                 //read first point
                 reader.mark(1000);

@@ -37,7 +37,7 @@ public abstract class GriddedScanVoxelization extends AbstractVoxelization {
 
         IteratorWithException<Shot> it = new GriddedScanShotExtractor(gpScan, transformation).iterator();
 
-        voxelization.voxelization(it, gpScan.getHeader().getNumCols() * gpScan.getHeader().getNumRows());
+        voxelization.voxelization(it, gpScan.getHeader().getNZenith() * gpScan.getHeader().getNAzimuth());
 
         fireSucceeded();
 

@@ -29,8 +29,8 @@ public class XYBScan extends GriddedPointScan {
         this.file = file;
         try (XYBIterator xybIterator = new XYBIterator(this.file)) {
             this.header = xybIterator.getHeader();
-            resetColumnLimits();
-            resetRowLimits();
+            resetAzimuthRange();
+            resetZenithRange();
         } catch (Exception ex) {
             Logger.getLogger(XYBScan.class.getName()).log(Level.SEVERE, null, ex);
         }

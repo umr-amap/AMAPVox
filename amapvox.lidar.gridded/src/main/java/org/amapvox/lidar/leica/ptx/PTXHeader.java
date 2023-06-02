@@ -22,7 +22,7 @@ import org.amapvox.lidar.gridded.PointScanHeader;
 import javax.vecmath.Point3d;
 
 /**
- * This class represents the header of a scan into a ptx file (a ptx file may
+ * This class represents the header of a scan into a PTX file (a PTX file may
  * have multiple scans).
  *
  * @author Julien Heurtebize

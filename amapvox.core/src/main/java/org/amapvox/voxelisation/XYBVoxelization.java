@@ -71,7 +71,7 @@ public class XYBVoxelization extends AbstractVoxelization {
             }
         };
 
-        int nshot = xybIterator.getHeader().getNumCols() * xybIterator.getHeader().getNumRows();
+        int nshot = xybIterator.getHeader().getNZenith() * xybIterator.getHeader().getNAzimuth();
         voxelization.voxelization(shotIterator, nshot);
 
         fireSucceeded();

@@ -29,9 +29,13 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 /**
  * <p>
  * This abstract class can be used by subclasses who need to handle gridded
- * point scan files.</p>
+ * point scan files. It is assumed that the scanner performs alternatively (i)
+ * vertical sweeps with regular zenith increment, and (ii) horizontal rotations
+ * with regular azimuthal increment.
+ * </p>
  * <p>
- * The subclass should implements iterator and file opening.</p>
+ * The subclass should implements iterator and file opening.
+ * </p>
  *
  * @author Julien Heurtebize
  */
@@ -40,65 +44,77 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     protected PointScanHeader header;
 
     /**
-     * First row index to read from the file.
+     * First zenithal index to read in the scan. Vertical sweep.
      */
-    protected int startRowIndex;
+    protected int startZenithIndex;
 
     /**
-     * Last row index to read from the file.
+     * Last zenithal index to read in the scan. Vertical sweep.
      */
-    protected int endRowIndex;
+    protected int endZenithIndex;
 
     /**
-     * First column index to read from the file.
+     * First azimuthal index to read in the scan. Horizontal rotation.
      */
-    protected int startColumnIndex;
+    protected int startAzimuthIndex;
 
     /**
-     * Last column index to read from the file.
+     * Last azimuthal index to read in the scan. Horizontal rotation.
      */
-    protected int endColumnIndex;
+    protected int endAzimuthIndex;
 
     /**
-     * Minimum azimutal angle in radians, azimuth of first non empty column.
+     * Minimum azimuthal angle in radians. Azimuth of first non empty vertical
+     * sweep.
      */
     protected double azim_min = Double.NaN;
 
     /**
-     * Maximum azimutal angle in radians, azimuth of last non empty column.
+     * Maximum azimuthal angle in radians. Azimuth of last non empty vertical
+     * sweep.
      */
     protected double azim_max = Double.NaN;
 
     /**
-     * Azimutal step angle in radians, offset angle between two columns.
+     * Delta azimuthal angle in radians. Averaged azimuthal angle between two
+     * vertical sweeps.
      */
-    protected double azimutalStepAngle = Double.NaN;
+    protected double azim_delta = Double.NaN;
 
     /**
-     * Zenithal step angle in radians, offset angle between two rows.
+     * Delta zenithal step angle in radians. Averaged zenithal angle between two
+     * horizontal rotations.
      */
-    protected double elevationStepAngle = Double.NaN;
+    protected double zenith_delta = Double.NaN;
 
     /**
-     * Minimum zenithal angle in radians, zenith of first non empty row.
+     * Minimum zenithal angle in radians. Zenith of first non empty horizontal
+     * rotation.
      */
-    protected double elev_min = Double.NaN;
+    protected double zenith_min = Double.NaN;
 
     /**
-     * Maximum zenithal angle in radians, zenith of last non empty row.
+     * Maximum zenithal angle in radians. Zenith of last non empty horizontal
+     * rotation.
      */
-    protected double elev_max = Double.NaN;
-
-    //handle empty columns
-    protected int colIndexAzimMin = -1;
-    protected int colIndexAzimMax = -1;
-
-    //handle empty rows
-    protected int rowIndexElevMin = -1;
-    protected int rowIndexElevMax = -1;
+    protected double zenith_max = Double.NaN;
 
     /**
-     * Should iterator return missing points ? (shot without return) 
+     * Index to identify empty vertical sweep at the beginning and the end of
+     * the horizontal rotation.
+     */
+    protected int indexMinAzimAngle = -1;
+    protected int indexMaxAzimAngle = -1;
+
+    /**
+     * Index to identity empty horizontal slices at the beginning and the end of
+     * the vertical sweep.
+     */
+    protected int indexMinZenithAngle = -1;
+    protected int indexMaxZenithAngle = -1;
+
+    /**
+     * Should iterator return missing points ? (shot without return)
      */
     protected boolean returnMissingPoint;
 
@@ -117,18 +133,18 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     public abstract Iterator<LPoint> iterator();
 
     /**
-     * Compute minimum and maximum azimuthal and elevation angles of the scan.
+     * Compute minimum and maximum azimuthal and zenithal angles of the scan.
      */
-    public void computeExtremumsAngles() {
+    public void computeMinMaxAngles() {
 
         //compute min & max azimutal angle
-        resetRowLimits();
-        resetColumnLimits();
+        resetZenithRange();
+        resetAzimuthRange();
         int i;
-        double[] azimuth = new double[header.getNumCols()];
-        for (i = 0; i < header.getNumCols(); i++) {
+        double[] azimuth = new double[header.getNZenith()];
+        for (i = 0; i < header.getNZenith(); i++) {
 
-            setUpColumnToRead(i);
+            setZenithIndex(i);
 
             Statistic azimuthStatistics = new Statistic();
             for (LPoint point : this) {
@@ -153,21 +169,21 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
             // min
             if (azimuth[i] < azim_min) {
                 azim_min = azimuth[i];
-                colIndexAzimMin = i;
+                indexMinAzimAngle = i;
             }
             // max
             if (azimuth[i] > azim_max) {
                 azim_max = azimuth[i];
-                colIndexAzimMax = i;
+                indexMaxAzimAngle = i;
             }
         }
 
         // compute min & max zenithal angle
-        resetColumnLimits();
-        double[] zenith = new double[header.getNumRows()];
-        for (i = 0; i < header.getNumRows(); i++) {
+        resetZenithRange();
+        double[] zenith = new double[header.getNAzimuth()];
+        for (i = 0; i < header.getNAzimuth(); i++) {
 
-            setUpRowToRead(i);
+            setAzimuthIndex(i);
 
             Statistic zenithStatistics = new Statistic();
             for (LPoint point : this) {
@@ -186,36 +202,36 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
             zenith[i] = zenithStatistics.getMean();
         }
 
-        elev_min = Float.MAX_VALUE;
-        elev_max = -1.f * Float.MAX_VALUE;
+        zenith_min = Float.MAX_VALUE;
+        zenith_max = -1.f * Float.MAX_VALUE;
         for (i = 0; i < zenith.length; i++) {
             // min
-            if (zenith[i] < elev_min) {
-                elev_min = zenith[i];
-                rowIndexElevMin = i;
+            if (zenith[i] < zenith_min) {
+                zenith_min = zenith[i];
+                indexMinZenithAngle = i;
             }
             // max
-            if (zenith[i] > elev_max) {
-                elev_max = zenith[i];
-                rowIndexElevMax = i;
+            if (zenith[i] > zenith_max) {
+                zenith_max = zenith[i];
+                indexMaxZenithAngle = i;
             }
         }
 
-        resetRowLimits();
-        resetColumnLimits();
+        resetZenithRange();
+        resetAzimuthRange();
     }
 
     /**
      * Compute azimutal step angle from the extremums angles.
      * <p>
      * If the extremums are unknown, then the method
-     * {@link #computeExtremumsAngles() computeExtremumsAngles()} will be
+     * {@link #computeMinMaxAngles() computeExtremumsAngles()} will be
      * called.</p>
      */
     protected void computeAzimutalStepAngle() {
 
         if (Double.isNaN(azim_min) || Double.isNaN(azim_max)) {
-            computeExtremumsAngles();
+            computeMinMaxAngles();
         }
 
         //azimutalStepAngle = (Math.abs(azim_min)-Math.abs(azim_max))/(double)(colIndexAzimMax - colIndexAzimMin);
@@ -224,106 +240,107 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
             fov += (Math.PI * 2);
         }
 
-        azimutalStepAngle = fov / (double) (colIndexAzimMax - colIndexAzimMin);
+        azim_delta = fov / (double) (indexMaxAzimAngle - indexMinAzimAngle);
     }
 
     /**
      * Compute zenithal step angle from the extremums angles.
      * <p>
      * If the extremums are unknown, then the method
-     * {@link #computeExtremumsAngles() computeExtremumsAngles()} will be
+     * {@link #computeMinMaxAngles() computeExtremumsAngles()} will be
      * called.</p>
      */
     protected void computeZenithalStepAngle() {
 
-        if (Double.isNaN(elev_min) || Double.isNaN(elev_max)) {
-            computeExtremumsAngles();
+        if (Double.isNaN(zenith_min) || Double.isNaN(zenith_max)) {
+            computeMinMaxAngles();
         }
 
-        double fov = elev_min - elev_max;
-        elevationStepAngle = fov / ((double) rowIndexElevMax - rowIndexElevMin);
+        double fov = zenith_min - zenith_max;
+        zenith_delta = fov / ((double) indexMaxZenithAngle - indexMinZenithAngle);
     }
 
     /**
-     * Reset the row range limits to default values.
+     * Reset the zenithal range to default values.
      * <p>
      * The values can have been modified by a call to the following methods
      * :</p>
      * <ul>
-     * <li>{@link #setUpRowToRead(int) setUpRowToRead(int)}</li>
-     * <li>{@link #setUpRowsToRead(int, int) setUpRowsToRead(int, int)}</li>
+     * <li>{@link #setZenithIndex(int) setZenithIndex(int)}</li>
+     * <li>{@link #setZenithRange(int, int) setZenithRange(int, int)}</li>
      * </ul>
      */
-    public void resetRowLimits() {
-        setUpRowsToRead(0, header.getNumRows() - 1);
+    public void resetZenithRange() {
+        setZenithRange(0, header.getNZenith() - 1);
     }
 
     /**
-     * Reset the columns range limits to default values.
+     * Reset the azimuthal range to default values.
      * <p>
      * The values can have been modified by a call to the following methods
      * :</p>
      * <ul>
-     * <li>{@link #setUpColumnToRead(int) setUpColumnToRead(int)}</li>
-     * <li>{@link #setUpColumnsToRead(int, int) setUpColumnsToRead(int, int)}</li>
+     * <li>{@link #setAzimuthIndex(int) setAzimuthIndex(int)}</li>
+     * <li>{@link #setAzimuthRange(int, int) setAzimuthRange(int, int)}</li>
      * </ul>
      */
-    public void resetColumnLimits() {
+    public void resetAzimuthRange() {
 
-        setUpColumnsToRead(0, header.getNumCols() - 1);
+        setAzimuthRange(0, header.getNAzimuth() - 1);
     }
 
     /**
-     * Set the column index to read from the file, others columns will be
-     * ignored.
+     * Set the azimuth index to read from the file. Others vertical sweeps will
+     * be ignored.
      * <p>
      * You should invoke this method before you get the iterator.</p>
      *
-     * @param columnIndex The column index to read
+     * @param azimuthIndex The azimuth index to read
      */
-    public void setUpColumnToRead(int columnIndex) {
-        this.startColumnIndex = columnIndex;
-        this.endColumnIndex = columnIndex;
+    public void setAzimuthIndex(int azimuthIndex) {
+        this.startAzimuthIndex = azimuthIndex;
+        this.endAzimuthIndex = azimuthIndex;
     }
 
     /**
-     * Set the range (inclusion) of column indices to read from the file,
-     * columns outside the range will be ignored.
+     * Set the range (inclusion) of azimuth index to read from the file.
+     * Vertical sweeps outside the range will be ignored.
      * <p>
      * You should invoke this method before you get the iterator.</p>
      *
-     * @param startColumnIndex The first column index of the range
-     * @param endColumnIndex The last column index of the range
+     * @param azimuthIndex1 The first azimuth index of the range
+     * @param azimuthIndex2 The last azimuth index of the range
      */
-    public void setUpColumnsToRead(int startColumnIndex, int endColumnIndex) {
-        this.startColumnIndex = startColumnIndex;
-        this.endColumnIndex = endColumnIndex;
+    public void setAzimuthRange(int azimuthIndex1, int azimuthIndex2) {
+        this.startAzimuthIndex = azimuthIndex1;
+        this.endAzimuthIndex = azimuthIndex2;
     }
 
     /**
-     * Set the row index to read from the file, others rows will be ignored.
+     * Set the zenith index to read from the file. Other horizontal slices will
+     * be ignored.
      * <p>
      * You should invoke this method before you get the iterator.</p>
      *
-     * @param rowIndex The row index to read
+     * @param zenithIndex The zenith index to read
      */
-    public void setUpRowToRead(int rowIndex) {
-        this.startRowIndex = rowIndex;
-        this.endRowIndex = rowIndex;
+    public void setZenithIndex(int zenithIndex) {
+        this.startZenithIndex = zenithIndex;
+        this.endZenithIndex = zenithIndex;
     }
 
     /**
-     * Set the range (inclusion) of row indices to read from the file, rows
-     * outside the range will be ignored.
+     * Set the range (inclusion) of zenithal index to read from the file.
+     * Horizontal slices outside the zenithal range will be ignored.
      * <p>
      * You should invoke this method before you get the iterator.</p>
      *
-     * @param startRowIndex The first row index of the range
-     * @param endRowIndex The last row index of the range
+     * @param zenithIndex1 The first zenithal index of the range
+     * @param zenithIndex2 The last zenithal index of the range
      */
-    public void setUpRowsToRead(int startRowIndex, int endRowIndex) {
-        this.startRowIndex = startRowIndex;
-        this.endRowIndex = endRowIndex;
+    public void setZenithRange(int zenithIndex1, int zenithIndex2) {
+        this.startZenithIndex = zenithIndex1;
+        this.endZenithIndex = zenithIndex2;
     }
 
     /**
@@ -352,89 +369,90 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     }
 
     /**
-     * Get column index corresponding to the mimimum azimutal angle.
+     * Get azimuthal index corresponding to the minimal azimuthal angle.
      * <p>
-     * The minimum azimutal angle is obtained from the first non empty column
-     * starting from column 0.</p>
+     * The minimum azimuthal angle is obtained from the first non empty vertical
+     * sweep.</p>
      *
-     * @return a column index
+     * @return an azimuthal index corresponding to the minimal azimuthal angle.
      */
-    public int getColIndexAzimMin() {
-        return colIndexAzimMin;
+    public int getIndexAzimMin() {
+        return indexMinAzimAngle;
     }
 
     /**
-     * Get row index corresponding to the mimimum zenithal angle.
+     * Get zenithal index corresponding to the minimal zenithal angle.
      * <p>
-     * The minimum zenithal angle is obtained from the first non empty row
-     * starting from row 0.</p>
+     * The minimum zenithal angle is obtained from the first non empty
+     * horizontal rotation.</p>
      *
-     * @return a row index
+     * @return a zenithal index corresponding to the minimal zenithal angle.
      */
-    public int getRowIndexElevMin() {
-        return rowIndexElevMin;
+    public int getIndexZenithMin() {
+        return indexMinZenithAngle;
     }
 
     /**
-     * Get row index corresponding to the maximum zenithal angle.
+     * Get zenithal index corresponding to the maximum zenithal angle.
      * <p>
-     * The maximum zenithal angle is obtained from the first non empty row
-     * starting from the last row.</p>
+     * The maximum zenithal angle is obtained from the last non empty horizontal
+     * rotation.</p>
      *
-     * @return a row index
+     * @return a zenithal index corresponding to the maximum zenithal angle.
      */
-    public int getRowIndexElevMax() {
-        return rowIndexElevMax;
+    public int getIndexZenithMax() {
+        return indexMaxZenithAngle;
     }
 
     /**
-     * Get column index corresponding to the maximum azimutal angle.
+     * Get azimuthal index corresponding to the maximum azimuthal angle.
      * <p>
-     * The maximum azimutal angle is obtained from the first non empty column
-     * starting from the last column.</p>
+     * The maximum azimuthal angle is obtained from the last non empty vertical
+     * sweep.</p>
      *
-     * @return a column index
+     * @return an azimuthal index corresponding to the maximum azimuthal angle.
      */
-    public int getColIndexAzimMax() {
-        return colIndexAzimMax;
+    public int getIndexAzimMax() {
+        return indexMaxAzimAngle;
     }
 
     /**
-     * Get the first row index to read from the file. The default value is 0.
+     * Get the first zenith index to read from the file. The default value is 0.
      *
-     * @return the row index
+     * @return the start zenith index
      */
-    public int getStartRowIndex() {
-        return startRowIndex;
+    public int getStartZenithIndex() {
+        return startZenithIndex;
     }
 
     /**
-     * Get the first column index to read from the file. The default value is 0.
+     * Get the first azimuth index to read from the file. The default value is
+     * 0.
      *
-     * @return the column index
+     * @return the first zenith index
      */
-    public int getStartColumnIndex() {
-        return startColumnIndex;
+    public int getStartAzimuthIndex() {
+        return startAzimuthIndex;
     }
 
     /**
-     * Get the last row index to read from the file. The default value is
-     * (number of rows) - 1.
+     * Get the last zenith index to read from the file. The default value is
+     * (number of horizontal rotations) - 1.
      *
-     * @return the row index
+     * @return the last zenith index
      */
-    public int getEndRowIndex() {
-        return endRowIndex;
+    public int getEndZenithIndex() {
+        return endZenithIndex;
     }
 
     /**
-     * Get the last column index to read from the file. The default value is
-     * (number of columns) - 1.
+     * Get the last azimuth index to read from the file. The default value is
+     * (number of vertical sweeps) - 1.
      *
-     * @return the column index
+     * @return the last azimuth index
      */
-    public int getEndColumnIndex() {
-        return endColumnIndex;
+    public int getEndAzimuthIndex() {
+        return endAzimuthIndex;
     }
 
     /**
@@ -451,36 +469,34 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     }
 
     /**
-     * Get the minimum azimutal angle.
+     * Get the minimum azimuthal angle.
      * <p>
-     * If the extremums are unknown, then the method
-     * {@link #computeExtremumsAngles() computeExtremumsAngles()} will be
-     * called.</p>
+     * If min/max angles are unknown, then the method
+     * {@link #computeMinMaxAngles()} will be called.</p>
      *
-     * @return The minimum azimutal angle in radians
+     * @return The minimum azimuthal angle in radians
      */
-    public double getAzim_min() {
+    public double getAzimMin() {
 
         if (Double.isNaN(azim_min)) {
-            computeExtremumsAngles();
+            computeMinMaxAngles();
         }
 
         return azim_min;
     }
 
     /**
-     * Get the maximum azimutal angle.
+     * Get the maximum azimuthal angle.
      * <p>
-     * If the extremums are unknown, then the method
-     * {@link #computeExtremumsAngles() computeExtremumsAngles()} will be
-     * called.</p>
+     * If min/max angles are unknown, then the method
+     * {@link #computeMinMaxAngles()} will be called.</p>
      *
-     * @return The maximum azimutal angle in radians
+     * @return The maximum azimuthal angle in radians
      */
-    public double getAzim_max() {
+    public double getAzimMax() {
 
         if (Double.isNaN(azim_max)) {
-            computeExtremumsAngles();
+            computeMinMaxAngles();
         }
 
         return azim_max;
@@ -489,67 +505,63 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     /**
      * Get the minimum zenithal angle.
      * <p>
-     * If the extremums are unknown, then the method
-     * {@link #computeExtremumsAngles() computeExtremumsAngles()} will be
-     * called.</p>
+       * If min/max angles are unknown, then the method
+     * {@link #computeMinMaxAngles()} will be called.</p>
      *
      * @return The minimum zenithal angle in radians
      */
-    public double getElev_min() {
+    public double getZenithMin() {
 
-        if (Double.isNaN(elev_min)) {
-            computeExtremumsAngles();
+        if (Double.isNaN(zenith_min)) {
+            computeMinMaxAngles();
         }
-        return elev_min;
+        return zenith_min;
     }
 
     /**
      * Get the maximum zenithal angle.
      * <p>
-     * If the extremums are unknown, then the method
-     * {@link #computeExtremumsAngles() computeExtremumsAngles()} will be
-     * called.</p>
+     * If min/max angles are unknown, then the method
+     * {@link #computeMinMaxAngles()} will be called.</p>
      *
      * @return The maximum zenithal angle in radians
      */
-    public double getElev_max() {
-        return elev_max;
+    public double getZenithMax() {
+        return zenith_max;
     }
 
     /**
      * Get the azimuthal step angle.
      * <p>
-     * If the extremums are unknown, then the method
-     * {@link #computeExtremumsAngles() computeExtremumsAngles()} will be
-     * called.</p>
+     * If min/max angles are unknown, then the method
+     * {@link #computeMinMaxAngles()} will be called.</p>
      *
      * @return The azimuthal step angle in radians
      */
-    public double getAzimutalStepAngle() {
+    public double getAzimuthalStepAngle() {
 
-        if (Double.isNaN(azimutalStepAngle)) {
+        if (Double.isNaN(azim_delta)) {
             computeAzimutalStepAngle();
         }
 
-        return azimutalStepAngle;
+        return azim_delta;
     }
 
     /**
      * Get the zenithal step angle.
      * <p>
-     * If the extremums are unknown, then the method
-     * {@link #computeExtremumsAngles() computeExtremumsAngles()} will be
-     * called.</p>
+      * If min/max angles are unknown, then the method
+     * {@link #computeMinMaxAngles()} will be called.</p> F
      *
      * @return The zenithal step angle in radians
      */
-    public double getElevationStepAngle() {
+    public double getZenithalStepAngle() {
 
-        if (Double.isNaN(elevationStepAngle)) {
+        if (Double.isNaN(zenith_delta)) {
             computeZenithalStepAngle();
         }
 
-        return elevationStepAngle;
+        return zenith_delta;
     }
 
 //    public int getCurrentColIndex() {

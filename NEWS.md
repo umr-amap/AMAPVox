@@ -1,8 +1,8 @@
 # AMAPVox 1.0.1
 
-*2023-06-01*
+*2023-06-19*
 Fixed issue #5, unzip failed on Windows and AMAPVox did not run.
-Fixed Java specifications in DESCRIPTION.
+Deleted Java as System Requirement in DESCRIPTION (optional since AMAPVox binary 2.0)
 Released on CRAN
 
 # AMAPVox 1.0.0

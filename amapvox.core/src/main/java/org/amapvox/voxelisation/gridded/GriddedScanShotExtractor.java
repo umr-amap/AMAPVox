@@ -53,7 +53,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
     this is not a doublon with the SphericalCoordinates class, this is a light version*/
     private class SimpleSpherCoords {
 
-        public double azimut;
+        public double azimuth;
         public double zenith;
 
         public SimpleSpherCoords() {
@@ -61,7 +61,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
         }
 
         public SimpleSpherCoords(double azimut, double elevation) {
-            this.azimut = azimut;
+            this.azimuth = azimut;
             this.zenith = elevation;
         }
 
@@ -83,7 +83,9 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
         scan.openScanFile(scan.getFile());
 
-        angles = new SimpleSpherCoords[this.scan.getHeader().getNAzimuth()][this.scan.getHeader().getNZenith()];
+        int nzenith = scan.getHeader().getNZenith();
+        int nazimuth = scan.getHeader().getNAzimuth();
+        angles = new SimpleSpherCoords[nazimuth][nzenith];
 
         azimuts = new boolean[this.scan.getHeader().getNZenith()];
         zenithals = new boolean[this.scan.getHeader().getNAzimuth()];
@@ -109,7 +111,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                 SphericalCoordinates sc = new SphericalCoordinates(new Vector3D(dir.x, dir.y, dir.z));
 
                 angles[point.azimuthIndex][point.zenithIndex] = new SimpleSpherCoords();
-                angles[point.azimuthIndex][point.zenithIndex].azimut = sc.getTheta();
+                angles[point.azimuthIndex][point.zenithIndex].azimuth = sc.getTheta();
                 angles[point.azimuthIndex][point.zenithIndex].zenith = sc.getPhi();
 
                 azimuts[point.zenithIndex] = true;
@@ -117,99 +119,85 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
             }
         }
 
-        int lastValidRowIndex = -1;
-        int lastValidColumnIndex = -1;
         int nfill = 0;
 
-        for (int row = 0; row < angles.length; row += 10) {
-            for (int column = 0; column < angles[0].length; column += 10) {
-                if (null != angles[row][column]) {
-                    System.out.println("row " + row + " col " + column + " azimuth " + angles[row][column].azimut + " zenith " + angles[row][column].zenith);
+        for (int iazim = 0; iazim < nazimuth; iazim++) {
+            for (int izenith = 0; izenith < nzenith; izenith++) {
+
+                if (angles[iazim][izenith] != null) {
+                    continue;
                 }
-            }
-        }
 
-        for (int row = 0; row < angles.length; row++) {
+                double azimuth = Double.NaN;
+                double zenith = Double.NaN;
 
-            for (int column = 0; column < angles[0].length; column++) {
-
-                if (angles[row][column] == null) {
-
-                    double azimut = Double.NaN;
-                    double zenithal = Double.NaN;
-
-                    if (azimuts[column]) {
-                        for (int i = row + 1, j = row - 1; i < angles.length || j >= 0; i++, j--) {
-
-                            if (i < angles.length && angles[i][column] != null) {
-                                azimut = angles[i][column].azimut;
-                                azimuts[column] = true;
-                                break;
-                            }
-
-                            if (j >= 0 && angles[j][column] != null) {
-                                azimut = angles[j][column].azimut;
-                                azimuts[column] = true;
-                                break;
-                            }
+                if (!Double.isNaN(scan.getAveragedAzimuth()[iazim])) {
+                    // look for closest non null azimuth value on same vertical sweep
+                    for (int up = izenith + 1, down = izenith - 1; up < nzenith || down >= 0; up++, down--) {
+                        if (up < nzenith && angles[iazim][up] != null) {
+                            azimuth = angles[up][izenith].azimuth;
+                            break;
+                        }
+                        if (down >= 0 && angles[iazim][down] != null) {
+                            azimuth = angles[iazim][down].azimuth;
+                            break;
                         }
                     }
-
-                    if (azimuts[column]) {
-
-                        for (int i = row + 1, j = row - 1; i < angles.length || j >= 0; i++, j--) {
-
-                            if (i < angles.length && angles[i][column] != null) {
-                                zenithal = (angles[i][column].zenith + ((i - row) * scan.getZenithalStepAngle()));
-                                azimuts[column] = true;
-                                break;
-                            }
-
-                            if (j >= 0 && angles[j][column] != null) {
-                                zenithal = (angles[j][column].zenith - ((row - j) * scan.getZenithalStepAngle()));
-                                azimuts[column] = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    /*if(zenithals[row]){
-                        
-                        for(int i=column+1, j=column-1;i<angles[0].length || j>=0;i++, j--){
-                        
-                            if(i<angles[0].length && angles[row][i] != null){
-                                zenithal = angles[row][i].zenith;
-                                zenithals[row] = true;
-                                break;
-                            }
-
-                            if(j >=0 && angles[row][j] != null){
-                                zenithal = angles[row][j].zenith;
-                                zenithals[row] = true;
-                                break;
-                            }
-                        }
-                    }*/
-                    if (Double.isNaN(azimut)) {
-                        azimut = (scan.getAzimMin() - ((column - scan.getIndexAzimMin()) * scan.getAzimuthalStepAngle()));
-                    }
-
-                    if (Double.isNaN(zenithal)) {
-                        if (lastValidRowIndex != -1) {
-                            zenithal = (angles[lastValidRowIndex][lastValidColumnIndex].zenith - ((row - lastValidRowIndex) * scan.getZenithalStepAngle()));
-                        } else {
-                            zenithal = (scan.getZenithMin() - ((row - scan.getIndexZenithMin()) * scan.getZenithalStepAngle()));
-                        }
-
-                    }
-
-                    angles[row][column] = new SimpleSpherCoords(azimut, zenithal);
-                    nfill++;
-
                 } else {
-                    lastValidRowIndex = row;
-                    lastValidColumnIndex = column;
+                    // look for closest non null averaged azimuth value on neighbooring vertical sweeps and interpolate
+                    for (int fw = iazim + 1, bw = iazim - 1; fw < nazimuth || bw >= 0; fw++, bw--) {
+                        if (fw < nazimuth) {
+                            double azimFw = scan.getAveragedAzimuth()[fw];
+                            if (!Double.isNaN(azimFw)) {
+                                azimuth = (azimFw - ((fw - iazim) * scan.getAzimuthalStepAngle()));
+                                break;
+                            }
+                        }
+                        if (bw >= 0) {
+                            double azimBw = scan.getAveragedAzimuth()[bw];
+                            if (!Double.isNaN(azimBw)) {
+                                azimuth = (azimBw + ((iazim - bw) * scan.getAzimuthalStepAngle()));
+                                break;
+                            }
+                        }
+                    }
                 }
+
+                if (!Double.isNaN(scan.getAveragedZenith()[izenith])) {
+                    // look for closest non null zenith value on same horizontal rotation
+                    for (int fw = iazim + 1, bw = iazim - 1; fw < nazimuth || bw >= 0; fw++, bw--) {
+                        if (fw < nazimuth && angles[fw][izenith] != null) {
+                            zenith = angles[fw][izenith].zenith;
+                            break;
+                        }
+                        if (bw >= 0 & angles[bw][izenith] != null) {
+                            zenith = angles[bw][izenith].zenith;
+                            break;
+                        }
+                    }
+                } else {
+                    // look for closest non null averaged zenith value on neighbooring horizontal rotations and interpolate
+                    for (int up = izenith + 1, down = izenith - 1; up < nzenith || down >= 0; up++, down--) {
+                        if (up < nzenith) {
+                            double zenithUp = scan.getAveragedZenith()[up];
+                            if (!Double.isNaN(zenithUp)) {
+                                zenith = (zenithUp - ((up - izenith) * scan.getZenithalStepAngle()));
+                                break;
+                            }
+                        }
+                        if (down >= 0) {
+                            double zenithDown = scan.getAveragedZenith()[down];
+                            if (!Double.isNaN(zenithDown)) {
+                                zenith = (zenithDown + ((izenith - down) * scan.getZenithalStepAngle()));
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                angles[iazim][izenith] = new SimpleSpherCoords(azimuth, zenith);
+                nfill++;
+
             }
         }
         Logger.getLogger(GriddedScanShotExtractor.class.getName()).log(Level.INFO, "Filled {0} missing shots", nfill);
@@ -274,7 +262,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                     Point3d origin = new Point3d(0.d, 0.d, 0.d);
                     transformation.transform(origin);
 
-                    SphericalCoordinates sc = new SphericalCoordinates(1, angles[point.azimuthIndex][point.zenithIndex].azimut, angles[point.azimuthIndex][point.zenithIndex].zenith);
+                    SphericalCoordinates sc = new SphericalCoordinates(1, angles[point.azimuthIndex][point.zenithIndex].azimuth, angles[point.azimuthIndex][point.zenithIndex].zenith);
                     //SphericalCoordinates sc = angles[point.rowIndex][point.columnIndex];
                     Vector3d direction = new Vector3d(sc.getCartesian().getX(), sc.getCartesian().getY(), sc.getCartesian().getZ());
                     direction.normalize();

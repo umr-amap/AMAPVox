@@ -63,55 +63,58 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      */
     protected int endAzimuthIndex;
 
+    private double[] averagedAzimuth;
+    private double[] averagedZenith;
+
     /**
      * Minimum azimuthal angle in radians. Azimuth of first non empty vertical
      * sweep.
      */
-    protected double azim_min = Double.NaN;
+    private double azim_min = Double.NaN;
 
     /**
      * Maximum azimuthal angle in radians. Azimuth of last non empty vertical
      * sweep.
      */
-    protected double azim_max = Double.NaN;
+    private double azim_max = Double.NaN;
 
     /**
      * Delta azimuthal angle in radians. Averaged azimuthal angle between two
      * vertical sweeps.
      */
-    protected double azim_delta = Double.NaN;
+    private double azim_delta = Double.NaN;
 
     /**
      * Delta zenithal step angle in radians. Averaged zenithal angle between two
      * horizontal rotations.
      */
-    protected double zenith_delta = Double.NaN;
+    private double zenith_delta = Double.NaN;
 
     /**
      * Minimum zenithal angle in radians. Zenith of first non empty horizontal
      * rotation.
      */
-    protected double zenith_min = Double.NaN;
+    private double zenith_min = Double.NaN;
 
     /**
      * Maximum zenithal angle in radians. Zenith of last non empty horizontal
      * rotation.
      */
-    protected double zenith_max = Double.NaN;
+    private double zenith_max = Double.NaN;
 
     /**
      * Index to identify empty vertical sweep at the beginning and the end of
      * the horizontal rotation.
      */
-    protected int indexMinAzimAngle = -1;
-    protected int indexMaxAzimAngle = -1;
+    private int indexMinAzimAngle = -1;
+    private int indexMaxAzimAngle = -1;
 
     /**
      * Index to identity empty horizontal slices at the beginning and the end of
      * the vertical sweep.
      */
-    protected int indexMinZenithAngle = -1;
-    protected int indexMaxZenithAngle = -1;
+    private int indexMinZenithAngle = -1;
+    private int indexMaxZenithAngle = -1;
 
     /**
      * Should iterator return missing points ? (shot without return)
@@ -140,11 +143,14 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
         //compute min & max azimutal angle
         resetZenithRange();
         resetAzimuthRange();
-        int i;
-        double[] azimuth = new double[header.getNZenith()];
-        for (i = 0; i < header.getNZenith(); i++) {
+        
+        resetZenithRange();
 
-            setZenithIndex(i);
+        int i;
+        averagedAzimuth = new double[header.getNAzimuth()];
+        for (i = 0; i < header.getNAzimuth(); i++) {
+
+            setAzimuthIndex(i);
 
             Statistic azimuthStatistics = new Statistic();
             for (LPoint point : this) {
@@ -160,30 +166,39 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
                     azimuthStatistics.addValue(sc.getTheta());
                 }
             }
-            azimuth[i] = azimuthStatistics.getMean();
+            averagedAzimuth[i] = azimuthStatistics.getNbValues() > 0
+                    ? azimuthStatistics.getMean()
+                    : Double.NaN;
+
+//            System.out.println("index azimuth " + i + " averaged azimuth " + averagedAzimuth[i]);
         }
 
-        azim_min = Float.MAX_VALUE;
-        azim_max = -1.f * Float.MAX_VALUE;
-        for (i = 0; i < azimuth.length; i++) {
+        azim_min = Float.NaN;
+        for (i = 0; i < averagedAzimuth.length; i++) {
             // min
-            if (azimuth[i] < azim_min) {
-                azim_min = azimuth[i];
+            if (!Double.isNaN(averagedAzimuth[i])) {
+                azim_min = averagedAzimuth[i];
                 indexMinAzimAngle = i;
+                break;
             }
+
+        }
+        azim_max = Float.NaN;
+        for (i = averagedAzimuth.length - 1; i > 0; i--) {
             // max
-            if (azimuth[i] > azim_max) {
-                azim_max = azimuth[i];
+            if (!Double.isNaN(averagedAzimuth[i])) {
+                azim_max = averagedAzimuth[i];
                 indexMaxAzimAngle = i;
+                break;
             }
         }
 
         // compute min & max zenithal angle
-        resetZenithRange();
-        double[] zenith = new double[header.getNAzimuth()];
-        for (i = 0; i < header.getNAzimuth(); i++) {
+        resetAzimuthRange();
+        averagedZenith = new double[header.getNZenith()];
+        for (i = 0; i < header.getNZenith(); i++) {
 
-            setAzimuthIndex(i);
+            setZenithIndex(i);
 
             Statistic zenithStatistics = new Statistic();
             for (LPoint point : this) {
@@ -199,26 +214,34 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
                     zenithStatistics.addValue(sc.getPhi());
                 }
             }
-            zenith[i] = zenithStatistics.getMean();
+            averagedZenith[i] = zenithStatistics.getNbValues() > 0
+                    ? zenithStatistics.getMean()
+                    : Double.NaN;
+
+//            System.out.println("zenith index " + i + " averaged zenith " + averagedZenith[i]);
         }
 
-        zenith_min = Float.MAX_VALUE;
-        zenith_max = -1.f * Float.MAX_VALUE;
-        for (i = 0; i < zenith.length; i++) {
+        zenith_min = Float.NaN;
+        for (i = 0; i < averagedZenith.length; i++) {
             // min
-            if (zenith[i] < zenith_min) {
-                zenith_min = zenith[i];
+            if (!Double.isNaN(averagedZenith[i])) {
+                zenith_min = averagedZenith[i];
                 indexMinZenithAngle = i;
+                break;
             }
+
+        }
+        zenith_max = Float.NaN;
+        for (i = averagedZenith.length - 1; i > 0; i--) {
             // max
-            if (zenith[i] > zenith_max) {
-                zenith_max = zenith[i];
+            if (!Double.isNaN(averagedZenith[i])) {
+                zenith_max = averagedZenith[i];
                 indexMaxZenithAngle = i;
+                break;
             }
         }
 
         resetZenithRange();
-        resetAzimuthRange();
     }
 
     /**
@@ -368,6 +391,14 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
         this.returnMissingPoint = returnInvalidPoint;
     }
 
+    public double[] getAveragedZenith() {
+        return averagedZenith;
+    }
+
+    public double[] getAveragedAzimuth() {
+        return averagedAzimuth;
+    }
+
     /**
      * Get azimuthal index corresponding to the minimal azimuthal angle.
      * <p>
@@ -505,7 +536,7 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     /**
      * Get the minimum zenithal angle.
      * <p>
-       * If min/max angles are unknown, then the method
+     * If min/max angles are unknown, then the method
      * {@link #computeMinMaxAngles()} will be called.</p>
      *
      * @return The minimum zenithal angle in radians
@@ -550,7 +581,7 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     /**
      * Get the zenithal step angle.
      * <p>
-      * If min/max angles are unknown, then the method
+     * If min/max angles are unknown, then the method
      * {@link #computeMinMaxAngles()} will be called.</p> F
      *
      * @return The zenithal step angle in radians

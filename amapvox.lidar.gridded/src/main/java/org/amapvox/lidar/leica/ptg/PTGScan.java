@@ -172,10 +172,10 @@ public class PTGScan extends GriddedPointScan {
                         ((PTGHeader) header).setText(getNextString(dis));
                         break;
                     case "%%cols":
-                        ((PTGHeader) header).setNZenith(getNextInt(dis));
+                        ((PTGHeader) header).setNAzimuth(getNextInt(dis));
                         break;
                     case "%%rows":
-                        ((PTGHeader) header).setNAzimuth(getNextInt(dis));
+                        ((PTGHeader) header).setNZenith(getNextInt(dis));
                         break;
                     case "%%rows_total":
                         ((PTGHeader) header).setRowsTotal(getNextInt(dis));
@@ -368,7 +368,7 @@ public class PTGScan extends GriddedPointScan {
             return;
         }
 
-        points = new LPoint[header.getNZenith()][header.getNAzimuth()];
+        points = new LPoint[header.getNAzimuth()][header.getNZenith()];
 
         readColumnsOffsets();
 
@@ -417,15 +417,15 @@ public class PTGScan extends GriddedPointScan {
                         point.blue = blue;
                     }
 
-                    point.azimuthIndex = row;
-                    point.zenithIndex = col;
+                    point.azimuthIndex = col;
+                    point.zenithIndex = row;
 
                     points[col][row] = point;
 
                 } else {
                     //skipBytes(dis, header.getPointSize());
                 }
-            } while (col < header.getNZenith());
+            } while (col < header.getNAzimuth());
             cached.set(true);
         }
     }
@@ -435,7 +435,7 @@ public class PTGScan extends GriddedPointScan {
         try {
             col++;
 
-            if (col < header.getNZenith()) {
+            if (col < header.getNAzimuth()) {
 
                 if (nbByteRead != offsets[col]) {
                     dis.reset();
@@ -443,7 +443,7 @@ public class PTGScan extends GriddedPointScan {
                     nbByteRead = offsets[col];
                 }
 
-                int nbValidityBytes = (int) Math.ceil(header.getNAzimuth() / 8.0);
+                int nbValidityBytes = (int) Math.ceil(header.getNZenith()/ 8.0);
                 validPoints = new boolean[nbValidityBytes * 8];
 
                 for (int j = 0, count = 0; j < nbValidityBytes; j++, count += 8) {

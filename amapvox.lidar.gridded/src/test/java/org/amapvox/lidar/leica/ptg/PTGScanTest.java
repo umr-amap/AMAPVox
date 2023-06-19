@@ -85,8 +85,8 @@ public class PTGScanTest {
                     transfMatrix.getM30(), transfMatrix.getM31(), transfMatrix.getM32(), transfMatrix.getM33()},
                 0);
 
-        assertEquals(3498, header.getNZenith());
-        assertEquals(3696, header.getNAzimuth());
+        assertEquals(3498, header.getNAzimuth());
+        assertEquals(3696, header.getNZenith());
         assertEquals(16, header.getPointSize());
         assertEquals(0, header.getRowsTotal());
         assertEquals(1, header.getVersion());
@@ -123,8 +123,7 @@ public class PTGScanTest {
     @Test
     public void testIteratorFiltering() throws IOException, URISyntaxException {
 
-        int indexRowToRead = 0;
-        pTGScan.setZenithIndex(indexRowToRead);
+        pTGScan.setZenithIndex(0);
 
         Iterator<LPoint> iterator = pTGScan.iterator();
 
@@ -133,13 +132,13 @@ public class PTGScanTest {
             LPoint point = iterator.next();
             assertNotNull(point);
 
-            assertEquals(indexRowToRead, point.azimuthIndex);
+            assertEquals(0, point.zenithIndex);
         }
 
         pTGScan.resetZenithRange();
 
-        int indexColumnToRead = pTGScan.getHeader().getNZenith() - 1;
-        pTGScan.setAzimuthIndex(indexColumnToRead);
+        int indexAzimuth = pTGScan.getHeader().getNAzimuth() - 1;
+        pTGScan.setAzimuthIndex(indexAzimuth);
 
         iterator = pTGScan.iterator();
 
@@ -148,15 +147,15 @@ public class PTGScanTest {
             LPoint point = iterator.next();
             assertNotNull(point);
 
-            assertEquals(indexColumnToRead, point.zenithIndex);
+            assertEquals(indexAzimuth, point.azimuthIndex);
         }
 
         pTGScan.resetAzimuthRange();
 
-        int minIndexColumnToRead = pTGScan.getHeader().getNZenith() - 51;
-        int maxIndexColumnToRead = pTGScan.getHeader().getNZenith() - 1;
+        int minIndezZenith = pTGScan.getHeader().getNZenith() - 51;
+        int maxIndexZenith = pTGScan.getHeader().getNZenith() - 1;
 
-        pTGScan.setAzimuthRange(minIndexColumnToRead, maxIndexColumnToRead);
+        pTGScan.setZenithRange(minIndezZenith, maxIndexZenith);
 
         iterator = pTGScan.iterator();
 
@@ -165,24 +164,26 @@ public class PTGScanTest {
             LPoint point = iterator.next();
             assertNotNull(point);
 
-            assertTrue(point.zenithIndex >= minIndexColumnToRead && point.zenithIndex <= maxIndexColumnToRead);
+            assertTrue(point.zenithIndex >= minIndezZenith && point.zenithIndex <= maxIndexZenith);
         }
 
+        pTGScan.resetZenithRange();
+
+        int minIndexAzim = 50;
+        int maxIndexAzim = 100;
+        pTGScan.setAzimuthRange(minIndexAzim, maxIndexAzim);
+
+        iterator = pTGScan.iterator();
+
+        while (iterator.hasNext()) {
+
+            LPoint point = iterator.next();
+            assertNotNull(point);
+
+            assertTrue(point.azimuthIndex >= minIndexAzim && point.azimuthIndex <= maxIndexAzim);
+        }
+        
         pTGScan.resetAzimuthRange();
-
-        int minIndexRowToRead = 50;
-        int maxIndexRowToRead = 100;
-        pTGScan.setZenithRange(minIndexRowToRead, maxIndexRowToRead);
-
-        iterator = pTGScan.iterator();
-
-        while (iterator.hasNext()) {
-
-            LPoint point = iterator.next();
-            assertNotNull(point);
-
-            assertTrue(point.azimuthIndex >= minIndexRowToRead && point.azimuthIndex <= maxIndexRowToRead);
-        }
 
     }
 
@@ -191,10 +192,10 @@ public class PTGScanTest {
         
         pTGScan.computeMinMaxAngles();
 
-        assertEquals(1.9210892540308797, pTGScan.getZenithMax(), 0.0000001);
-        assertEquals(0.07353449476314654, pTGScan.getZenithMin(), 0.0000001);
-        assertEquals(1.4557245551731213, pTGScan.getAzimMax(), 0.0000001);
-        assertEquals(-0.2926585159330574, pTGScan.getAzimMin(), 0.0000001);
+        assertEquals(1.9210892540308797, pTGScan.getZenithMin(), 0.0000001);
+        assertEquals(0.07353449476314654, pTGScan.getZenithMax(), 0.0000001);
+        assertEquals(1.4557245551731213, pTGScan.getAzimMin(), 0.0000001);
+        assertEquals(-0.2926585159330574, pTGScan.getAzimMax(), 0.0000001);
 
         assertEquals(4.999665630844091E-4, pTGScan.getAzimuthalStepAngle(), 0.0000001);
         assertEquals(5.000148198288859E-4, pTGScan.getZenithalStepAngle(), 0.0000001);

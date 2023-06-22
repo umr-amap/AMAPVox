@@ -88,7 +88,7 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * Should iterator return missing points ? (shot without return)
      */
     protected boolean returnMissingPoint;
-    
+
     // LPoint array, without empty point
     protected LPoint[][] points;
 
@@ -105,10 +105,10 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     public abstract void readHeader() throws FileNotFoundException, IOException;
 
     public abstract void readPointCloud() throws FileNotFoundException, IOException;
-    
+
     /**
      * Returns an iterator to get points from the scan file as a
-     * {@link org.amapvox.lidar.gridded.LPoint} 
+     * {@link org.amapvox.lidar.gridded.LPoint}
      *
      * @return A {@link LPoint} point returned by the iterator.
      */
@@ -216,9 +216,11 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
                         LDoublePoint doublePoint = (LDoublePoint) point;
                         sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
                     }
-                    azimuthStatistics.addValue(sc.getTheta());
+                    double azimuth = Math.abs(sc.getTheta() +  Math.PI) < 0.1  ? sc.getTheta() + 2 * Math.PI : sc.getTheta();
+                    azimuthStatistics.addValue(azimuth);
                 }
             }
+
             averagedAzimuth[i] = azimuthStatistics.getNbValues() > 0
                     ? azimuthStatistics.getMean()
                     : Double.NaN;
@@ -298,19 +300,19 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * @param azimuthIndex2 The last azimuth index of the range
      */
     public void setAzimuthRange(int azimuthIndex1, int azimuthIndex2) {
-        
-         if (azimuthIndex1 < 0 || azimuthIndex1 >= header.getNAzimuth()) {
+
+        if (azimuthIndex1 < 0 || azimuthIndex1 >= header.getNAzimuth()) {
             throw new IllegalArgumentException("azimuth index out of range exception (" + azimuthIndex1 + " not in [" + 0 + " " + header.getNAzimuth() + "[)");
         }
-        
+
         if (azimuthIndex2 < 0 || azimuthIndex2 >= header.getNAzimuth()) {
             throw new IllegalArgumentException("azimuth index out of range exception (" + azimuthIndex2 + " not in [" + 0 + " " + header.getNAzimuth() + "[)");
         }
-        
+
         if (azimuthIndex1 > azimuthIndex2) {
             throw new IllegalArgumentException("azimuth index 1 must be smaller than azimuth index 2");
         }
-        
+
         this.startAzimuthIndex = azimuthIndex1;
         this.endAzimuthIndex = azimuthIndex2;
     }
@@ -324,7 +326,7 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * @param zenithIndex The zenith index to read
      */
     public void setZenithIndex(int zenithIndex) {
-        
+
         setZenithRange(zenithIndex, zenithIndex);
     }
 
@@ -338,19 +340,19 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * @param zenithIndex2 The last zenithal index of the range
      */
     public void setZenithRange(int zenithIndex1, int zenithIndex2) {
-        
+
         if (zenithIndex1 < 0 || zenithIndex1 >= header.getNZenith()) {
             throw new IllegalArgumentException("zenith index out of range exception (" + zenithIndex1 + " not in [" + 0 + " " + header.getNZenith() + "[)");
         }
-        
+
         if (zenithIndex2 < 0 || zenithIndex2 >= header.getNZenith()) {
             throw new IllegalArgumentException("zenith index out of range exception (" + zenithIndex2 + " not in [" + 0 + " " + header.getNZenith() + "[)");
         }
-        
+
         if (zenithIndex1 > zenithIndex2) {
             throw new IllegalArgumentException("zenith index 1 must be smaller than zenith index 2");
         }
-        
+
         this.startZenithIndex = zenithIndex1;
         this.endZenithIndex = zenithIndex2;
     }
@@ -420,8 +422,8 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
 
         return zenith_delta;
     }
-    
-     private class GriddedScanIterator implements Iterator<LPoint> {
+
+    private class GriddedScanIterator implements Iterator<LPoint> {
 
         final private int size, nrow, ncol;
         private int cursor;

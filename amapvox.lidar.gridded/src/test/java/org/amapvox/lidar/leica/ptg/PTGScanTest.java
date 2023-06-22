@@ -99,7 +99,6 @@ public class PTGScanTest {
         long npoint = 0;
         long emptypoint = 0;
 
-        System.out.println("testIteratorNoFiltering");
         for (LPoint point : pTGScan) {
             assertNotNull(point);
             if (point instanceof LEmptyPoint) {

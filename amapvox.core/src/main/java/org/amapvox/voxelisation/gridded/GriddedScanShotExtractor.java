@@ -44,28 +44,19 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
     private final GriddedPointScan scan;
     private final Matrix4d transformation;
 
-    private boolean[] azimuts;
-    private boolean[] zenithals;
+    private SimpleSphericalCoordinates[][] angles;
 
-    private SimpleSpherCoords[][] angles;
+    /*this class contains azimuth and zenith information,
+    light version of SphericalCoordinates */
+    private class SimpleSphericalCoordinates {
 
-    /*this class contains azimut and zenith information,
-    this is not a doublon with the SphericalCoordinates class, this is a light version*/
-    private class SimpleSpherCoords {
+        final private double azimuth;
+        final private double zenith;
 
-        public double azimuth;
-        public double zenith;
-        public boolean data;
-
-        public SimpleSpherCoords() {
-
+        SimpleSphericalCoordinates(double azimuth, double zenith) {
+            this.azimuth = azimuth;
+            this.zenith = zenith;
         }
-
-        public SimpleSpherCoords(double azimut, double elevation) {
-            this.azimuth = azimut;
-            this.zenith = elevation;
-        }
-
     }
 
     public GriddedScanShotExtractor(GriddedPointScan scan, Matrix4d transformation) throws Exception {
@@ -75,20 +66,17 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
     public void init() throws Exception {
         if (scan.isReturnMissingPoint()) {
-            fillNoHit();
+            fillMissingShot();
         }
     }
 
-    private void fillNoHit() throws Exception {
+    private void fillMissingShot() throws Exception {
 
         Logger.getLogger(GriddedScanShotExtractor.class.getName()).info("Computing missing shots...");
 
         int nzenith = scan.getHeader().getNZenith();
         int nazimuth = scan.getHeader().getNAzimuth();
-        angles = new SimpleSpherCoords[nazimuth][nzenith];
-
-        azimuts = new boolean[scan.getHeader().getNZenith()];
-        zenithals = new boolean[scan.getHeader().getNAzimuth()];
+        angles = new SimpleSphericalCoordinates[nazimuth][nzenith];
 
         for (LPoint point : scan) {
             if (point.valid) {
@@ -110,17 +98,12 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
                 SphericalCoordinates sc = new SphericalCoordinates(new Vector3D(dir.x, dir.y, dir.z));
 
-                angles[point.azimuthIndex][point.zenithIndex] = new SimpleSpherCoords();
-                angles[point.azimuthIndex][point.zenithIndex].azimuth = sc.getTheta();
-                angles[point.azimuthIndex][point.zenithIndex].zenith = sc.getPhi();
-                angles[point.azimuthIndex][point.zenithIndex].data = true;
-
-                azimuts[point.zenithIndex] = true;
-                zenithals[point.azimuthIndex] = true;
+                angles[point.azimuthIndex][point.zenithIndex] = new SimpleSphericalCoordinates(sc.getTheta(), sc.getPhi());
             }
         }
 
-        int nfill = 0;
+        // compute missing shot angles in a separate array
+        SimpleSphericalCoordinates[][] filledAngles = new SimpleSphericalCoordinates[nazimuth][nzenith];
 
         for (int iazim = 0; iazim < nazimuth; iazim++) {
             for (int izenith = 0; izenith < nzenith; izenith++) {
@@ -134,15 +117,19 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
                 if (!Double.isNaN(scan.getAveragedAzimuth()[iazim])) {
                     // look for closest non null azimuth value on same vertical sweep
-                    for (int up = izenith + 1, down = izenith - 1; up < nzenith || down >= 0; up++, down--) {
-                        if (up < nzenith && angles[iazim][up] != null) {
+                    for (int up = izenith - 1, down = izenith + 1; up >= 0 || down < nzenith; up--, down++) {
+                        if (up >= 0 && angles[iazim][up] != null) {
                             azimuth = angles[iazim][up].azimuth;
                             break;
                         }
-                        if (down >= 0 && angles[iazim][down] != null) {
+                        if (down < nzenith && angles[iazim][down] != null) {
                             azimuth = angles[iazim][down].azimuth;
                             break;
                         }
+                    }
+                    // fallback: get averaged azimuthal angle 
+                    if (Double.isNaN(azimuth)) {
+                        azimuth = scan.getAveragedAzimuth()[iazim];
                     }
                 } else {
                     // look for closest non null averaged azimuth value on neighbooring vertical sweeps and interpolate
@@ -176,6 +163,10 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                             break;
                         }
                     }
+                    // fallback: get averaged zenithal angle
+                    if (Double.isNaN(zenith)) {
+                        zenith = scan.getAveragedZenith()[izenith];
+                    }
                 } else {
                     // look for closest non null averaged zenith value on neighbooring horizontal rotations and interpolate
                     for (int up = izenith + 1, down = izenith - 1; up < nzenith || down >= 0; up++, down--) {
@@ -196,9 +187,22 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                     }
                 }
 
-                angles[iazim][izenith] = new SimpleSpherCoords(azimuth, zenith);
-                nfill++;
+                if (!Double.isNaN(azimuth) && !Double.isNaN(zenith)) {
+                    filledAngles[iazim][izenith] = new SimpleSphericalCoordinates(azimuth, zenith);
+                }
+            }
+        }
 
+        // fill missing shot angles
+        int nfill = 0;
+        for (int iazim = 0; iazim < nazimuth; iazim++) {
+            for (int izenith = 0; izenith < nzenith; izenith++) {
+                if (null == angles[iazim][izenith] && null != filledAngles[iazim][izenith]) {
+                    angles[iazim][izenith] = new SimpleSphericalCoordinates(
+                            filledAngles[iazim][izenith].azimuth,
+                            filledAngles[iazim][izenith].zenith);
+                    nfill++;
+                }
             }
         }
         Logger.getLogger(GriddedScanShotExtractor.class.getName()).log(Level.INFO, "Filled {0} missing shots", nfill);
@@ -245,10 +249,10 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                     transformation.transform(origin);
 
                     Vector3d direction = new Vector3d(xDirection, yDirection, zDirection);
+                    double range = direction.length();
+
                     direction.normalize();
                     transformation.transform(direction);
-
-                    double range = Math.sqrt((xDirection * xDirection) + (yDirection * yDirection) + (zDirection * zDirection));
 
                     shot = new Shot(index++, origin, direction, new double[]{range});
                     if (!Float.isNaN(point.intensity)) {

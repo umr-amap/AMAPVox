@@ -33,9 +33,9 @@ public class XYBVoxelization extends AbstractVoxelization {
     public Object call() throws Exception {
 
         // XYB scan
-        XYBScan xybScan = new XYBScan();
-        xybScan.openScanFile(getLidarScan().getFile());
-
+        XYBScan xybScan = new XYBScan(getLidarScan().getFile());
+        xybScan.open();
+        
         // XYB iterator
         XYBIterator xybIterator = (XYBIterator) xybScan.iterator();
         Point3d origin = xybIterator.getHeader().getScannerPosition();

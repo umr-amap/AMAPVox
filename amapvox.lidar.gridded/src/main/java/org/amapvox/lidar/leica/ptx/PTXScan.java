@@ -20,18 +20,12 @@ package org.amapvox.lidar.leica.ptx;
 
 import org.amapvox.lidar.gridded.GriddedPointScan;
 import org.amapvox.lidar.gridded.LDoublePoint;
-import org.amapvox.lidar.gridded.LEmptyPoint;
 import org.amapvox.lidar.gridded.LPoint;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * <p>
@@ -59,12 +53,6 @@ public class PTXScan extends GriddedPointScan {
     // offset to scan point data in PTX file
     final private long offset;
 
-    // whether PTX scan has been cached in heap memory
-    final private AtomicBoolean cached = new AtomicBoolean(false);
-
-    // LPoint array, without empty point
-    final private LPoint[][] points;
-
     /**
      * Initialize a new PTXScan, meaning a single scan into the file
      *
@@ -74,9 +62,8 @@ public class PTXScan extends GriddedPointScan {
      */
     public PTXScan(File file, PTXHeader header, long offset) {
 
-        super();
+        super(file);
 
-        this.file = file;
         this.header = header;
         this.offset = offset;
         this.returnMissingPoint = true;
@@ -89,7 +76,7 @@ public class PTXScan extends GriddedPointScan {
         startAzimuthIndex = 0;
         endAzimuthIndex = header.getNZenith() - 1;
     }
-    
+
     public long getOffset() {
         return offset;
     }
@@ -105,13 +92,15 @@ public class PTXScan extends GriddedPointScan {
         }
     }
 
-    synchronized private void cacheScan(File file) throws FileNotFoundException, IOException {
+    @Override
+    public void readHeader() throws FileNotFoundException, IOException {
+        // does nothing, header is passed in constructor
+    }
 
-        if (cached.get()) {
-            return;
-        }
+    @Override
+    public void readPointCloud() throws FileNotFoundException, IOException {
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(getFile()))) {
             // skip previous scans and current scan header
             skipLines(reader, offset);
             // init line, row and col index
@@ -149,83 +138,11 @@ public class PTXScan extends GriddedPointScan {
                     points[iazimuth][izenith] = point;
                 }
             }
-            cached.set(true);
         }
-    }
-
-    /**
-     * Returns an iterator to get points from the scan file as a
-     * {@link org.amapvox.lidar.gridded.LPoint} As the ptx scan file is a
-     * gridded point format, you can select the row, columns you want to read
-     * with the following methods :
-     * <ul>
-     * <li>{@link #setAzimuthIndex(int)},</li>
-     * <li>{@link #setAzimuthRange(int, int)},</li>
-     * <li>{@link #setZenithIndex(int)},</li>
-     * <li>{@link #setZenithRange(int, int)}</li>
-     * </ul>
-     * All those methods should be called before to get the iterator.
-     *
-     * @return A {@link LPoint} point returned by the iterator.
-     */
-    @Override
-    public Iterator<LPoint> iterator() {
-
-        if (!cached.get()) {
-            try {
-                cacheScan(file);
-            } catch (IOException ex) {
-                Logger.getLogger(PTXScan.class.getName()).log(Level.SEVERE, null, ex);
-                throw new RuntimeException(ex);
-            }
-        }
-        return new CachedPTXScanIterator();
-    }
-
-    @Override
-    public void openScanFile(File file) throws FileNotFoundException, IOException, Exception {
-
-        //test file existence
-        FileReader reader = new FileReader(file);
-        reader.close();
     }
 
     @Override
     public PTXHeader getHeader() {
         return (PTXHeader) header;
-    }
-
-    private class CachedPTXScanIterator implements Iterator<LPoint> {
-
-        final private int size, nzenith, nazimuth;
-        private int cursor;
-
-        CachedPTXScanIterator() {
-            nzenith = endZenithIndex - startZenithIndex + 1;
-            nazimuth = endAzimuthIndex - startAzimuthIndex + 1;
-            size = nzenith * nazimuth;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return cursor != size;
-        }
-
-        @Override
-        public LPoint next() {
-
-            int i = cursor;
-            if (i >= size) {
-                throw new NoSuchElementException();
-            }
-            int iazimuth = i / nzenith;
-            int izenith = i - iazimuth * nzenith;
-            iazimuth += startAzimuthIndex;
-            izenith += startZenithIndex;
-            cursor = i + 1;
-            return (null != points[iazimuth][izenith])
-                    ? points[iazimuth][izenith]
-                    : new LEmptyPoint(iazimuth, izenith);
-        }
     }
 }

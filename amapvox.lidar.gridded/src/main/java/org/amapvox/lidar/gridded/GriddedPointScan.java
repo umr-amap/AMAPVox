@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import org.apache.commons.math3.geometry.euclidean.threed.SphericalCoordinates;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -46,37 +47,31 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     /**
      * First zenithal index to read in the scan. Vertical sweep.
      */
-    protected int startZenithIndex;
+    protected int startZenithIndex = -1;
 
     /**
      * Last zenithal index to read in the scan. Vertical sweep.
      */
-    protected int endZenithIndex;
+    protected int endZenithIndex = -1;
 
     /**
      * First azimuthal index to read in the scan. Horizontal rotation.
      */
-    protected int startAzimuthIndex;
+    protected int startAzimuthIndex = -1;
 
     /**
      * Last azimuthal index to read in the scan. Horizontal rotation.
      */
-    protected int endAzimuthIndex;
+    protected int endAzimuthIndex = -1;
 
+    /**
+     * Averaged azimuthal angle for every vertical sweep.
+     */
     private double[] averagedAzimuth;
+    /**
+     * Averaged zenithal angle for every horizontal rotation.
+     */
     private double[] averagedZenith;
-
-    /**
-     * Minimum azimuthal angle in radians. Azimuth of first non empty vertical
-     * sweep.
-     */
-    private double azim_min = Double.NaN;
-
-    /**
-     * Maximum azimuthal angle in radians. Azimuth of last non empty vertical
-     * sweep.
-     */
-    private double azim_max = Double.NaN;
 
     /**
      * Delta azimuthal angle in radians. Averaged azimuthal angle between two
@@ -89,114 +84,55 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * horizontal rotations.
      */
     private double zenith_delta = Double.NaN;
-
-    /**
-     * Minimum zenithal angle in radians. Zenith of first non empty horizontal
-     * rotation.
-     */
-    private double zenith_min = Double.NaN;
-
-    /**
-     * Maximum zenithal angle in radians. Zenith of last non empty horizontal
-     * rotation.
-     */
-    private double zenith_max = Double.NaN;
-
-    /**
-     * Index to identify empty vertical sweep at the beginning and the end of
-     * the horizontal rotation.
-     */
-    private int indexMinAzimAngle = -1;
-    private int indexMaxAzimAngle = -1;
-
-    /**
-     * Index to identity empty horizontal slices at the beginning and the end of
-     * the vertical sweep.
-     */
-    private int indexMinZenithAngle = -1;
-    private int indexMaxZenithAngle = -1;
-
     /**
      * Should iterator return missing points ? (shot without return)
      */
     protected boolean returnMissingPoint;
+    
+    // LPoint array, without empty point
+    protected LPoint[][] points;
 
     /**
      * Bonded gridded point scan file.
      */
-    protected File file;
+    final private File file;
 
-    public GriddedPointScan() {
+    public GriddedPointScan(File file) {
+        this.file = file;
         header = new PointScanHeader();
     }
 
-    public abstract void openScanFile(File file) throws FileNotFoundException, IOException, Exception;
+    public abstract void readHeader() throws FileNotFoundException, IOException;
 
-    @Override
-    public abstract Iterator<LPoint> iterator();
-
+    public abstract void readPointCloud() throws FileNotFoundException, IOException;
+    
     /**
-     * Compute minimum and maximum azimuthal and zenithal angles of the scan.
+     * Returns an iterator to get points from the scan file as a
+     * {@link org.amapvox.lidar.gridded.LPoint} 
+     *
+     * @return A {@link LPoint} point returned by the iterator.
      */
-    public void computeMinMaxAngles() {
+    @Override
+    public Iterator<LPoint> iterator() {
+        return new GriddedScanIterator();
+    }
 
-        //compute min & max azimutal angle
-        resetZenithRange();
-        resetAzimuthRange();
-        
-        resetZenithRange();
+    synchronized public void open() throws FileNotFoundException, IOException {
 
-        int i;
-        averagedAzimuth = new double[header.getNAzimuth()];
-        for (i = 0; i < header.getNAzimuth(); i++) {
+        readHeader();
+        readPointCloud();
+        reset();
+        initZenith();
+        reset();
+        initAzimuth();
+        reset();
+    }
 
-            setAzimuthIndex(i);
+    private void initZenith() {
 
-            Statistic azimuthStatistics = new Statistic();
-            for (LPoint point : this) {
-                if (point.valid) {
-                    SphericalCoordinates sc;
-                    if (header.isPointInFloatFormat()) {
-                        LFloatPoint floatPoint = (LFloatPoint) point;
-                        sc = new SphericalCoordinates(new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
-                    } else {
-                        LDoublePoint doublePoint = (LDoublePoint) point;
-                        sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
-                    }
-                    azimuthStatistics.addValue(sc.getTheta());
-                }
-            }
-            averagedAzimuth[i] = azimuthStatistics.getNbValues() > 0
-                    ? azimuthStatistics.getMean()
-                    : Double.NaN;
-
-//            System.out.println("index azimuth " + i + " averaged azimuth " + averagedAzimuth[i]);
-        }
-
-        azim_min = Float.NaN;
-        for (i = 0; i < averagedAzimuth.length; i++) {
-            // min
-            if (!Double.isNaN(averagedAzimuth[i])) {
-                azim_min = averagedAzimuth[i];
-                indexMinAzimAngle = i;
-                break;
-            }
-
-        }
-        azim_max = Float.NaN;
-        for (i = averagedAzimuth.length - 1; i > 0; i--) {
-            // max
-            if (!Double.isNaN(averagedAzimuth[i])) {
-                azim_max = averagedAzimuth[i];
-                indexMaxAzimAngle = i;
-                break;
-            }
-        }
-
-        // compute min & max zenithal angle
-        resetAzimuthRange();
+        // averaged zenith angle for every horizontal rotation
         averagedZenith = new double[header.getNZenith()];
-        for (i = 0; i < header.getNZenith(); i++) {
+        for (int i = 0; i < header.getNZenith(); i++) {
 
             setZenithIndex(i);
 
@@ -221,94 +157,122 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
 //            System.out.println("zenith index " + i + " averaged zenith " + averagedZenith[i]);
         }
 
-        zenith_min = Float.NaN;
-        for (i = 0; i < averagedZenith.length; i++) {
-            // min
-            if (!Double.isNaN(averagedZenith[i])) {
-                zenith_min = averagedZenith[i];
-                indexMinZenithAngle = i;
-                break;
-            }
-
-        }
-        zenith_max = Float.NaN;
-        for (i = averagedZenith.length - 1; i > 0; i--) {
-            // max
-            if (!Double.isNaN(averagedZenith[i])) {
-                zenith_max = averagedZenith[i];
-                indexMaxZenithAngle = i;
-                break;
+        // zenithal angle delta
+        Statistic deltaZenithStatistics = new Statistic();
+        for (int i = 0; i < (averagedZenith.length - 1); i++) {
+            if (!Double.isNaN(averagedZenith[i]) && !Double.isNaN(averagedZenith[i + 1])) {
+                deltaZenithStatistics.addValue(averagedZenith[i] - averagedZenith[i + 1]);
             }
         }
 
-        resetZenithRange();
+        if (deltaZenithStatistics.getNbValues() >= 10) {
+            // arbitrarily get averaged delta zenith for series greater than 10 values
+            zenith_delta = deltaZenithStatistics.getMean();
+        } else {
+            // computes delta zenith with min & max zenithal angles
+            // zenith of first non empty horizontal rotation
+            double z1 = Double.NaN;
+            int iz1 = -1;
+            for (int i = 0; i < averagedZenith.length; i++) {
+                // min
+                if (!Double.isNaN(averagedZenith[i])) {
+                    z1 = averagedZenith[i];
+                    iz1 = i;
+                    break;
+                }
+
+            }
+            // zenith of last non empty horizontal rotation
+            double z2 = Float.NaN;
+            int iz2 = -1;
+            for (int i = averagedZenith.length - 1; i > 0; i--) {
+                // max
+                if (!Double.isNaN(averagedZenith[i])) {
+                    z2 = averagedZenith[i];
+                    iz2 = i;
+                    break;
+                }
+            }
+            double fov = z1 - z2;
+            zenith_delta = fov / ((double) iz2 - iz1);
+        }
+    }
+
+    private void initAzimuth() {
+
+        averagedAzimuth = new double[header.getNAzimuth()];
+        for (int i = 0; i < header.getNAzimuth(); i++) {
+
+            setAzimuthIndex(i);
+
+            Statistic azimuthStatistics = new Statistic();
+            for (LPoint point : this) {
+                if (point.valid) {
+                    SphericalCoordinates sc;
+                    if (header.isPointInFloatFormat()) {
+                        LFloatPoint floatPoint = (LFloatPoint) point;
+                        sc = new SphericalCoordinates(new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
+                    } else {
+                        LDoublePoint doublePoint = (LDoublePoint) point;
+                        sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
+                    }
+                    azimuthStatistics.addValue(sc.getTheta());
+                }
+            }
+            averagedAzimuth[i] = azimuthStatistics.getNbValues() > 0
+                    ? azimuthStatistics.getMean()
+                    : Double.NaN;
+
+//            System.out.println("index azimuth " + i + " averaged azimuth " + averagedAzimuth[i]);
+        }
+
+        // 
+        Statistic deltaAzimStatistics = new Statistic();
+        for (int i = 0; i < (averagedAzimuth.length - 1); i++) {
+            if (!Double.isNaN(averagedAzimuth[i]) && !Double.isNaN(averagedAzimuth[i + 1])) {
+                deltaAzimStatistics.addValue(averagedAzimuth[i] - averagedAzimuth[i + 1]);
+            }
+        }
+
+        if (deltaAzimStatistics.getNbValues() >= 10) {
+            azim_delta = deltaAzimStatistics.getMean();
+        } else {
+
+            double a1 = Double.NaN;
+            int ia1 = -1;
+            for (int i = 0; i < averagedAzimuth.length; i++) {
+                // min
+                if (!Double.isNaN(averagedAzimuth[i])) {
+                    a1 = averagedAzimuth[i];
+                    ia1 = i;
+                    break;
+                }
+
+            }
+            double a2 = Double.NaN;
+            int ia2 = -1;
+            for (int i = averagedAzimuth.length - 1; i > 0; i--) {
+                // max
+                if (!Double.isNaN(averagedAzimuth[i])) {
+                    a2 = averagedAzimuth[i];
+                    ia2 = i;
+                    break;
+                }
+            }
+            double fov = a1 - a2;
+            if (Math.abs(a2 - a1) < 0.1) {
+                fov += (Math.PI * 2);
+            }
+            azim_delta = fov / (double) (ia2 - ia1);
+        }
     }
 
     /**
-     * Compute azimutal step angle from the extremums angles.
-     * <p>
-     * If the extremums are unknown, then the method
-     * {@link #computeMinMaxAngles() computeExtremumsAngles()} will be
-     * called.</p>
+     * Reset the zenithal and azimuthal ranges to default values.
      */
-    protected void computeAzimutalStepAngle() {
+    public void reset() {
 
-        if (Double.isNaN(azim_min) || Double.isNaN(azim_max)) {
-            computeMinMaxAngles();
-        }
-
-        //azimutalStepAngle = (Math.abs(azim_min)-Math.abs(azim_max))/(double)(colIndexAzimMax - colIndexAzimMin);
-        double fov = azim_min - azim_max;
-        if (Math.abs(azim_max - azim_min) < 0.1) {
-            fov += (Math.PI * 2);
-        }
-
-        azim_delta = fov / (double) (indexMaxAzimAngle - indexMinAzimAngle);
-    }
-
-    /**
-     * Compute zenithal step angle from the extremums angles.
-     * <p>
-     * If the extremums are unknown, then the method
-     * {@link #computeMinMaxAngles() computeExtremumsAngles()} will be
-     * called.</p>
-     */
-    protected void computeZenithalStepAngle() {
-
-        if (Double.isNaN(zenith_min) || Double.isNaN(zenith_max)) {
-            computeMinMaxAngles();
-        }
-
-        double fov = zenith_min - zenith_max;
-        zenith_delta = fov / ((double) indexMaxZenithAngle - indexMinZenithAngle);
-    }
-
-    /**
-     * Reset the zenithal range to default values.
-     * <p>
-     * The values can have been modified by a call to the following methods
-     * :</p>
-     * <ul>
-     * <li>{@link #setZenithIndex(int) setZenithIndex(int)}</li>
-     * <li>{@link #setZenithRange(int, int) setZenithRange(int, int)}</li>
-     * </ul>
-     */
-    public void resetZenithRange() {
         setZenithRange(0, header.getNZenith() - 1);
-    }
-
-    /**
-     * Reset the azimuthal range to default values.
-     * <p>
-     * The values can have been modified by a call to the following methods
-     * :</p>
-     * <ul>
-     * <li>{@link #setAzimuthIndex(int) setAzimuthIndex(int)}</li>
-     * <li>{@link #setAzimuthRange(int, int) setAzimuthRange(int, int)}</li>
-     * </ul>
-     */
-    public void resetAzimuthRange() {
-
         setAzimuthRange(0, header.getNAzimuth() - 1);
     }
 
@@ -321,8 +285,7 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * @param azimuthIndex The azimuth index to read
      */
     public void setAzimuthIndex(int azimuthIndex) {
-        this.startAzimuthIndex = azimuthIndex;
-        this.endAzimuthIndex = azimuthIndex;
+        setAzimuthRange(azimuthIndex, azimuthIndex);
     }
 
     /**
@@ -335,6 +298,19 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * @param azimuthIndex2 The last azimuth index of the range
      */
     public void setAzimuthRange(int azimuthIndex1, int azimuthIndex2) {
+        
+         if (azimuthIndex1 < 0 || azimuthIndex1 >= header.getNAzimuth()) {
+            throw new IllegalArgumentException("azimuth index out of range exception (" + azimuthIndex1 + " not in [" + 0 + " " + header.getNAzimuth() + "[)");
+        }
+        
+        if (azimuthIndex2 < 0 || azimuthIndex2 >= header.getNAzimuth()) {
+            throw new IllegalArgumentException("azimuth index out of range exception (" + azimuthIndex2 + " not in [" + 0 + " " + header.getNAzimuth() + "[)");
+        }
+        
+        if (azimuthIndex1 > azimuthIndex2) {
+            throw new IllegalArgumentException("azimuth index 1 must be smaller than azimuth index 2");
+        }
+        
         this.startAzimuthIndex = azimuthIndex1;
         this.endAzimuthIndex = azimuthIndex2;
     }
@@ -348,8 +324,8 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * @param zenithIndex The zenith index to read
      */
     public void setZenithIndex(int zenithIndex) {
-        this.startZenithIndex = zenithIndex;
-        this.endZenithIndex = zenithIndex;
+        
+        setZenithRange(zenithIndex, zenithIndex);
     }
 
     /**
@@ -362,33 +338,46 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * @param zenithIndex2 The last zenithal index of the range
      */
     public void setZenithRange(int zenithIndex1, int zenithIndex2) {
+        
+        if (zenithIndex1 < 0 || zenithIndex1 >= header.getNZenith()) {
+            throw new IllegalArgumentException("zenith index out of range exception (" + zenithIndex1 + " not in [" + 0 + " " + header.getNZenith() + "[)");
+        }
+        
+        if (zenithIndex2 < 0 || zenithIndex2 >= header.getNZenith()) {
+            throw new IllegalArgumentException("zenith index out of range exception (" + zenithIndex2 + " not in [" + 0 + " " + header.getNZenith() + "[)");
+        }
+        
+        if (zenithIndex1 > zenithIndex2) {
+            throw new IllegalArgumentException("zenith index 1 must be smaller than zenith index 2");
+        }
+        
         this.startZenithIndex = zenithIndex1;
         this.endZenithIndex = zenithIndex2;
     }
 
     /**
-     * Are invalid points returned ?
+     * Are missing points returned ?
      * <p>
-     * An invalid point is a point without a position because the laser shot
+     * A missing point is a point without a position because the laser shot
      * didn't get a return.</p>
      *
-     * @return true if invalid points are returned, false otherwise
+     * @return true if missing points are returned, false otherwise
      */
-    public boolean isReturnInvalidPoint() {
+    public boolean isReturnMissingPoint() {
         return returnMissingPoint;
     }
 
     /**
      * Set if invalid points are returned or not.
      * <p>
-     * An invalid point is a point without a position because the laser shot
+     * A missing point is a point without a position because the laser shot
      * didn't get a return.</p>
      *
-     * @param returnInvalidPoint true if invalid point should be returned, false
+     * @param returnMissingPoint true if missing point should be returned, false
      * otherwise
      */
-    public void setReturnInvalidPoint(boolean returnInvalidPoint) {
-        this.returnMissingPoint = returnInvalidPoint;
+    public void setReturnMisingPoint(boolean returnMissingPoint) {
+        this.returnMissingPoint = returnMissingPoint;
     }
 
     public double[] getAveragedZenith() {
@@ -397,93 +386,6 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
 
     public double[] getAveragedAzimuth() {
         return averagedAzimuth;
-    }
-
-    /**
-     * Get azimuthal index corresponding to the minimal azimuthal angle.
-     * <p>
-     * The minimum azimuthal angle is obtained from the first non empty vertical
-     * sweep.</p>
-     *
-     * @return an azimuthal index corresponding to the minimal azimuthal angle.
-     */
-    public int getIndexAzimMin() {
-        return indexMinAzimAngle;
-    }
-
-    /**
-     * Get zenithal index corresponding to the minimal zenithal angle.
-     * <p>
-     * The minimum zenithal angle is obtained from the first non empty
-     * horizontal rotation.</p>
-     *
-     * @return a zenithal index corresponding to the minimal zenithal angle.
-     */
-    public int getIndexZenithMin() {
-        return indexMinZenithAngle;
-    }
-
-    /**
-     * Get zenithal index corresponding to the maximum zenithal angle.
-     * <p>
-     * The maximum zenithal angle is obtained from the last non empty horizontal
-     * rotation.</p>
-     *
-     * @return a zenithal index corresponding to the maximum zenithal angle.
-     */
-    public int getIndexZenithMax() {
-        return indexMaxZenithAngle;
-    }
-
-    /**
-     * Get azimuthal index corresponding to the maximum azimuthal angle.
-     * <p>
-     * The maximum azimuthal angle is obtained from the last non empty vertical
-     * sweep.</p>
-     *
-     * @return an azimuthal index corresponding to the maximum azimuthal angle.
-     */
-    public int getIndexAzimMax() {
-        return indexMaxAzimAngle;
-    }
-
-    /**
-     * Get the first zenith index to read from the file. The default value is 0.
-     *
-     * @return the start zenith index
-     */
-    public int getStartZenithIndex() {
-        return startZenithIndex;
-    }
-
-    /**
-     * Get the first azimuth index to read from the file. The default value is
-     * 0.
-     *
-     * @return the first zenith index
-     */
-    public int getStartAzimuthIndex() {
-        return startAzimuthIndex;
-    }
-
-    /**
-     * Get the last zenith index to read from the file. The default value is
-     * (number of horizontal rotations) - 1.
-     *
-     * @return the last zenith index
-     */
-    public int getEndZenithIndex() {
-        return endZenithIndex;
-    }
-
-    /**
-     * Get the last azimuth index to read from the file. The default value is
-     * (number of vertical sweeps) - 1.
-     *
-     * @return the last azimuth index
-     */
-    public int getEndAzimuthIndex() {
-        return endAzimuthIndex;
     }
 
     /**
@@ -500,102 +402,57 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     }
 
     /**
-     * Get the minimum azimuthal angle.
-     * <p>
-     * If min/max angles are unknown, then the method
-     * {@link #computeMinMaxAngles()} will be called.</p>
-     *
-     * @return The minimum azimuthal angle in radians
-     */
-    public double getAzimMin() {
-
-        if (Double.isNaN(azim_min)) {
-            computeMinMaxAngles();
-        }
-
-        return azim_min;
-    }
-
-    /**
-     * Get the maximum azimuthal angle.
-     * <p>
-     * If min/max angles are unknown, then the method
-     * {@link #computeMinMaxAngles()} will be called.</p>
-     *
-     * @return The maximum azimuthal angle in radians
-     */
-    public double getAzimMax() {
-
-        if (Double.isNaN(azim_max)) {
-            computeMinMaxAngles();
-        }
-
-        return azim_max;
-    }
-
-    /**
-     * Get the minimum zenithal angle.
-     * <p>
-     * If min/max angles are unknown, then the method
-     * {@link #computeMinMaxAngles()} will be called.</p>
-     *
-     * @return The minimum zenithal angle in radians
-     */
-    public double getZenithMin() {
-
-        if (Double.isNaN(zenith_min)) {
-            computeMinMaxAngles();
-        }
-        return zenith_min;
-    }
-
-    /**
-     * Get the maximum zenithal angle.
-     * <p>
-     * If min/max angles are unknown, then the method
-     * {@link #computeMinMaxAngles()} will be called.</p>
-     *
-     * @return The maximum zenithal angle in radians
-     */
-    public double getZenithMax() {
-        return zenith_max;
-    }
-
-    /**
      * Get the azimuthal step angle.
-     * <p>
-     * If min/max angles are unknown, then the method
-     * {@link #computeMinMaxAngles()} will be called.</p>
      *
      * @return The azimuthal step angle in radians
      */
     public double getAzimuthalStepAngle() {
-
-        if (Double.isNaN(azim_delta)) {
-            computeAzimutalStepAngle();
-        }
 
         return azim_delta;
     }
 
     /**
      * Get the zenithal step angle.
-     * <p>
-     * If min/max angles are unknown, then the method
-     * {@link #computeMinMaxAngles()} will be called.</p> F
      *
      * @return The zenithal step angle in radians
      */
     public double getZenithalStepAngle() {
 
-        if (Double.isNaN(zenith_delta)) {
-            computeZenithalStepAngle();
-        }
-
         return zenith_delta;
     }
+    
+     private class GriddedScanIterator implements Iterator<LPoint> {
 
-//    public int getCurrentColIndex() {
-//        return currentColIndex;
-//    }
+        final private int size, nrow, ncol;
+        private int cursor;
+
+        GriddedScanIterator() {
+            nrow = endZenithIndex - startZenithIndex + 1;
+            ncol = endAzimuthIndex - startAzimuthIndex + 1;
+            size = nrow * ncol;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return cursor != size;
+        }
+
+        @Override
+        public LPoint next() {
+
+            int i = cursor;
+            if (i >= size) {
+                throw new NoSuchElementException();
+            }
+            int col = i / nrow;
+            int row = i - col * nrow;
+            col += startAzimuthIndex;
+            row += startZenithIndex;
+            cursor = i + 1;
+            return (null != points[col][row])
+                    ? points[col][row]
+                    : new LEmptyPoint(col, row);
+        }
+    }
+
 }

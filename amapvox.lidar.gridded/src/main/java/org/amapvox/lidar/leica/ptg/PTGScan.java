@@ -32,11 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.vecmath.Matrix4d;
-import org.amapvox.lidar.leica.ptx.PTXScan;
 
 /**
  * <p>
@@ -67,35 +63,27 @@ public class PTGScan extends GriddedPointScan {
     private int col = -1;
     private boolean[] validPoints;
 
-    // whether PTX scan has been cached in heap memory
-    final private AtomicBoolean cached = new AtomicBoolean(false);
-
-    // LPoint array, without empty point
-    private LPoint[][] points;
-
-    public PTGScan() {
+    public PTGScan(File file) {
+        super(file);
         header = new PTGHeader();
         returnMissingPoint = true;
     }
 
+    @Override
     /**
      * Open a ptg binary scan file.This method read header and stores it as a
      * {@link PTGHeader PTGHeader} object. You can get it with the method
      *
-     * @param file
      * @throws FileNotFoundException
      * @throws IOException
      */
-    @Override
-    public void openScanFile(File file) throws FileNotFoundException, IOException {
+    public void readHeader() throws FileNotFoundException, IOException {
 
         this.nbByteRead = 0;
         this.offsetSize = 0;
         this.headerByteLength = 0;
 
-        this.file = file;
-
-        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(getFile())))) {
 
             /**
              * *read PTG format signature**
@@ -240,8 +228,7 @@ public class PTGScan extends GriddedPointScan {
             header.updatePointSize();
             headerByteLength = nbByteRead;
 
-            resetAzimuthRange();
-            resetZenithRange();
+            reset();
         }
     }
 
@@ -322,7 +309,7 @@ public class PTGScan extends GriddedPointScan {
 
         offsetSize = 0;
 
-        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(getFile())))) {
 
             dis.mark(Integer.MAX_VALUE);
             dis.skipBytes((int) headerByteLength);
@@ -362,17 +349,14 @@ public class PTGScan extends GriddedPointScan {
         return (PTGHeader) header;
     }
 
-    synchronized private void cacheScan(File file) throws FileNotFoundException, IOException {
-
-        if (cached.get()) {
-            return;
-        }
+    @Override
+    public void readPointCloud() throws FileNotFoundException, IOException {
 
         points = new LPoint[header.getNAzimuth()][header.getNZenith()];
 
         readColumnsOffsets();
 
-        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(getFile())))) {
             dis.mark(Integer.MAX_VALUE);
             skipMetadata(dis);
             incrementColumnIndex(dis);
@@ -426,7 +410,6 @@ public class PTGScan extends GriddedPointScan {
                     //skipBytes(dis, header.getPointSize());
                 }
             } while (col < header.getNAzimuth());
-            cached.set(true);
         }
     }
 
@@ -443,7 +426,7 @@ public class PTGScan extends GriddedPointScan {
                     nbByteRead = offsets[col];
                 }
 
-                int nbValidityBytes = (int) Math.ceil(header.getNZenith()/ 8.0);
+                int nbValidityBytes = (int) Math.ceil(header.getNZenith() / 8.0);
                 validPoints = new boolean[nbValidityBytes * 8];
 
                 for (int j = 0, count = 0; j < nbValidityBytes; j++, count += 8) {
@@ -480,67 +463,5 @@ public class PTGScan extends GriddedPointScan {
     private void skipBytes(DataInputStream dis, long nbBytes) throws IOException {
         dis.skipBytes((int) nbBytes);
         nbByteRead += nbBytes;
-    }
-
-    /**
-     * Returns an iterator to get points from the scan file as a {@link LPoint}
-     * As the ptg scan file is a gridded point format, you can select the row,
-     * columns you want to read with the following methods :
-     * <ul>
-     * <li>{@link #setAzimuthIndex(int) setUpColumnToRead(int columnIndex)},</li>
-     * <li>{@link #setAzimuthRange(int, int) setUpColumnsToRead(int startColumnIndex, int endColumnIndex)},</li>
-     * <li>{@link #setZenithIndex(int) setUpRowToRead(int rowIndex)},</li>
-     * <li>{@link #setZenithRange(int, int) setUpRowsToRead(int startRowIndex, int endRowIndex)}</li>
-     * </ul>
-     * Those methods should be called before to get the iterator.
-     *
-     * @return A {@link LPoint} point returned by the iterator.
-     */
-    @Override
-    public Iterator<LPoint> iterator() {
-
-        if (!cached.get()) {
-            try {
-                cacheScan(file);
-            } catch (IOException ex) {
-                Logger.getLogger(PTXScan.class.getName()).log(Level.SEVERE, "Error at column " + col + ", row " + row, ex);
-                throw new RuntimeException(ex);
-            }
-        }
-        return new CachedPTGScanIterator();
-    }
-
-    private class CachedPTGScanIterator implements Iterator<LPoint> {
-
-        final private int size, nrow, ncol;
-        private int cursor;
-
-        CachedPTGScanIterator() {
-            nrow = endZenithIndex - startZenithIndex + 1;
-            ncol = endAzimuthIndex - startAzimuthIndex + 1;
-            size = nrow * ncol;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return cursor != size;
-        }
-
-        @Override
-        public LPoint next() {
-
-            int i = cursor;
-            if (i >= size) {
-                throw new NoSuchElementException();
-            }
-            int col = i / nrow;
-            int row = i - col * nrow;
-            col += startAzimuthIndex;
-            row += startZenithIndex;
-            cursor = i + 1;
-            return (null != points[col][row])
-                    ? points[col][row]
-                    : new LEmptyPoint(col, row);
-        }
     }
 }

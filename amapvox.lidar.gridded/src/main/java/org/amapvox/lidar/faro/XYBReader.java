@@ -20,8 +20,8 @@ public class XYBReader implements LidarScanReader {
 
     @Override
     public LidarScan toLidarScan(File file) throws FileNotFoundException, IOException {
-        XYBScan scan = new XYBScan();
-        scan.openScanFile(file);
+        XYBScan scan = new XYBScan(file);
+        scan.readHeader();
         return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
 
     }

@@ -76,8 +76,8 @@ public class PTGScanConversion {
         File outputTxtFile = new File(outputDirectory.getAbsolutePath() + File.separator + scan.file.getName() + ".txt");
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputTxtFile))) {
-            PTGScan ptgScan = new PTGScan();
-            ptgScan.openScanFile(scan.file);
+            PTGScan ptgScan = new PTGScan(scan.file);
+            ptgScan.open();
 
             GriddedScanShotExtractor shots = new GriddedScanShotExtractor(ptgScan, transfMatrix);
             IteratorWithException<Shot> it = shots.iterator();
@@ -217,8 +217,8 @@ public class PTGScanConversion {
 
             writer.write(header);
 
-            PTGScan ptgScan = new PTGScan();
-            ptgScan.openScanFile(scan.file);
+            PTGScan ptgScan = new PTGScan(scan.file);
+            ptgScan.open();
 
             GriddedScanShotExtractor shots = new GriddedScanShotExtractor(ptgScan, transfMatrix);
             IteratorWithException<Shot> it = shots.iterator();

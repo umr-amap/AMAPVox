@@ -11,8 +11,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -20,27 +18,28 @@ import java.util.logging.Logger;
  */
 public class XYBScan extends GriddedPointScan {
     
-    public XYBScan() {
+    public XYBScan(File file) {
+        super(file);
         this.returnMissingPoint = false;
+    }
+    
+    @Override
+    public void readHeader() throws FileNotFoundException, IOException {
+        
+        XYBIterator xybIterator = new XYBIterator(getFile());
+        this.header = xybIterator.getHeader();
     }
 
     @Override
-    public void openScanFile(File file) throws FileNotFoundException, IOException {
-        this.file = file;
-        try (XYBIterator xybIterator = new XYBIterator(this.file)) {
-            this.header = xybIterator.getHeader();
-            resetAzimuthRange();
-            resetZenithRange();
-        } catch (Exception ex) {
-            Logger.getLogger(XYBScan.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public void readPointCloud() throws FileNotFoundException, IOException {
+        // nothing to do, file is read on the fly whith iterator
     }
 
     @Override
     public Iterator<LPoint> iterator() {
 
         try {
-            return new XYBIterator(this.file);
+            return new XYBIterator(getFile());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

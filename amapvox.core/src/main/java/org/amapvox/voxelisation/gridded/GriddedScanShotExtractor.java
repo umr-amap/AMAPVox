@@ -55,6 +55,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
         public double azimuth;
         public double zenith;
+        public boolean data;
 
         public SimpleSpherCoords() {
 
@@ -70,7 +71,10 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
     public GriddedScanShotExtractor(GriddedPointScan scan, Matrix4d transformation) throws Exception {
         this.scan = scan;
         this.transformation = transformation;
-        if (scan.isReturnInvalidPoint()) {
+    }
+
+    public void init() throws Exception {
+        if (scan.isReturnMissingPoint()) {
             fillNoHit();
         }
     }
@@ -79,16 +83,12 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
         Logger.getLogger(GriddedScanShotExtractor.class.getName()).info("Computing missing shots...");
 
-        scan.computeMinMaxAngles();
-
-        scan.openScanFile(scan.getFile());
-
         int nzenith = scan.getHeader().getNZenith();
         int nazimuth = scan.getHeader().getNAzimuth();
         angles = new SimpleSpherCoords[nazimuth][nzenith];
 
-        azimuts = new boolean[this.scan.getHeader().getNZenith()];
-        zenithals = new boolean[this.scan.getHeader().getNAzimuth()];
+        azimuts = new boolean[scan.getHeader().getNZenith()];
+        zenithals = new boolean[scan.getHeader().getNAzimuth()];
 
         for (LPoint point : scan) {
             if (point.valid) {
@@ -113,6 +113,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                 angles[point.azimuthIndex][point.zenithIndex] = new SimpleSpherCoords();
                 angles[point.azimuthIndex][point.zenithIndex].azimuth = sc.getTheta();
                 angles[point.azimuthIndex][point.zenithIndex].zenith = sc.getPhi();
+                angles[point.azimuthIndex][point.zenithIndex].data = true;
 
                 azimuts[point.zenithIndex] = true;
                 zenithals[point.azimuthIndex] = true;
@@ -135,7 +136,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                     // look for closest non null azimuth value on same vertical sweep
                     for (int up = izenith + 1, down = izenith - 1; up < nzenith || down >= 0; up++, down--) {
                         if (up < nzenith && angles[iazim][up] != null) {
-                            azimuth = angles[up][izenith].azimuth;
+                            azimuth = angles[iazim][up].azimuth;
                             break;
                         }
                         if (down >= 0 && angles[iazim][down] != null) {
@@ -170,7 +171,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                             zenith = angles[fw][izenith].zenith;
                             break;
                         }
-                        if (bw >= 0 & angles[bw][izenith] != null) {
+                        if (bw >= 0 && angles[bw][izenith] != null) {
                             zenith = angles[bw][izenith].zenith;
                             break;
                         }
@@ -257,7 +258,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                         shot.getEcho(0).addInteger("color", new Color(point.red, point.green, point.blue).getRGB());
                     }
                     return shot;
-                } else if (scan.isReturnInvalidPoint()) {
+                } else if (scan.isReturnMissingPoint()) {
 
                     Point3d origin = new Point3d(0.d, 0.d, 0.d);
                     transformation.transform(origin);

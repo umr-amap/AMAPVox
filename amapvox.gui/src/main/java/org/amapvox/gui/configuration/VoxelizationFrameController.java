@@ -1591,8 +1591,8 @@ public class VoxelizationFrameController extends ConfigurationController {
                 case XYB:
                     try {
                     scanItems = new ArrayList();
-                    XYBReader ptgReader = new XYBReader();
-                    scanItems.add(ptgReader.toLidarScan(selectedFile));
+                    XYBReader xybReader = new XYBReader();
+                    scanItems.add(xybReader.toLidarScan(selectedFile));
                     listviewLidarScans.getItems().setAll(scanItems);
                 } catch (IOException ex) {
                     Util.showErrorDialog(getStage(), ex, "[Voxelization]");

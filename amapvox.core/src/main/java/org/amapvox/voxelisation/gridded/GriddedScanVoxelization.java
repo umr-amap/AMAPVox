@@ -5,6 +5,7 @@
  */
 package org.amapvox.voxelisation.gridded;
 
+import java.io.File;
 import org.amapvox.voxelisation.AbstractVoxelization;
 import org.amapvox.commons.util.IteratorWithException;
 import org.amapvox.shot.Shot;
@@ -24,18 +25,21 @@ public abstract class GriddedScanVoxelization extends AbstractVoxelization {
     public GriddedScanVoxelization(VoxelizationTask task, VoxelizationCfg cfg, int iscan) {
         super(task, cfg, iscan);
     }
-    
-    abstract GriddedPointScan newGriddedScan();
+
+    abstract GriddedPointScan newGriddedScan(File file);
 
     @Override
     public Object call() throws Exception {
 
         LOGGER.info(logHeader() + " Point cloud extraction started");
 
-        GriddedPointScan gpScan = newGriddedScan();
-        gpScan.openScanFile(getLidarScan().getFile());
+        GriddedPointScan gpScan = newGriddedScan(getLidarScan().getFile());
+        gpScan.open();
+        
+        GriddedScanShotExtractor shotExtractor = new GriddedScanShotExtractor(gpScan, transformation);
+        shotExtractor.init();
 
-        IteratorWithException<Shot> it = new GriddedScanShotExtractor(gpScan, transformation).iterator();
+        IteratorWithException<Shot> it = shotExtractor.iterator();
 
         voxelization.voxelization(it, gpScan.getHeader().getNZenith() * gpScan.getHeader().getNAzimuth());
 
@@ -45,5 +49,4 @@ public abstract class GriddedScanVoxelization extends AbstractVoxelization {
 
     }
 
-    
 }

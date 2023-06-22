@@ -9,6 +9,7 @@ import org.amapvox.lidar.gridded.LPoint;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Iterator;
 import javax.vecmath.Matrix4d;
 import org.amapvox.lidar.gridded.LEmptyPoint;
@@ -27,14 +28,10 @@ public class PTGScanTest {
 
     private PTGScan pTGScan;
 
-    public PTGScanTest() throws Exception {
-
-    }
-
     @Before
     public void init() throws URISyntaxException, Exception {
-        pTGScan = new PTGScan();
-        pTGScan.openScanFile(new File(PTGScanTest.class.getResource("/leica_scans-2.PTG").toURI()));
+        pTGScan = new PTGScan(new File(PTGScanTest.class.getResource("/leica_scans-2.PTG").toURI()));
+        pTGScan.open();
     }
 
     @BeforeClass
@@ -102,6 +99,7 @@ public class PTGScanTest {
         long npoint = 0;
         long emptypoint = 0;
 
+        System.out.println("testIteratorNoFiltering");
         for (LPoint point : pTGScan) {
             assertNotNull(point);
             if (point instanceof LEmptyPoint) {
@@ -111,13 +109,12 @@ public class PTGScanTest {
         }
 
         // total number of points
-        assertEquals(npoint,
-                pTGScan.getHeader().getNZenith() * pTGScan.getHeader().getNAzimuth());
+        assertEquals(pTGScan.getHeader().getNZenith() * pTGScan.getHeader().getNAzimuth(), npoint);
         // same as above but hard-coded
-        assertEquals(npoint, 12928608);
-        
+        assertEquals(12928608, npoint);
+
         // empty shots
-        assertEquals(emptypoint, 10201699);
+        assertEquals(10201699, emptypoint);
     }
 
     @Test
@@ -135,7 +132,7 @@ public class PTGScanTest {
             assertEquals(0, point.zenithIndex);
         }
 
-        pTGScan.resetZenithRange();
+        pTGScan.reset();
 
         int indexAzimuth = pTGScan.getHeader().getNAzimuth() - 1;
         pTGScan.setAzimuthIndex(indexAzimuth);
@@ -150,7 +147,7 @@ public class PTGScanTest {
             assertEquals(indexAzimuth, point.azimuthIndex);
         }
 
-        pTGScan.resetAzimuthRange();
+        pTGScan.reset();
 
         int minIndezZenith = pTGScan.getHeader().getNZenith() - 51;
         int maxIndexZenith = pTGScan.getHeader().getNZenith() - 1;
@@ -167,7 +164,7 @@ public class PTGScanTest {
             assertTrue(point.zenithIndex >= minIndezZenith && point.zenithIndex <= maxIndexZenith);
         }
 
-        pTGScan.resetZenithRange();
+        pTGScan.reset();
 
         int minIndexAzim = 50;
         int maxIndexAzim = 100;
@@ -182,22 +179,45 @@ public class PTGScanTest {
 
             assertTrue(point.azimuthIndex >= minIndexAzim && point.azimuthIndex <= maxIndexAzim);
         }
-        
-        pTGScan.resetAzimuthRange();
+
+        pTGScan.reset();
 
     }
 
     @Test
     public void testComputeAngles() {
+
+        double a1 = Arrays.stream(pTGScan.getAveragedAzimuth())
+                .filter(az -> !Double.isNaN(az))
+                .findFirst().getAsDouble();
+        assertEquals(1.4557245551731213, a1, 0.0000001);
+
+        double a2 = Double.NaN;
+        for (int i = pTGScan.getAveragedAzimuth().length - 1; i > 0; i--) {
+            // max
+            if (!Double.isNaN(pTGScan.getAveragedAzimuth()[i])) {
+                a2 = pTGScan.getAveragedAzimuth()[i];
+                break;
+            }
+        }
+        assertEquals(-0.2926585159330574, a2, 0.0000001);
+
+        double zn1 = Arrays.stream(pTGScan.getAveragedZenith())
+                .filter(zn -> !Double.isNaN(zn))
+                .findFirst().getAsDouble();
+        assertEquals(1.9210892540308797, zn1, 0.0000001);
         
-        pTGScan.computeMinMaxAngles();
-
-        assertEquals(1.9210892540308797, pTGScan.getZenithMin(), 0.0000001);
-        assertEquals(0.07353449476314654, pTGScan.getZenithMax(), 0.0000001);
-        assertEquals(1.4557245551731213, pTGScan.getAzimMin(), 0.0000001);
-        assertEquals(-0.2926585159330574, pTGScan.getAzimMax(), 0.0000001);
-
-        assertEquals(4.999665630844091E-4, pTGScan.getAzimuthalStepAngle(), 0.0000001);
-        assertEquals(5.000148198288859E-4, pTGScan.getZenithalStepAngle(), 0.0000001);
+        double zn2 = Double.NaN;
+        for (int i = pTGScan.getAveragedZenith().length - 1; i > 0; i--) {
+            // max
+            if (!Double.isNaN(pTGScan.getAveragedZenith()[i])) {
+                zn2 = pTGScan.getAveragedZenith()[i];
+                break;
+            }
+        }
+        assertEquals(0.07353449476314654, zn2, 0.0000001);
+        
+        assertEquals(5E-4, pTGScan.getAzimuthalStepAngle(), 1E-6);
+        assertEquals(5E-4, pTGScan.getZenithalStepAngle(), 1E-6);
     }
 }

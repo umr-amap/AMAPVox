@@ -43,8 +43,8 @@ public class PTGReader implements LidarScanReader {
     @Override
     public LidarScan toLidarScan(File file) throws FileNotFoundException, IOException {
 
-        PTGScan scan = new PTGScan();
-        scan.openScanFile(file);
+        PTGScan scan = new PTGScan(file);
+        scan.readHeader();
         return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
     }
 }

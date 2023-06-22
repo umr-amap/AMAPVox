@@ -8,6 +8,7 @@ package org.amapvox.lidar.leica.ptx;
 import org.amapvox.lidar.gridded.LDoublePoint;
 import org.amapvox.lidar.gridded.LPoint;
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import org.junit.After;
@@ -27,18 +28,6 @@ public class PTXScanTest {
 
     private final static double DELTA = 0.0000001;
 
-    public PTXScanTest() throws URISyntaxException {
-
-        PTXHeader header = new PTXHeader();
-        header.setNZenith(2);
-        header.setNAzimuth(5);
-        header.setPointContainsIntensity(true);
-        header.setPointContainsRGB(false);
-        header.setPointInDoubleFormat(true);
-
-        pTXScan = new PTXScan(new File(PTXScanTest.class.getResource("/scan_test.ptx").toURI()), header, 10);
-    }
-
     @BeforeClass
     public static void setUpClass() {
     }
@@ -48,22 +37,30 @@ public class PTXScanTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws URISyntaxException, IOException {
+        
+        PTXHeader header = new PTXHeader();
+        header.setNZenith(2);
+        header.setNAzimuth(5);
+        header.setPointContainsIntensity(true);
+        header.setPointContainsRGB(false);
+        header.setPointInDoubleFormat(true);
+
+        pTXScan = new PTXScan(new File(PTXScanTest.class.getResource("/scan_test.ptx").toURI()), header, 10);
+        pTXScan.open();
     }
 
     @After
     public void tearDown() {
     }
 
+    @Test
     public void testIteratorFiltering() {
 
-        pTXScan.setReturnInvalidPoint(true);
+        pTXScan.reset();
 
-        pTXScan.resetZenithRange();
-        pTXScan.resetAzimuthRange();
-
-        pTXScan.setAzimuthIndex(1);
-        pTXScan.setZenithIndex(3);
+        pTXScan.setAzimuthIndex(3);
+        pTXScan.setZenithIndex(1);
 
         Iterator<LPoint> iterator = pTXScan.iterator();
 
@@ -75,10 +72,10 @@ public class PTXScanTest {
             LDoublePoint dPoint = (LDoublePoint) point;
 
             if (count == 0) {
-                assertEquals(dPoint.x, 9.0, 0);
-                assertEquals(dPoint.y, 2.0, 0);
-                assertEquals(dPoint.z, 9.0, 0);
-                assertEquals(dPoint.intensity, 0.9, DELTA);
+                assertEquals(dPoint.x, 8.0, 0);
+                assertEquals(dPoint.y, 3.0, 0);
+                assertEquals(dPoint.z, 8.0, 0);
+                assertEquals(dPoint.intensity, 0.8, DELTA);
             }
 
             count++;
@@ -88,10 +85,10 @@ public class PTXScanTest {
         assertEquals(1, count);
     }
 
+    @Test
     public void testIteratorNoFiltering() {
 
         Iterator<LPoint> iterator = pTXScan.iterator();
-        pTXScan.setReturnInvalidPoint(true);
 
         int count = 0;
         while (iterator.hasNext()) {

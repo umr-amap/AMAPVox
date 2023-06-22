@@ -5,6 +5,7 @@
  */
 package org.amapvox.voxelisation.gridded;
 
+import java.io.File;
 import org.amapvox.voxelisation.VoxelizationTask;
 import org.amapvox.voxelisation.VoxelizationCfg;
 import org.amapvox.lidar.gridded.GriddedPointScan;
@@ -26,8 +27,8 @@ public class PTGVoxelization extends GriddedScanVoxelization {
     }
 
     @Override
-    GriddedPointScan newGriddedScan() {
-        return new PTGScan();
+    GriddedPointScan newGriddedScan(File file) {
+        return new PTGScan(file);
     }
 
 }

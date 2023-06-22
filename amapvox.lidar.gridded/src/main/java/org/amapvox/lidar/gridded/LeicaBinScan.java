@@ -28,6 +28,10 @@ import java.util.Iterator;
  * @author Julien Heurtebize
  */
 public class LeicaBinScan extends GriddedPointScan{
+
+    public LeicaBinScan(File file) {
+        super(file);
+    }
     
     
 //    private long currentLineIndex;
@@ -290,7 +294,12 @@ public class LeicaBinScan extends GriddedPointScan{
 //    }
 
     @Override
-    public void openScanFile(File file) throws FileNotFoundException, IOException, Exception {
+    public void readHeader() throws FileNotFoundException, IOException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
+    public void readPointCloud() throws FileNotFoundException, IOException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

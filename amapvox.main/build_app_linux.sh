@@ -98,7 +98,7 @@ $JAVA_HOME/bin/jpackage \
 --icon src/main/resources/amapvox-icon_128x128.png \
 --app-version ${PROJECT_VERSION} \
 --vendor "IRD" \
---copyright "Copyright © 2022 ird.fr"
+--copyright "Copyright © 2023 ird.fr"
 
 mv target/installer/AMAPVox target/$FINAL_NAME-linux
 cd target; zip -r $FINAL_NAME-linux.zip $FINAL_NAME-linux/*; cd ..

@@ -10,7 +10,7 @@ rem PROJECT_VERSION: version used in pom.xml, e.g. 1.0-SNAPSHOT
 rem APP_VERSION: the application version, e.g. 1.0.0, shown in "about" dialog
 
 set JAVA_VERSION=17
-set PROJECT_VERSION=2.0.0
+set PROJECT_VERSION=2.0.1
 set FINAL_NAME=AMAPVox-%PROJECT_VERSION%
 set MAIN_JAR=%FINAL_NAME%.jar
 
@@ -107,7 +107,7 @@ call "%JAVA_HOME%\bin\jpackage" ^
   --icon src/main/resources/amapvox.ico ^
   --app-version %PROJECT_VERSION% ^
   --vendor "IRD" ^
-  --copyright "Copyright © 2022 ird.fr"
+  --copyright "Copyright © 2023 ird.fr"
 rem  --win-dir-chooser ^
 rem  --win-shortcut ^
 rem  --win-per-user-install ^

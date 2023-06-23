@@ -36,7 +36,7 @@ public abstract class GriddedScanVoxelization extends AbstractVoxelization {
         GriddedPointScan gpScan = newGriddedScan(getLidarScan().getFile());
         gpScan.open();
         
-        GriddedScanShotExtractor shotExtractor = new GriddedScanShotExtractor(gpScan, transformation);
+        GriddedScanShotExtractor shotExtractor = new GriddedScanShotExtractor(gpScan, transformation, logHeader());
         shotExtractor.init();
 
         IteratorWithException<Shot> it = shotExtractor.iterator();

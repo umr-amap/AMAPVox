@@ -20,7 +20,6 @@ package org.amapvox.voxelisation.gridded;
 
 import java.awt.Color;
 import java.util.Iterator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
@@ -40,9 +39,12 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  * @author Julien Heurtebize
  */
 public class GriddedScanShotExtractor implements IterableWithException<Shot> {
+    
+    private final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(GriddedScanShotExtractor.class);
 
     private final GriddedPointScan scan;
     private final Matrix4d transformation;
+    private final String logHeader;
 
     private SimpleSphericalCoordinates[][] angles;
 
@@ -59,9 +61,10 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
         }
     }
 
-    public GriddedScanShotExtractor(GriddedPointScan scan, Matrix4d transformation) throws Exception {
+    public GriddedScanShotExtractor(GriddedPointScan scan, Matrix4d transformation, String logHeader) throws Exception {
         this.scan = scan;
         this.transformation = transformation;
+        this.logHeader = logHeader;
     }
 
     public void init() throws Exception {
@@ -71,6 +74,8 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
     }
 
     private void fillMissingShot() throws Exception {
+        
+        LOGGER.info(logHeader + " Computing missing shots...");
 
         Logger.getLogger(GriddedScanShotExtractor.class.getName()).info("Computing missing shots...");
 
@@ -205,8 +210,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                 }
             }
         }
-        Logger.getLogger(GriddedScanShotExtractor.class.getName()).log(Level.INFO, "Filled {0} missing shots", nfill);
-
+        LOGGER.info(logHeader + " Computed " + nfill + " missing shots");
     }
 
     @Override

@@ -79,7 +79,7 @@ public class PTGScanConversion {
             PTGScan ptgScan = new PTGScan(scan.file);
             ptgScan.open();
 
-            GriddedScanShotExtractor shots = new GriddedScanShotExtractor(ptgScan, transfMatrix);
+            GriddedScanShotExtractor shots = new GriddedScanShotExtractor(ptgScan, transfMatrix, "[PTG conversion]");
             IteratorWithException<Shot> it = shots.iterator();
             while (it.hasNext()) {
                 Shot shot = it.next();
@@ -220,7 +220,7 @@ public class PTGScanConversion {
             PTGScan ptgScan = new PTGScan(scan.file);
             ptgScan.open();
 
-            GriddedScanShotExtractor shots = new GriddedScanShotExtractor(ptgScan, transfMatrix);
+            GriddedScanShotExtractor shots = new GriddedScanShotExtractor(ptgScan, transfMatrix, "[PTG conversion]");
             IteratorWithException<Shot> it = shots.iterator();
             int shotID = 0;
             while (it.hasNext()) {

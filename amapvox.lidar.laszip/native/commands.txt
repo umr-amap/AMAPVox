@@ -24,7 +24,10 @@ rm -rf build/linux64/*
 cmake -G "Unix Makefiles" -B build/linux64
 
 # compile target and install it in JLas project
-cmake --build build/linux64 --target install --config Release
+cmake --build build/linux64 --config Release
+
+# copy target to Java ressource folder
+cp build/linux64/libJLasApi.so ../src/main/resources/libJLasApi64.so
 
 # clean target
 cmake --build build/linux64 --target clean

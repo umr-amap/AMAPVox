@@ -23,6 +23,8 @@ LASZIP_API laszip_I32 jlas_copy_point(laszip_point_struct* point_in, jlas_point_
       point_out->return_number = point_in->return_number;
       point_out->number_of_returns = point_in->number_of_returns;
       point_out->classification = point_in->classification;
+      point_out->user_data = point_in->user_data;
+      point_out->point_source_ID = point_in->point_source_ID;
       point_out->gps_time = point_in->gps_time;
       memcpy(point_out->rgb, point_in->rgb, 8);
 

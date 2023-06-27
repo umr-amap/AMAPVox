@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 include( InstallRequiredSystemLibraries )
 
 # set the project name
-project(JLasApi VERSION 1.0)
+project(JLasApi VERSION 1.1)
 
 #
 # Shared library
@@ -17,7 +17,7 @@ add_library(${PROJECT_NAME} SHARED
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}
-    SOVERSION 1
+    SOVERSION 1.1
     PUBLIC_HEADER src/jlas_api.h
 )
 

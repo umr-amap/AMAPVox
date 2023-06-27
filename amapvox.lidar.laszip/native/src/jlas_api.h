@@ -20,6 +20,8 @@ typedef struct jlas_point
   laszip_U8 return_number;
   laszip_U8 number_of_returns;
   laszip_U8 classification;
+  laszip_U8 user_data;
+  laszip_U16 point_source_ID;
   laszip_F64 gps_time;
   laszip_U16 rgb[4];
 

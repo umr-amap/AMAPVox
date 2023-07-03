@@ -1532,7 +1532,11 @@ public class VoxelizationFrameController extends ConfigurationController {
                         });
                         break;
                     default:
-                        throw new IOException("Unsupported file format for multi-scan project");
+                        lidarProjectExtractor = new MultiScanProjectExtractor(lidarType.name(), f -> {
+                            Matrix4d identity = new Matrix4d();
+                            identity.setIdentity();
+                            return new LidarScan(f, identity);
+                        });
                 }
 
                 lidarProjectExtractor.read(selectedFile);

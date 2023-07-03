@@ -131,7 +131,7 @@ public class PTGScanTest {
             assertEquals(0, point.zenithIndex);
         }
 
-        pTGScan.reset();
+        pTGScan.resetRange();
 
         int indexAzimuth = pTGScan.getHeader().getNAzimuth() - 1;
         pTGScan.setAzimuthIndex(indexAzimuth);
@@ -146,7 +146,7 @@ public class PTGScanTest {
             assertEquals(indexAzimuth, point.azimuthIndex);
         }
 
-        pTGScan.reset();
+        pTGScan.resetRange();
 
         int minIndezZenith = pTGScan.getHeader().getNZenith() - 51;
         int maxIndexZenith = pTGScan.getHeader().getNZenith() - 1;
@@ -163,7 +163,7 @@ public class PTGScanTest {
             assertTrue(point.zenithIndex >= minIndezZenith && point.zenithIndex <= maxIndexZenith);
         }
 
-        pTGScan.reset();
+        pTGScan.resetRange();
 
         int minIndexAzim = 50;
         int maxIndexAzim = 100;
@@ -179,7 +179,7 @@ public class PTGScanTest {
             assertTrue(point.azimuthIndex >= minIndexAzim && point.azimuthIndex <= maxIndexAzim);
         }
 
-        pTGScan.reset();
+        pTGScan.resetRange();
 
     }
 

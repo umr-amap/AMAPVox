@@ -335,8 +335,8 @@ public class PTGHeader extends PointScanHeader {
                 + "Min elevation angle :\t" + minElevationAngle + "\n"
                 + "Max elevation angle :\t" + maxElevationAngle + "\n"
                 + "Transformation matrix :\t" + getTransfMatrix().toString() + "\n"
-                + "Column number :\t\t" + getNZenith() + "\n"
-                + "Row number :\t\t" + getNAzimuth() + "\n"
+                + "Column number :\t\t" + getNAzimuth() + "\n"
+                + "Row number :\t\t" +  getNZenith() + "\n"
                 + "Point storage format :\t" + ((isPointInDoubleFormat()) ? "Double" : "Float") + "\n"
                 + "Contains intensity :\t" + ((isPointContainsIntensity()) ? "Yes" : "No") + "\n"
                 + "Contains RGB :\t\t" + ((isPointContainsRGB()) ? "Yes" : "No");

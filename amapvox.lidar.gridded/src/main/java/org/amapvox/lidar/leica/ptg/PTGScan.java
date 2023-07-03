@@ -21,7 +21,6 @@ package org.amapvox.lidar.leica.ptg;
 import org.amapvox.commons.util.io.LittleEndianUtility;
 import org.amapvox.lidar.gridded.GriddedPointScan;
 import org.amapvox.lidar.gridded.LDoublePoint;
-import org.amapvox.lidar.gridded.LEmptyPoint;
 import org.amapvox.lidar.gridded.LFloatPoint;
 import org.amapvox.lidar.gridded.LPoint;
 import java.io.BufferedInputStream;
@@ -30,8 +29,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import javax.vecmath.Matrix4d;
 
 /**
@@ -54,14 +51,9 @@ import javax.vecmath.Matrix4d;
  */
 public class PTGScan extends GriddedPointScan {
 
-    private long nbByteRead;
-    private long headerByteLength;
-    private long[] offsets = null;
-    private long offsetSize;
-
-    private int row = -1;
-    private int col = -1;
-    private boolean[] validPoints;
+    private long nByteRead;
+    private int headerSize;
+    private int columnPositionSize;
 
     public PTGScan(File file) {
         super(file);
@@ -79,11 +71,9 @@ public class PTGScan extends GriddedPointScan {
      */
     public void readHeader() throws FileNotFoundException, IOException {
 
-        this.nbByteRead = 0;
-        this.offsetSize = 0;
-        this.headerByteLength = 0;
-
         try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(getFile())))) {
+            // reset number of bytes read
+            nByteRead = 0;
 
             /**
              * *read PTG format signature**
@@ -93,10 +83,10 @@ public class PTGScan extends GriddedPointScan {
             char ptgSignatureByte3 = (char) dis.readByte();
             char ptgSignatureByte4 = (char) dis.readByte();
 
-            nbByteRead += 4;
+            nByteRead += 4;
 
             if (ptgSignatureByte1 != 'P' || ptgSignatureByte2 != 'T' || ptgSignatureByte3 != 'G' || ptgSignatureByte4 != '\0') {
-                throw new IOException("Bad format");
+                throw new IOException("PTG file " + getFile().getName() + " File type tag ‘P’, ‘T’, ‘G’, ‘\\0’ excepected in header");
             }
 
             /**
@@ -107,7 +97,7 @@ public class PTGScan extends GriddedPointScan {
             byte magicNumberByte3 = dis.readByte();
             byte magicNumberByte4 = dis.readByte();
 
-            nbByteRead += 4;
+            nByteRead += 4;
 
             if ((magicNumberByte1 & 0xc7) != 0xc7
                     || (magicNumberByte2 & 0xa3) != 0xa3
@@ -206,7 +196,7 @@ public class PTGScan extends GriddedPointScan {
                         byte propertiesByte3 = dis.readByte(); //useless
                         byte propertiesByte4 = dis.readByte(); //useless
 
-                        nbByteRead += 4;
+                        nByteRead += 4;
 
                         int bit1 = ((propertiesByte1 & 0x1) == 0x1) ? 1 : 0;
                         int bit2 = ((propertiesByte1 & 0x2) == 0x2) ? 1 : 0;
@@ -226,23 +216,24 @@ public class PTGScan extends GriddedPointScan {
             }
 
             header.updatePointSize();
-            headerByteLength = nbByteRead;
+            headerSize = (int) nByteRead;
+            columnPositionSize = 8 * header.getNAzimuth();
 
-            reset();
+            resetRange();
         }
     }
 
     private String getNextString(DataInputStream dis) throws IOException {
 
         int length = dis.readUnsignedByte() + dis.readUnsignedByte() + dis.readUnsignedByte() + dis.readUnsignedByte();
-        nbByteRead += 4;
+        nByteRead += 4;
 
         char[] keyCharacters = new char[length];
         for (int i = 0; i < length; i++) {
             keyCharacters[i] = (char) dis.readByte();
         }
 
-        nbByteRead += length;
+        nByteRead += length;
 
         return String.valueOf(keyCharacters).trim();
     }
@@ -256,7 +247,7 @@ public class PTGScan extends GriddedPointScan {
 
         int result = LittleEndianUtility.bytesToInt(b1, b2, b3, b4);
 
-        nbByteRead += 4;
+        nByteRead += 4;
 
         return result;
     }
@@ -272,7 +263,7 @@ public class PTGScan extends GriddedPointScan {
             dis.readByte(),
             dis.readByte()});
 
-        nbByteRead += 8;
+        nByteRead += 8;
 
         return result;
     }
@@ -288,7 +279,7 @@ public class PTGScan extends GriddedPointScan {
                 dis.readByte(),
                 dis.readByte());
 
-        nbByteRead += 8;
+        nByteRead += 8;
 
         return result;
     }
@@ -300,48 +291,30 @@ public class PTGScan extends GriddedPointScan {
                 dis.readByte(),
                 dis.readByte());
 
-        nbByteRead += 4;
+        nByteRead += 4;
 
         return result;
     }
 
+    // column offset to be able to jump directly to colum start
+    // not used since we read the whole file at once
     private void readColumnsOffsets() throws FileNotFoundException, IOException {
 
-        offsetSize = 0;
+        columnPositionSize = 0;
 
         try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(getFile())))) {
 
             dis.mark(Integer.MAX_VALUE);
-            dis.skipBytes((int) headerByteLength);
+            dis.skipBytes((int) headerSize);
 
-            offsets = new long[header.getNZenith()];
+            long[] offsets = new long[header.getNAzimuth()];
 
             //get columns offsets list
-            for (int i = 0; i < header.getNZenith(); i++) {
-
+            for (int i = 0; i < header.getNAzimuth(); i++) {
                 offsets[i] = getNextLong(dis);
-                offsetSize += 8;
+                columnPositionSize += 8;
             }
         }
-    }
-
-    private void skipHeader(DataInputStream dis) throws IOException {
-        dis.skipBytes((int) headerByteLength);
-        nbByteRead = headerByteLength;
-    }
-
-    private void skipOffsets(DataInputStream dis) throws IOException {
-        dis.skipBytes((int) offsetSize);
-        nbByteRead = (int) (headerByteLength + offsetSize);
-    }
-
-    private void skipMetadata(DataInputStream dis) throws IOException {
-        skipHeader(dis);
-        skipOffsets(dis);
-    }
-
-    public long getNbByteRead() {
-        return nbByteRead;
     }
 
     @Override
@@ -354,114 +327,97 @@ public class PTGScan extends GriddedPointScan {
 
         points = new LPoint[header.getNAzimuth()][header.getNZenith()];
 
-        readColumnsOffsets();
-
+        // use col and row variables to stick to LEICA Cyclone PTG File Format Specification
+        int col = -1;
+        int row = -1;
+        // open data stream
         try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(getFile())))) {
-            dis.mark(Integer.MAX_VALUE);
-            skipMetadata(dis);
-            incrementColumnIndex(dis);
-            do {
-                incrementRowIndex(dis);
-                if (validPoints[row]) {
-                    LPoint point;
-                    if (header.isPointInDoubleFormat()) {
-                        double x = getNextDouble(dis);
-                        double y = getNextDouble(dis);
-                        double z = getNextDouble(dis);
+            // reset number of bytes
+            nByteRead = 0;
+            // skip header
+            dis.skipBytes(headerSize);
+            nByteRead += headerSize;
+            // skip column positions
+            dis.skipBytes(columnPositionSize);
+            nByteRead += columnPositionSize;
+            // loop over columns
+            for (col = 0; col < header.getNAzimuth(); col++) {
+                // read row validity bits 
+                boolean[] validPoints = readValidityBits(dis);
+                // loop over rows
+                for (row = 0; row < header.getNZenith(); row++) {
+                    // read valid points
+                    if (validPoints[row]) {
+                        LPoint point;
+                        // point xyz coordinate
+                        if (header.isPointInDoubleFormat()) {
+                            // xyz as double
+                            double x = getNextDouble(dis);
+                            double y = getNextDouble(dis);
+                            double z = getNextDouble(dis);
 
-                        point = new LDoublePoint();
-                        ((LDoublePoint) point).x = x;
-                        ((LDoublePoint) point).y = y;
-                        ((LDoublePoint) point).z = z;
-                    } else {
-                        float x = getNextFloat(dis);
-                        float y = getNextFloat(dis);
-                        float z = getNextFloat(dis);
+                            point = new LDoublePoint();
+                            ((LDoublePoint) point).x = x;
+                            ((LDoublePoint) point).y = y;
+                            ((LDoublePoint) point).z = z;
+                        } else {
+                            // xyz as float
+                            float x = getNextFloat(dis);
+                            float y = getNextFloat(dis);
+                            float z = getNextFloat(dis);
 
-                        point = new LFloatPoint();
-                        ((LFloatPoint) point).x = x;
-                        ((LFloatPoint) point).y = y;
-                        ((LFloatPoint) point).z = z;
+                            point = new LFloatPoint();
+                            ((LFloatPoint) point).x = x;
+                            ((LFloatPoint) point).y = y;
+                            ((LFloatPoint) point).z = z;
+                        }
+                        // point intensity
+                        if (header.isPointContainsIntensity()) {
+                            float intensity = getNextFloat(dis);
+                            point.intensity = intensity;
+                        }
+                        // point RGB
+                        if (header.isPointContainsRGB()) {
+                            int red = dis.readUnsignedByte() + 128;
+                            int green = dis.readUnsignedByte() + 128;
+                            int blue = dis.readUnsignedByte() + 128;
+                            nByteRead += 3;
+                            point.red = red;
+                            point.green = green;
+                            point.blue = blue;
+                        }
+                        // point grid coordinate
+                        point.azimuthIndex = col;
+                        point.zenithIndex = row;
+                        // set point in array
+                        points[col][row] = point;
                     }
-
-                    if (header.isPointContainsIntensity()) {
-                        float intensity = getNextFloat(dis);
-                        point.intensity = intensity;
-                    }
-
-                    if (header.isPointContainsRGB()) {
-                        int red = dis.readUnsignedByte() + 128;
-                        int green = dis.readUnsignedByte() + 128;
-                        int blue = dis.readUnsignedByte() + 128;
-
-                        nbByteRead += 3;
-
-                        point.red = red;
-                        point.green = green;
-                        point.blue = blue;
-                    }
-
-                    point.azimuthIndex = col;
-                    point.zenithIndex = row;
-
-                    points[col][row] = point;
-
-                } else {
-                    //skipBytes(dis, header.getPointSize());
-                }
-            } while (col < header.getNAzimuth());
-        }
-    }
-
-    private void incrementColumnIndex(DataInputStream dis) {
-
-        try {
-            col++;
-
-            if (col < header.getNAzimuth()) {
-
-                if (nbByteRead != offsets[col]) {
-                    dis.reset();
-                    dis.skipBytes((int) offsets[col]); //seek to column position
-                    nbByteRead = offsets[col];
-                }
-
-                int nbValidityBytes = (int) Math.ceil(header.getNZenith() / 8.0);
-                validPoints = new boolean[nbValidityBytes * 8];
-
-                for (int j = 0, count = 0; j < nbValidityBytes; j++, count += 8) {
-
-                    byte value = dis.readByte();
-                    nbByteRead++;
-                    validPoints[count + 7] = ((value & 0b00000001) == 0b00000001);
-                    validPoints[count + 6] = ((value & 0b00000010) == 0b00000010);
-                    validPoints[count + 5] = ((value & 0b00000100) == 0b00000100);
-                    validPoints[count + 4] = ((value & 0b00001000) == 0b00001000);
-                    validPoints[count + 3] = ((value & 0b00010000) == 0b00010000);
-                    validPoints[count + 2] = ((value & 0b00100000) == 0b00100000);
-                    validPoints[count + 1] = ((value & 0b01000000) == 0b01000000);
-                    validPoints[count + 0] = ((value & 0b10000000) == 0b10000000);
                 }
             }
-
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            throw new IOException("Error reading point cloud " + getFile().getName() + " col " + col + " row " + row, ex);
         }
     }
 
-    private void incrementRowIndex(DataInputStream dis) throws IOException {
+    private boolean[] readValidityBits(DataInputStream dis) throws IOException {
 
-        row++;
+        int nbValidityBytes = (int) Math.ceil(header.getNZenith() / 8.0);
+        boolean[] validPoints = new boolean[nbValidityBytes * 8];
 
-        //if last processed row was the last row then increment column and reinitialize row index
-        if (row == validPoints.length) {
-            incrementColumnIndex(dis);
-            row = 0;
+        for (int j = 0, count = 0; j < nbValidityBytes; j++, count += 8) {
+
+            byte value = dis.readByte();
+            nByteRead++;
+            validPoints[count + 7] = ((value & 0b00000001) == 0b00000001);
+            validPoints[count + 6] = ((value & 0b00000010) == 0b00000010);
+            validPoints[count + 5] = ((value & 0b00000100) == 0b00000100);
+            validPoints[count + 4] = ((value & 0b00001000) == 0b00001000);
+            validPoints[count + 3] = ((value & 0b00010000) == 0b00010000);
+            validPoints[count + 2] = ((value & 0b00100000) == 0b00100000);
+            validPoints[count + 1] = ((value & 0b01000000) == 0b01000000);
+            validPoints[count + 0] = ((value & 0b10000000) == 0b10000000);
         }
-    }
-
-    private void skipBytes(DataInputStream dis, long nbBytes) throws IOException {
-        dis.skipBytes((int) nbBytes);
-        nbByteRead += nbBytes;
+        
+        return validPoints;
     }
 }

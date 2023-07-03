@@ -57,7 +57,7 @@ public class PTXScanTest {
     @Test
     public void testIteratorFiltering() {
 
-        pTXScan.reset();
+        pTXScan.resetRange();
 
         pTXScan.setAzimuthIndex(3);
         pTXScan.setZenithIndex(1);

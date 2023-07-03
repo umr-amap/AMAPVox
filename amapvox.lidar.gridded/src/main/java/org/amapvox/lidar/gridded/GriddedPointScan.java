@@ -121,11 +121,11 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
 
         readHeader();
         readPointCloud();
-        reset();
+        resetRange();
         initZenith();
-        reset();
+        resetRange();
         initAzimuth();
-        reset();
+        resetRange();
     }
 
     private void initZenith() {
@@ -272,7 +272,7 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     /**
      * Reset the zenithal and azimuthal ranges to default values.
      */
-    public void reset() {
+    public void resetRange() {
 
         setZenithRange(0, header.getNZenith() - 1);
         setAzimuthRange(0, header.getNAzimuth() - 1);

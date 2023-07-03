@@ -23,42 +23,69 @@ public class MultiScanProjectReader extends LidarProjectReader {
 
     private final List<File> scanFiles;
     private final LidarScanReader scanReader;
-    private final static String HEADER = "# multi scan project";
+    private final String fileExt;
 
-    public MultiScanProjectReader(File file, LidarScanReader scanReader) throws FileNotFoundException, IOException {
+    public MultiScanProjectReader(File file, String fileExt, LidarScanReader scanReader) throws IOException {
         super(file);
+        this.fileExt = fileExt.trim().toUpperCase();
         this.scanReader = scanReader;
         scanFiles = new ArrayList();
+    }
 
-        try (BufferedReader projectReader = new BufferedReader(new FileReader(file))) {
+    private void readHeader() throws FileNotFoundException, IOException {
+
+        try (BufferedReader projectReader = new BufferedReader(new FileReader(getFile()))) {
+            String header = fileExt.trim().toUpperCase() + " index file";
             // check 1st line
-            if (!projectReader.readLine().trim().toLowerCase().startsWith(HEADER)) {
-                throw new IOException("not a valide multi scan project file (1st line must \"" + HEADER + "\"");
+            if (!projectReader.readLine().trim().toLowerCase().startsWith(header.toLowerCase())) {
+                throw new IOException("not a valide multi scan project file (1st line must be \"" + header + "\"");
             }
+            // check 2nd line
+            String line;
+            line = projectReader.readLine().trim();
+            if (!line.matches("^-+")) {
+                throw new IOException("not a valide multi scan project file (2nd line must contain only minus chars ------ no matter how many)");
+            }
+        }
+
+    }
+
+    private void readProjectFile() throws FileNotFoundException, IOException {
+
+        // check header
+        readHeader();
+
+        try (BufferedReader projectReader = new BufferedReader(new FileReader(getFile()))) {
+            // skip line 1 & 2
+            projectReader.readLine();
+            projectReader.readLine();
             // read file list
+            scanFiles.clear();
             String line;
             while ((line = projectReader.readLine()) != null) {
                 line = line.trim();
                 if (!(line.startsWith("#") || line.length() < 1)) {
                     line = line.replace('\\', File.separatorChar);
-                    scanFiles.add(new File(resolve(line, file.getParent())));
+                    scanFiles.add(new File(resolve(line, getFile().getParent())));
                 }
             }
         }
     }
 
-    public static boolean isValid(File file) {
+    public static boolean isValid(File file, String fileExt) {
 
-        try (BufferedReader projectReader = new BufferedReader(new FileReader(file))) {
-            // check 1st line
-            return projectReader.readLine().trim().toLowerCase().startsWith(HEADER);
-        } catch (Exception ex) {
+        try {
+            new MultiScanProjectReader(file, fileExt, null).readHeader();
+        } catch (IOException ex) {
+            return false;
         }
-        return false;
+        return true;
     }
 
     @Override
     public IteratorWithException<LidarScan> iterator() throws Exception {
+
+        readProjectFile();
 
         Iterator<File> it = scanFiles.iterator();
         return new IteratorWithException() {

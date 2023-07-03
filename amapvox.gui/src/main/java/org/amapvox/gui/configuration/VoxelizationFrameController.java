@@ -45,8 +45,6 @@ import org.amapvox.voxelisation.VoxelizationCfg;
 import org.amapvox.voxelisation.output.OutputVariable;
 import org.amapvox.lidar.commons.LidarScan;
 import org.amapvox.lidar.commons.MultiScanProjectReader;
-import org.amapvox.lidar.faro.XYBReader;
-import org.amapvox.lidar.leica.ptg.PTGReader;
 import org.amapvox.lidar.las.Classification;
 import java.io.File;
 import java.io.IOException;
@@ -99,6 +97,8 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
 import javax.vecmath.Point3i;
+import org.amapvox.lidar.faro.XYBScan;
+import org.amapvox.lidar.leica.ptg.PTGScan;
 import org.apache.log4j.Logger;
 import org.controlsfx.dialog.ProgressDialog;
 import org.controlsfx.validation.ValidationSupport;
@@ -1514,14 +1514,22 @@ public class VoxelizationFrameController extends ConfigurationController {
         lastScanFile = selectedFile;
         LidarProjectExtractor lidarProjectExtractor;
 
-        if (MultiScanProjectReader.isValid(selectedFile)) {
+        if (MultiScanProjectReader.isValid(selectedFile, lidarType.name())) {
             try {
                 switch (lidarType) {
                     case PTG:
-                        lidarProjectExtractor = new MultiScanProjectExtractor(new PTGReader());
+                        lidarProjectExtractor = new MultiScanProjectExtractor(lidarType.name(), f -> {
+                            PTGScan scan = new PTGScan(f);
+                            scan.readHeader();
+                            return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
+                        });
                         break;
                     case XYB:
-                        lidarProjectExtractor = new MultiScanProjectExtractor(new XYBReader());
+                        lidarProjectExtractor = new MultiScanProjectExtractor(lidarType.name(), f -> {
+                            XYBScan scan = new XYBScan(f);
+                            scan.readHeader();
+                            return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
+                        });
                         break;
                     default:
                         throw new IOException("Unsupported file format for multi-scan project");
@@ -1580,8 +1588,9 @@ public class VoxelizationFrameController extends ConfigurationController {
                 case PTG:
                     try {
                     scanItems = new ArrayList();
-                    PTGReader ptgReader = new PTGReader();
-                    scanItems.add(ptgReader.toLidarScan(selectedFile));
+                    PTGScan scan = new PTGScan(selectedFile);
+                    scan.readHeader();
+                    scanItems.add(new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix())));
                     listviewLidarScans.getItems().setAll(scanItems);
                 } catch (IOException ex) {
                     Util.showErrorDialog(getStage(), ex, "[Voxelization]");
@@ -1591,8 +1600,9 @@ public class VoxelizationFrameController extends ConfigurationController {
                 case XYB:
                     try {
                     scanItems = new ArrayList();
-                    XYBReader xybReader = new XYBReader();
-                    scanItems.add(xybReader.toLidarScan(selectedFile));
+                    XYBScan scan = new XYBScan(selectedFile);
+                    scan.readHeader();
+                    scanItems.add(new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix())));
                     listviewLidarScans.getItems().setAll(scanItems);
                 } catch (IOException ex) {
                     Util.showErrorDialog(getStage(), ex, "[Voxelization]");
@@ -1936,7 +1946,6 @@ public class VoxelizationFrameController extends ConfigurationController {
     private HBox hBoxPointCloudFiltering;
     @FXML
     private VBox vBoxPointCloudFiltering;
-
 
     // Echo filter by attribute
     @FXML

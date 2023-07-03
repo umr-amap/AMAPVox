@@ -7,8 +7,6 @@ import org.amapvox.lidar.gui.MultiScanProjectExtractor;
 import org.amapvox.lidar.gui.PTXProjectExtractor;
 import org.amapvox.lidar.gui.RiscanProjectExtractor;
 import org.amapvox.lidar.commons.LidarScan;
-//import org.amapvox.lidar.faro.XYBReader;
-import org.amapvox.lidar.leica.ptg.PTGReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -37,6 +35,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javax.vecmath.Matrix4d;
+import org.amapvox.lidar.leica.ptg.PTGScan;
 import org.controlsfx.dialog.ProgressDialog;
 import org.controlsfx.validation.ValidationResult;
 import org.controlsfx.validation.ValidationSupport;
@@ -50,7 +49,6 @@ public class ConverterController implements Initializable {
 
     LidarProjectExtractor riscanProjectExtractor = new RiscanProjectExtractor();
     LidarProjectExtractor ptxProjectExtractor = new PTXProjectExtractor();
-    LidarProjectExtractor ptgProjectExtractor = new MultiScanProjectExtractor(new PTGReader());
 //    LidarProjectExtractor xybProjectExtractor = new MultiScanProjectExtractor(new XYBReader());
 
     @FXML
@@ -151,84 +149,90 @@ public class ConverterController implements Initializable {
                 case ".rsp":
                     try {
 
-                        RSPReader rsp = new RSPReader(selectedFile);
-                        riscanProjectExtractor.read(selectedFile);
+                    RSPReader rsp = new RSPReader(selectedFile);
+                    riscanProjectExtractor.read(selectedFile);
 
-                        riscanProjectExtractor.getFrame().setOnHidden((WindowEvent event1) -> {
-                            List<LidarScan> selectedScans = riscanProjectExtractor.getController().getSelectedScans();
+                    riscanProjectExtractor.getFrame().setOnHidden((WindowEvent event1) -> {
+                        List<LidarScan> selectedScans = riscanProjectExtractor.getController().getSelectedScans();
 
-                            Matrix4d popMatrix;
-                            if (checkboxImportPOPMatrix.isSelected()) {
+                        Matrix4d popMatrix;
+                        if (checkboxImportPOPMatrix.isSelected()) {
 
-                                popMatrix = rsp.getPopMatrix();
-                                System.out.println("POP matrix imported : " + popMatrix.toString());
-                            } else {
-                                popMatrix = new Matrix4d();
-                                popMatrix.setIdentity();
-                                System.out.println("POP matrix disabled, set to identity.");
-                            }
+                            popMatrix = rsp.getPopMatrix();
+                            System.out.println("POP matrix imported : " + popMatrix.toString());
+                        } else {
+                            popMatrix = new Matrix4d();
+                            popMatrix.setIdentity();
+                            System.out.println("POP matrix disabled, set to identity.");
+                        }
 
-                            selectedScans.forEach(scan -> {
-                                listViewScans.getItems().add(new SimpleScan(scan.getFile(), popMatrix, scan.getMatrix()));
-                            });
+                        selectedScans.forEach(scan -> {
+                            listViewScans.getItems().add(new SimpleScan(scan.getFile(), popMatrix, scan.getMatrix()));
                         });
+                    });
 
-                        riscanProjectExtractor.getFrame().showAndWait();
+                    riscanProjectExtractor.getFrame().showAndWait();
 
-                    } catch (IOException ex) {
-                        System.err.println(ex);
-                    } catch (Exception ex) {
-                        Logger.getLogger(ConverterController.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    break;
+                } catch (IOException ex) {
+                    System.err.println(ex);
+                } catch (Exception ex) {
+                    Logger.getLogger(ConverterController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                break;
 
                 case ".ptg":
                 case ".PTG":
                     try {
 
-                        ptgProjectExtractor.read(selectedFile);
-                        ptgProjectExtractor.getFrame().show();
+                    LidarProjectExtractor ptgProjectExtractor = new MultiScanProjectExtractor("PTG", f -> {
+                        PTGScan scan = new PTGScan(f);
+                        scan.readHeader();
+                        return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
+                    });
 
-                        ptgProjectExtractor.getFrame().setOnHidden((WindowEvent event1) -> {
-                            final List<LidarScan> selectedScans = ptgProjectExtractor.getController().getSelectedScans();
+                    ptgProjectExtractor.read(selectedFile);
+                    ptgProjectExtractor.getFrame().show();
 
-                            selectedScans.forEach(scan -> {
-                                Matrix4d identity = new Matrix4d();
-                                identity.setIdentity();
-                                listViewScans.getItems().add(new SimpleScan(scan.getFile(), identity, scan.getMatrix()));
-                            });
+                    ptgProjectExtractor.getFrame().setOnHidden((WindowEvent event1) -> {
+                        final List<LidarScan> selectedScans = ptgProjectExtractor.getController().getSelectedScans();
+
+                        selectedScans.forEach(scan -> {
+                            Matrix4d identity = new Matrix4d();
+                            identity.setIdentity();
+                            listViewScans.getItems().add(new SimpleScan(scan.getFile(), identity, scan.getMatrix()));
                         });
+                    });
 
-                    } catch (IOException ex) {
-                        System.err.println(ex);
-                    } catch (Exception ex) {
-                        System.err.println(ex);
-                    }
-                    break;
+                } catch (IOException ex) {
+                    System.err.println(ex);
+                } catch (Exception ex) {
+                    System.err.println(ex);
+                }
+                break;
 
                 case ".ptx":
                 case ".PTX":
                     try {
 
-                        ptxProjectExtractor.read(selectedFile);
-                        ptxProjectExtractor.getFrame().show();
+                    ptxProjectExtractor.read(selectedFile);
+                    ptxProjectExtractor.getFrame().show();
 
-                        ptxProjectExtractor.getFrame().setOnHidden((WindowEvent event1) -> {
-                            final List<LidarScan> selectedScans = ptxProjectExtractor.getController().getSelectedScans();
+                    ptxProjectExtractor.getFrame().setOnHidden((WindowEvent event1) -> {
+                        final List<LidarScan> selectedScans = ptxProjectExtractor.getController().getSelectedScans();
 
-                            selectedScans.forEach(scan -> {
-                                Matrix4d identity = new Matrix4d();
-                                identity.setIdentity();
-                                listViewScans.getItems().add(new SimpleScan(scan.getFile(), identity, scan.getMatrix()));
-                            });
+                        selectedScans.forEach(scan -> {
+                            Matrix4d identity = new Matrix4d();
+                            identity.setIdentity();
+                            listViewScans.getItems().add(new SimpleScan(scan.getFile(), identity, scan.getMatrix()));
                         });
+                    });
 
-                    } catch (IOException ex) {
-                        System.err.println(ex);
-                    } catch (Exception ex) {
-                        System.err.println(ex);
-                    }
-                    break;
+                } catch (IOException ex) {
+                    System.err.println(ex);
+                } catch (Exception ex) {
+                    System.err.println(ex);
+                }
+                break;
 
                 default:
                     System.err.println("Invalid extension");

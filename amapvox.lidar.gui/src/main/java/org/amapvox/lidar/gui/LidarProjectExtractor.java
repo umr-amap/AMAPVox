@@ -30,7 +30,7 @@ import javafx.stage.Stage;
  *
  * @author Julien Heurtebize
  */
-public abstract class LidarProjectExtractor {
+abstract public class LidarProjectExtractor {
 
     private final static Logger LOGGER = Logger.getLogger(LidarProjectExtractor.class.getCanonicalName());
 
@@ -38,7 +38,7 @@ public abstract class LidarProjectExtractor {
     protected Stage stage;
 
     private Service<List<LidarScan>> service;
-
+    
     abstract public LidarProjectReader getReader(File file) throws FileNotFoundException, IOException;
 
     /**
@@ -63,7 +63,7 @@ public abstract class LidarProjectExtractor {
                 return new Task<List<LidarScan>>() {
                     @Override
                     protected List<LidarScan> call() throws Exception {
-                        updateMessage("Reading PTX file " + file);
+                        updateMessage("Reading multi-scan file " + file);
                         reader.addProcessingListener(new ProcessingAdapter() {
                             @Override
                             public void processingStepProgress(String progressMsg, long progress, long max) {

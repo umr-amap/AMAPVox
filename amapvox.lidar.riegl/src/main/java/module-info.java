@@ -11,7 +11,7 @@ module amapvox.lidar.riegl {
     
     // automatic modules
     requires vecmath;
-    requires progressbar;
+    requires me.tongfei.progressbar;
     requires com.sun.jna;
     requires org.jdom2;
     

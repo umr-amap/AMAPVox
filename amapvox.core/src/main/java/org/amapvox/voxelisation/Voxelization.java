@@ -60,7 +60,7 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
 
     private final List<Filter<Shot>> shotFilters;
     private final List<Filter<Echo>> echoFilters;
-    private EchoesContext currentEchoesContext;
+    private EchoProperties currentEchoProperties;
 
     private boolean padEnabled;
     private double transmErrFallback;
@@ -164,13 +164,17 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         iShot++;
 
         if (retainShot(shot)) {
+
+            // set echoes property
+            currentEchoProperties = setEchoProperties(shot);
+
             if (potentialBeamSectionEnabled) {
                 // vegetation free shot propagation (as if no vegetation in the scene)
                 freePropagation(shot);
             }
 
             // shot propagation (with light interception in the scene)
-            if (propagation(shot, currentEchoesContext)) {
+            if (propagation(shot, currentEchoProperties)) {
                 // increment number of shots processed
                 nShotProcessed++;
             } else {
@@ -271,7 +275,7 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         return new LineSegment(shot.origin, shot.direction, SHOT_MAX_DISTANCE);
     }
 
-    private boolean propagation(Shot shot, EchoesContext echoesContext) throws Exception {
+    private boolean propagation(Shot shot, EchoProperties echoProperties) throws Exception {
 
         // create shot line
         LineSegment shotLine = shotLine(shot);
@@ -286,18 +290,18 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
             int rank = 0;
             // by default first echo is null
             Echo echo = null;
-            if (echoesContext.nEchoes > 0) {
+            if (echoProperties.nEcho > 0) {
                 // look for echoes located before voxel0
-                while ((rank < echoesContext.nEchoes) && (shot.getRange(rank) < voxelCrossing.length)) {
+                while ((rank < echoProperties.nEcho) && (shot.getRange(rank) < voxelCrossing.length)) {
                     // decrement beam fraction entering voxel0
-                    beamFractionIn -= echoesContext.bfIntercepted[rank];
+                    beamFractionIn -= echoProperties.bfIntercepted[rank];
                     rank++;
                 }
 
                 if (beamFractionIn < EPSILON) {
                     // no light reaches voxel0 => no propagation inside voxel space
                     return false;
-                } else if (rank < echoesContext.nEchoes) {
+                } else if (rank < echoProperties.nEcho) {
                     // there is at list one echo located inside or beyond voxel0
                     echo = shot.echoes[rank];
                 }
@@ -342,15 +346,15 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
                     while ((null != echo) && isEchoInsideVoxel(echo, vcoord) && (beamFractionIn - bfIntercepted > EPSILON)) {
                         // add free path length associated to current echo (intercepted)
                         double freepathLength = shot.getRange(rank) - dIn;
-                        freePaths.add(new FreepathVoxel(freepathLength, echoesContext.bfIntercepted[rank], true, echoesContext.retained[rank]));
+                        freePaths.add(new FreepathVoxel(freepathLength, echoProperties.bfIntercepted[rank], true, echoProperties.retained[rank]));
                         if (pathLengthOutput.isEnabled()) {
                             pathLengthOutput.addPathLengthRecord(vcoord, (float) freepathLength, (float) pathLength);
                         }
                         // intercepted beam fraction regardless of echo filtering
-                        bfIntercepted += echoesContext.bfIntercepted[rank];
+                        bfIntercepted += echoProperties.bfIntercepted[rank];
                         // next echo 
                         rank++;
-                        echo = rank < echoesContext.nEchoes ? shot.echoes[rank] : null;
+                        echo = rank < echoProperties.nEcho ? shot.echoes[rank] : null;
                     }
                 }
                 // add path length that goes through voxel (not intercepted)
@@ -623,12 +627,12 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         return (voxel.groundDistance < voxelManager.getVoxelSpace().getVoxelSize().z / 2.0f);
     }
 
-    private EchoesContext extractEchoesContext(Shot shot) throws Exception {
+    private EchoProperties setEchoProperties(Shot shot) throws Exception {
 
         if (laserSpec.isMonoEcho()) {
             // mono echo laser
-            EchoesContext context = new EchoesContext(Math.min(1, shot.getEchoesNumber()));
-            if (context.nEchoes > 0) {
+            EchoProperties context = new EchoProperties(Math.min(1, shot.getEchoesNumber()));
+            if (context.nEcho > 0) {
                 context.retained[0] = retainEcho(shot.echoes[0]);
                 context.bfIntercepted[0] = 1.d;
             }
@@ -636,30 +640,49 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
 
         } else {
             // multi echo laser
-            EchoesContext context = new EchoesContext(shot.getEchoesNumber());
-            if (context.nEchoes > 0) {
+            EchoProperties echoProperties = new EchoProperties(shot.getEchoesNumber());
+            if (echoProperties.nEcho > 0) {
                 // apply echo filter
-                for (int k = 0; k < context.nEchoes; k++) {
-                    context.retained[k] = retainEcho(shot.echoes[k]);
+                for (int k = 0; k < echoProperties.nEcho; k++) {
+                    echoProperties.retained[k] = retainEcho(shot.echoes[k]);
                 }
-                // specific weight attenuation (EchoesWeightByFileParams.java) for this shot
-                double weightCorr = (null != echoWeightCorrection)
-                        ? echoWeightCorrection.getWeightCorrection(shot.index)
-                        : 1.d;
-                // discard shot whith more echoes than weights provided in the weighting table
-                if (context.nEchoes > weightTable.length) {
-                    throw new ArrayIndexOutOfBoundsException(
-                            "Shot " + shot.index
-                            + " has been discarded. More echoes ("
-                            + context.nEchoes
-                            + ") than weights in the echo weighting table ("
-                            + weightTable.length + ").");
-                }
-                for (int k = 0; k < context.nEchoes; k++) {
-                    context.bfIntercepted[k] = beamAttenuation(k, context.nEchoes, weightCorr);
+
+                // echo weight 
+                if (cfg.isEchoWeightsFromRelativeIntensityEnabled()) {
+                    // echo weights from relative intensity
+                    float[] intensity = new float[shot.echoes.length];
+                    float sumIntensity = 0.f;
+                    for (int k = 0; k < intensity.length; k++) {
+                        intensity[k] = shot.echoes[k].getFloat("intensity");
+                        sumIntensity += intensity[k];
+                    }
+                    for (int k = 0; k < intensity.length; k++) {
+                        echoProperties.bfIntercepted[k] = intensity[k] / sumIntensity;
+                    }
+//                    if (intensity.length > 2) {
+//                        System.out.println(Arrays.toString(echoProperties.bfIntercepted));
+//                    }
+                } else {
+                    // specific weight attenuation (EchoesWeightByFileParams.java) for this shot
+                    double weightCorr = (null != echoWeightCorrection)
+                            ? echoWeightCorrection.getWeightCorrection(shot.index)
+                            : 1.d;
+                    // discard shot whith more echoes than weights provided in the weighting table
+                    if (echoProperties.nEcho > weightTable.length) {
+                        throw new ArrayIndexOutOfBoundsException(
+                                "Shot " + shot.index
+                                + " has been discarded. More echoes ("
+                                + echoProperties.nEcho
+                                + ") than weights in the echo weighting table ("
+                                + weightTable.length + ").");
+                    }
+                    // weight table
+                    for (int k = 0; k < echoProperties.nEcho; k++) {
+                        echoProperties.bfIntercepted[k] = beamAttenuation(k, echoProperties.nEcho, weightCorr);
+                    }
                 }
             }
-            return context;
+            return echoProperties;
         }
     }
 
@@ -862,15 +885,6 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
             }
         }
 
-        // echo filters and weighting
-        try {
-            currentEchoesContext = extractEchoesContext(shot);
-        } catch (Exception ex) {
-            // warn the user and discard the shot
-            LOGGER.warn("extract echoes context", ex);
-            return false;
-        }
-
         // all filters retain the shot
         return true;
     }
@@ -955,14 +969,21 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
                 : freepathLength;
     }
 
-    private class EchoesContext {
+    /**
+     * Convenience class that gathers together some properties for echoes of
+     * same shot.
+     */
+    private class EchoProperties {
 
-        private final int nEchoes;
+        // number of hits in the shot
+        private final int nEcho;
+        // whether the echoes are retained
         private final boolean retained[];
+        // intercepted beam fraction by each echo
         private final double[] bfIntercepted;
 
-        EchoesContext(int nEchoes) {
-            this.nEchoes = nEchoes;
+        EchoProperties(int nEchoes) {
+            this.nEcho = nEchoes;
             this.retained = new boolean[nEchoes];
             this.bfIntercepted = new double[nEchoes];
         }

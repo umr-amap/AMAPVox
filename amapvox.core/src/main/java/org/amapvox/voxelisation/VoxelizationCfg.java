@@ -76,7 +76,7 @@ public class VoxelizationCfg extends Configuration {
         RXP, RSP, PTX, PTG, XYB, LAS, LAZ, SHT;
     }
 
-    public final static Matrix DEFAULT_ECHOES_WEIGHT = new Matrix(
+    public final static Matrix DEFAULT_ECHO_WEIGHTS = new Matrix(
             new double[][]{
                 {1.d, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
                 {0.5d, 0.5d, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
@@ -132,8 +132,10 @@ public class VoxelizationCfg extends Configuration {
     private double maxAttenuation = 20.f;
     private double attenuationError = 1e-7d;
 
-    private Matrix echoesWeightMatrix;
+    private Matrix echoWeightsMatrix;
     private File echoWeightsFile;
+    private boolean echoWeightsFromRelativeIntensityEnabled;
+
     private LidarScan lidarScan;
 
     private LaserSpecification laserSpecification = null;
@@ -450,6 +452,9 @@ public class VoxelizationCfg extends Configuration {
             } else {
                 setEchoWeightsFile(null);
             }
+
+            // echo weights from relative intensity
+            setEchoWeightsFromRelativeIntensityEnabled(Boolean.parseBoolean(echoWeightinhgElement.getAttributeValue("byintensity")));
         }
 
         Element transformationElement = processElement.getChild("transformation");
@@ -1143,7 +1148,7 @@ public class VoxelizationCfg extends Configuration {
      * @return Echoes weigting parameters
      */
     public Matrix getEchoesWeightMatrix() {
-        return echoesWeightMatrix;
+        return echoWeightsMatrix;
     }
 
     /**
@@ -1151,7 +1156,15 @@ public class VoxelizationCfg extends Configuration {
      * @param echoesWeightMatrix Echoes weighting parameters
      */
     public void setEchoesWeightMatrix(Matrix echoesWeightMatrix) {
-        this.echoesWeightMatrix = echoesWeightMatrix;
+        this.echoWeightsMatrix = echoesWeightMatrix;
+    }
+
+    public boolean isEchoWeightsFromRelativeIntensityEnabled() {
+        return echoWeightsFromRelativeIntensityEnabled;
+    }
+
+    public void setEchoWeightsFromRelativeIntensityEnabled(boolean enabled) {
+        this.echoWeightsFromRelativeIntensityEnabled = enabled;
     }
 
     /**

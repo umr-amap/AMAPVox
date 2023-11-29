@@ -125,7 +125,7 @@ public class TLSVoxelizationTest {
         cfg.setMaxCorner(new Point3d(5, 5, 5));
         cfg.setDimension(new Point3i(5, 5, 5));
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
-        cfg.setEchoesWeightMatrix(VoxelizationCfg.DEFAULT_ECHOES_WEIGHT);
+        cfg.setEchoesWeightMatrix(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS);
         cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
 
         // create new voxel analysis
@@ -360,7 +360,7 @@ public class TLSVoxelizationTest {
         cfg.setMaxCorner(new Point3d(5, 5, 5));
         cfg.setDimension(new Point3i(5, 5, 5));
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
-        cfg.setEchoesWeightMatrix(VoxelizationCfg.DEFAULT_ECHOES_WEIGHT);
+        cfg.setEchoesWeightMatrix(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS);
         cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MONO_ECHO);
 
         // create new voxel analysis
@@ -422,7 +422,7 @@ public class TLSVoxelizationTest {
         cfg.setMaxCorner(new Point3d(5, 5, 5));
         cfg.setDimension(new Point3i(5, 5, 5));
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
-        cfg.setEchoesWeightMatrix(VoxelizationCfg.DEFAULT_ECHOES_WEIGHT);
+        cfg.setEchoesWeightMatrix(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS);
         cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
 
         // list of shots

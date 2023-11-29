@@ -711,7 +711,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         checkboxWeightingByRank.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
                 -> {
             if (newValue && textAreaWeighting.getText().isEmpty()) {
-                textAreaWeighting.setText(VoxelizationCfg.DEFAULT_ECHOES_WEIGHT.toExternalString());
+                textAreaWeighting.setText(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS.toExternalString());
             }
         });
         helpButtonWeightingByRank.setOnAction((ActionEvent event)
@@ -2117,7 +2117,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
     @FXML
     private void onActionButtonFillDefaultWeight(ActionEvent event) {
-        textAreaWeighting.setText(VoxelizationCfg.DEFAULT_ECHOES_WEIGHT.toExternalString());
+        textAreaWeighting.setText(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS.toExternalString());
     }
 
     @FXML

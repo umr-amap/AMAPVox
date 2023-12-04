@@ -431,13 +431,13 @@ public class VoxelizationCfg extends Configuration {
             //logger.info("Cannot find bounding-box element");
         }
 
-        Element echoWeightinhgElement = processElement.getChild("echo-weighting");
+        Element echoWeightingElement = processElement.getChild("echo-weighting");
 
-        if (echoWeightinhgElement != null) {
+        if (echoWeightingElement != null) {
 
             // weighting by rank
-            if (Boolean.valueOf(echoWeightinhgElement.getAttributeValue("byrank"))) {
-                Element matrixElement = echoWeightinhgElement.getChild("matrix");
+            if (Boolean.parseBoolean(echoWeightingElement.getAttributeValue("byrank"))) {
+                Element matrixElement = echoWeightingElement.getChild("matrix");
                 Matrix matrix = Matrix.valueOf(matrixElement.getText());
                 setEchoesWeightMatrix(matrix);
             } else {
@@ -445,8 +445,8 @@ public class VoxelizationCfg extends Configuration {
             }
 
             // weighting from external CSV file
-            if (Boolean.valueOf(echoWeightinhgElement.getAttributeValue("byfile"))) {
-                Element weightFileElement = echoWeightinhgElement.getChild("weight-file");
+            if (Boolean.parseBoolean(echoWeightingElement.getAttributeValue("byfile"))) {
+                Element weightFileElement = echoWeightingElement.getChild("weight-file");
                 String weightFile = resolve(weightFileElement.getAttributeValue("src"));
                 setEchoWeightsFile(new File(resolve(weightFile)));
             } else {
@@ -454,7 +454,7 @@ public class VoxelizationCfg extends Configuration {
             }
 
             // echo weights from relative intensity
-            setEchoWeightsFromRelativeIntensityEnabled(Boolean.parseBoolean(echoWeightinhgElement.getAttributeValue("byintensity")));
+            setEchoWeightsFromRelativeIntensityEnabled(Boolean.parseBoolean(echoWeightingElement.getAttributeValue("byintensity")));
         }
 
         Element transformationElement = processElement.getChild("transformation");
@@ -1158,13 +1158,25 @@ public class VoxelizationCfg extends Configuration {
     public void setEchoesWeightMatrix(Matrix echoesWeightMatrix) {
         this.echoWeightsMatrix = echoesWeightMatrix;
     }
+    
+    public boolean isStrongestEchoWeightEnabled() {
+        return false;
+    }
+    
+    public String getStrongestEchoWeightVariable() {
+        return "intensity";
+    }
 
     public boolean isEchoWeightsFromRelativeIntensityEnabled() {
         return echoWeightsFromRelativeIntensityEnabled;
     }
-
+    
     public void setEchoWeightsFromRelativeIntensityEnabled(boolean enabled) {
         this.echoWeightsFromRelativeIntensityEnabled = enabled;
+    }
+    
+     public String getRelativeEchoWeightVariable() {
+        return "intensity";
     }
 
     /**

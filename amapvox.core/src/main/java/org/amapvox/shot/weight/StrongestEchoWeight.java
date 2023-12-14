@@ -17,6 +17,10 @@ public class StrongestEchoWeight extends EchoWeight {
     private String attribute;
     private int[] weight;
 
+    public StrongestEchoWeight(boolean enabled) {
+        super(enabled);
+    }
+
     @Override
     public void init(VoxelizationCfg cfg) throws IOException {
 

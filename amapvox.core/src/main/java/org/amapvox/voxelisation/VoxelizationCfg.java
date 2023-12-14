@@ -54,6 +54,12 @@ import javax.vecmath.Point3i;
 import org.amapvox.commons.AVoxTask;
 import org.amapvox.commons.Release;
 import org.amapvox.shot.Echo;
+import org.amapvox.shot.weight.EchoWeight;
+import org.amapvox.shot.weight.EqualEchoWeight;
+import org.amapvox.shot.weight.RankEchoWeight;
+import org.amapvox.shot.weight.RelativeEchoWeight;
+import org.amapvox.shot.weight.ShotEchoWeight;
+import org.amapvox.shot.weight.StrongestEchoWeight;
 import org.apache.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
@@ -132,9 +138,11 @@ public class VoxelizationCfg extends Configuration {
     private double maxAttenuation = 20.f;
     private double attenuationError = 1e-7d;
 
-    private Matrix echoWeightsMatrix;
-    private File echoWeightsFile;
-    private boolean echoWeightsFromRelativeIntensityEnabled;
+    protected List<EchoWeight> echoWeights;
+    private Matrix echoWeightMatrix;
+    private File echoWeightFile;
+    private String strongestEchoWeightVariable;
+    private String relativeEchoWeightVariable;
 
     private LidarScan lidarScan;
 
@@ -163,6 +171,7 @@ public class VoxelizationCfg extends Configuration {
                 new String[]{"VOXELISATION"});
         shotFilters = new ArrayList<>();
         echoFilters = new ArrayList<>();
+        echoWeights = new ArrayList<>();
         decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
         decimalFormat.applyPattern("#0.############");
         decimalFormat.setGroupingUsed(false);
@@ -431,30 +440,43 @@ public class VoxelizationCfg extends Configuration {
             //logger.info("Cannot find bounding-box element");
         }
 
-        Element echoWeightingElement = processElement.getChild("echo-weighting");
-
-        if (echoWeightingElement != null) {
-
-            // weighting by rank
-            if (Boolean.parseBoolean(echoWeightingElement.getAttributeValue("byrank"))) {
-                Element matrixElement = echoWeightingElement.getChild("matrix");
-                Matrix matrix = Matrix.valueOf(matrixElement.getText());
-                setEchoesWeightMatrix(matrix);
-            } else {
-                setEchoesWeightMatrix(null);
+        Element echoWeightsElement = processElement.getChild("echo-weights");
+        if (echoWeightsElement != null) {
+            List<Element> echoWeightElements = echoWeightsElement.getChildren("echo-weight");
+            for (Element echoWeightElement : echoWeightElements) {
+                // class name attribute
+                String classname = echoWeightElement.getAttributeValue("classname");
+                // enabled attribute
+                boolean enabled = Boolean.parseBoolean(echoWeightElement.getAttributeValue("enabled"));
+                // parameters element
+                Element parametersElement = echoWeightElement.getChild("parameters");
+                if (classname.equalsIgnoreCase(EqualEchoWeight.class.getCanonicalName())) {
+                    echoWeights.add(new EqualEchoWeight(enabled));
+                } else if (classname.equalsIgnoreCase(RankEchoWeight.class.getCanonicalName())) {
+                    echoWeights.add(new RankEchoWeight(enabled));
+                    Element matrixElement = parametersElement.getChild("matrix");
+                    if (null != matrixElement) {
+                        Matrix matrix = Matrix.valueOf(matrixElement.getText());
+                        setRankEchoWeightMatrix(matrix);
+                    } else if (enabled) {
+                        throw new IOException("echo weight matrix missing");
+                    }
+                } else if (classname.equalsIgnoreCase(RelativeEchoWeight.class.getCanonicalName())) {
+                    echoWeights.add(new RelativeEchoWeight(enabled));
+                    setRelativeEchoWeightVariable(parametersElement.getAttributeValue("variable"));
+                } else if (classname.equalsIgnoreCase(ShotEchoWeight.class.getCanonicalName())) {
+                    echoWeights.add(new ShotEchoWeight(enabled));
+                    if (null != parametersElement) {
+                        String weightFile = resolve(parametersElement.getAttributeValue("src"));
+                        setShotEchoWeightFile(new File(weightFile));
+                    } else {
+                        setShotEchoWeightFile(null);
+                    }
+                } else if (classname.equalsIgnoreCase(StrongestEchoWeight.class.getCanonicalName())) {
+                    echoWeights.add(new StrongestEchoWeight(enabled));
+                    setStrongestEchoWeightVariable(parametersElement.getAttributeValue("variable"));
+                }
             }
-
-            // weighting from external CSV file
-            if (Boolean.parseBoolean(echoWeightingElement.getAttributeValue("byfile"))) {
-                Element weightFileElement = echoWeightingElement.getChild("weight-file");
-                String weightFile = resolve(weightFileElement.getAttributeValue("src"));
-                setEchoWeightsFile(new File(resolve(weightFile)));
-            } else {
-                setEchoWeightsFile(null);
-            }
-
-            // echo weights from relative intensity
-            setEchoWeightsFromRelativeIntensityEnabled(Boolean.parseBoolean(echoWeightingElement.getAttributeValue("byintensity")));
         }
 
         Element transformationElement = processElement.getChild("transformation");
@@ -778,27 +800,30 @@ public class VoxelizationCfg extends Configuration {
         voxelSpaceElement.setAttribute("subvoxel", String.valueOf(getSubVoxelSplit()));
         processElement.addContent(voxelSpaceElement);
 
-        // echo weighting by rank
-        Element echoWeightingElement = new Element("echo-weighting");
-        echoWeightingElement.setAttribute(new Attribute("byrank", String.valueOf(null != getEchoesWeightMatrix())));
-        if (null != getEchoesWeightMatrix()) {
-            Matrix matrix = getEchoesWeightMatrix();
-            matrix.setId("echo-weights");
-            echoWeightingElement.addContent(matrix.toElement());
+        // echo weight
+        Element echoWeightsElement = new Element("echo-weights");
+        if (echoWeights != null && !echoWeights.isEmpty()) {
+            for (EchoWeight echoWeight : echoWeights) {
+                Element echoWeightElement = new Element("echo-weight");
+                Element parametersElement = new Element("parameters");
+                if (echoWeight instanceof RankEchoWeight) {
+                    parametersElement.addContent(echoWeightMatrix.toElement());
+                } else if (echoWeight instanceof RelativeEchoWeight) {
+                    parametersElement.setAttribute("variable", null != relativeEchoWeightVariable ? relativeEchoWeightVariable : "");
+                } else if (echoWeight instanceof ShotEchoWeight) {
+                    parametersElement.setAttribute("src", null != echoWeightFile ? echoWeightFile.toString() : "");
+                } else if (echoWeight instanceof StrongestEchoWeight) {
+                    parametersElement.setAttribute("variable", null != relativeEchoWeightVariable ? strongestEchoWeightVariable : "");
+                }
+                echoWeightElement.setAttribute("enabled", String.valueOf(echoWeight.isEnabled()));
+                echoWeightElement.addContent(parametersElement);
+                // add echo-weight element to echo-weights parent element
+                echoWeightsElement.addContent(echoWeightElement);
+            }
         }
-        // echo weighting by file
-        echoWeightingElement.setAttribute(new Attribute("byfile", String.valueOf(null != getEchoWeightsFile())));
-        if (null != getEchoWeightsFile()) {
-            Element weightFileElement = new Element("weight-file");
-            weightFileElement.setAttribute("src", getEchoWeightsFile().getAbsolutePath());
-            echoWeightingElement.addContent(weightFileElement);
-        }
+        processElement.addContent(echoWeightsElement);
 
-        processElement.addContent(echoWeightingElement);
-
-        /**
-         * *LASER SPECIFICATION**
-         */
+        // laser specification
         Element laserSpecElement = new Element("laser-specification");
         laserSpecElement.setAttribute("name", getLaserSpecification().getName());
         laserSpecElement.setAttribute("beam-diameter-at-exit", String.valueOf(getLaserSpecification().getBeamDiameterAtExit()));
@@ -806,9 +831,7 @@ public class VoxelizationCfg extends Configuration {
         laserSpecElement.setAttribute("mono-echo", String.valueOf(getLaserSpecification().isMonoEcho()));
         processElement.addContent(laserSpecElement);
 
-        /**
-         * *TRANSFORMATION**
-         */
+        // transformation
         Element transformationElement = new Element("transformation");
 
         transformationElement.setAttribute(new Attribute("use-pop", String.valueOf(usePopMatrix)));
@@ -825,9 +848,7 @@ public class VoxelizationCfg extends Configuration {
 
         processElement.addContent(transformationElement);
 
-        /**
-         * FILTERS
-         */
+        // filters
         Element filtersElement = new Element("filters");
 
         if (shotFilters != null && !shotFilters.isEmpty()) {
@@ -905,9 +926,7 @@ public class VoxelizationCfg extends Configuration {
             }
         }
 
-        /**
-         * *EMPTY shots filtering**
-         */
+        // empty shot filter
         Element emptyShotFiltering = new Element("filter");
         emptyShotFiltering.setAttribute("enabled", String.valueOf(enableEmptyShotsFiltering));
         emptyShotFiltering.setAttribute("classname", RXPFalseEmptyShotRemover.class.getCanonicalName());
@@ -915,9 +934,6 @@ public class VoxelizationCfg extends Configuration {
 
         processElement.addContent(filtersElement);
 
-        /**
-         * LEAF properties
-         */
         // single leaf area
         Element leafAreaElement = new Element("single-leaf-area");
         leafAreaElement.setAttribute("value", String.valueOf(getMeanLeafArea()));
@@ -1143,56 +1159,44 @@ public class VoxelizationCfg extends Configuration {
         this.laserSpecification = laserSpecification;
     }
 
-    /**
-     *
-     * @return Echoes weigting parameters
-     */
-    public Matrix getEchoesWeightMatrix() {
-        return echoWeightsMatrix;
+    public void addEchoWeight(EchoWeight echoWeight) {
+        echoWeights.add(echoWeight);
     }
 
-    /**
-     *
-     * @param echoesWeightMatrix Echoes weighting parameters
-     */
-    public void setEchoesWeightMatrix(Matrix echoesWeightMatrix) {
-        this.echoWeightsMatrix = echoesWeightMatrix;
+    public List<EchoWeight> getEchoWeights() {
+        return echoWeights;
     }
-    
-    public boolean isStrongestEchoWeightEnabled() {
-        return false;
+
+    public Matrix getRankEchoWeightMatrix() {
+        return echoWeightMatrix;
     }
-    
+
+    public void setRankEchoWeightMatrix(Matrix echoWeightMatrix) {
+        this.echoWeightMatrix = echoWeightMatrix;
+    }
+
     public String getStrongestEchoWeightVariable() {
-        return "intensity";
+        return strongestEchoWeightVariable;
     }
 
-    public boolean isEchoWeightsFromRelativeIntensityEnabled() {
-        return echoWeightsFromRelativeIntensityEnabled;
-    }
-    
-    public void setEchoWeightsFromRelativeIntensityEnabled(boolean enabled) {
-        this.echoWeightsFromRelativeIntensityEnabled = enabled;
-    }
-    
-     public String getRelativeEchoWeightVariable() {
-        return "intensity";
+    public void setStrongestEchoWeightVariable(String strongestEchoWeightVariable) {
+        this.strongestEchoWeightVariable = strongestEchoWeightVariable;
     }
 
-    /**
-     *
-     * @return Echoes weighting parameters
-     */
-    public File getEchoWeightsFile() {
-        return echoWeightsFile;
+    public String getRelativeEchoWeightVariable() {
+        return relativeEchoWeightVariable;
     }
 
-    /**
-     *
-     * @param file path of the echo weights file
-     */
-    public void setEchoWeightsFile(File file) {
-        this.echoWeightsFile = file;
+    public void setRelativeEchoWeightVariable(String relativeEchoWeightVariable) {
+        this.relativeEchoWeightVariable = relativeEchoWeightVariable;
+    }
+
+    public File getShotEchoWeightFile() {
+        return echoWeightFile;
+    }
+
+    public void setShotEchoWeightFile(File file) {
+        this.echoWeightFile = file;
     }
 
     public LidarScan getLidarScan() {
@@ -1405,7 +1409,7 @@ public class VoxelizationCfg extends Configuration {
         properties.put("laser.specification.diameter", String.valueOf(getLaserSpecification().getBeamDiameterAtExit()));
         properties.put("laser.specification.divergence", String.valueOf(getLaserSpecification().getBeamDivergence()));
         properties.put("laser.specification.mono", String.valueOf(getLaserSpecification().isMonoEcho()));
-        properties.put("echo.weights.matrix", getEchoesWeightMatrix().toString());
+        properties.put("echo.weights.matrix", getRankEchoWeightMatrix().toString());
         properties.put("output.fraction.digits", String.valueOf(getDecimalFormat().getMaximumFractionDigits()));
         properties.put("leaf.area", String.valueOf(meanLeafArea));
         properties.put("build.version", Util.getVersion());

@@ -18,6 +18,10 @@ public class RelativeEchoWeight extends EchoWeight {
     private String attribute;
     private double[] weight;
 
+    public RelativeEchoWeight(boolean enabled) {
+        super(enabled);
+    }
+
     @Override
     public void init(VoxelizationCfg cfg) throws IOException {
 

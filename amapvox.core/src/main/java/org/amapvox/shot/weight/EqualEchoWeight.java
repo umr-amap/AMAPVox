@@ -20,6 +20,10 @@ public class EqualEchoWeight extends EchoWeight {
 
     private double weight;
 
+    public EqualEchoWeight(boolean enabled) {
+        super(enabled);
+    }
+
     @Override
     public void setWeight(Shot shot) {
         weight = 1.d / shot.getEchoesNumber();

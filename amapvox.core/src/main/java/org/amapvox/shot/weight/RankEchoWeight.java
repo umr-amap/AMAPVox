@@ -24,11 +24,15 @@ public class RankEchoWeight extends EchoWeight {
 
     private double[][] weightTable;
 
+    public RankEchoWeight(boolean enabled) {
+        super(enabled);
+    }
+
     @Override
     public void init(VoxelizationCfg cfg) throws IOException {
 
         // echo weighting table with security check to ensure values <= 1
-        weightTable = cfg.getEchoesWeightMatrix().getData();
+        weightTable = cfg.getRankEchoWeightMatrix().getData();
         for (int i = 0; i < weightTable.length; i++) {
             for (int j = 0; j < weightTable[i].length; j++) {
                 if (!Double.isNaN(weightTable[i][j])) {

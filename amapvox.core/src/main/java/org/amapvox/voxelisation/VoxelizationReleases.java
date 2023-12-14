@@ -895,6 +895,48 @@ public class VoxelizationReleases {
                 // SUBSAMPLING
                 removeDeprecatedOutputVariables(processElement);
             }
+        },
+        // 2023-12-14
+        new Release("2.1.0") {
+            @Override
+            public void update(Element processElement) {
+
+                // new way of inputing echo weight functions
+                Element echoWeightingElement = processElement.getChild("echo-weighting");
+                Element echoWeightsElement = new Element("echo-weights");
+                if (null != echoWeightingElement) {
+                    // rank echo-weight
+                    boolean enabled = Boolean.parseBoolean(echoWeightingElement.getAttributeValue("byrank"));
+                    if (enabled) {
+                        Element rankEchoWeightElement = new Element("echo-weight");
+                        rankEchoWeightElement.setAttribute("enabled", Boolean.TRUE.toString());
+                        rankEchoWeightElement.setAttribute("classname", org.amapvox.shot.weight.RankEchoWeight.class.getCanonicalName());
+                        Element matrixElement = echoWeightingElement.getChild("matrix").detach();
+                        Element parametersElement = new Element("paremeters");
+                        parametersElement.addContent(matrixElement);
+                        rankEchoWeightElement.addContent(parametersElement);
+                        echoWeightsElement.addContent(rankEchoWeightElement);
+                    }
+                    
+                    // shot echo weight
+                    enabled = Boolean.parseBoolean(echoWeightingElement.getAttributeValue("byfile"));
+                    if (enabled) {
+                        Element shotEchoWeight = new Element("echo-weight");
+                        shotEchoWeight.setAttribute("enabled", Boolean.TRUE.toString());
+                        shotEchoWeight.setAttribute("classname", org.amapvox.shot.weight.ShotEchoWeight.class.getCanonicalName());
+                        Element weightFileElement = echoWeightingElement.getChild("weight-file");
+                        String file = weightFileElement.getAttributeValue("src");
+                        Element parametersElement = new Element("paremeters");
+                        parametersElement.setAttribute("src", file);
+                        shotEchoWeight.addContent(parametersElement);
+                        echoWeightsElement.addContent(shotEchoWeight);
+                    }
+                    // add new <echo-weights> element
+                    processElement.addContent(echoWeightsElement);
+                    // delete deprecated <echo-weighting> element
+                    processElement.removeChild("echo-weighting");
+                }
+            }
         }
     };
 

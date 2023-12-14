@@ -26,16 +26,20 @@ import org.apache.log4j.Logger;
 public class ShotEchoWeight extends EchoWeight {
 
     private File file;
-    private IteratorWE it;
+    private ShotWeightIterator it;
     private ShotWeight shotWeight;
     private String scanName;
     // logger
     private final static Logger LOGGER = Logger.getLogger(ShotEchoWeight.class);
 
+    public ShotEchoWeight(boolean enabled) {
+        super(enabled);
+    }
+
     @Override
     public void init(VoxelizationCfg cfg) throws IOException {
 
-        this.file = cfg.getEchoWeightsFile();
+        this.file = cfg.getShotEchoWeightFile();
         this.scanName = cfg.getLidarScan().getFile().getName();
 
         // checks whether file exists
@@ -93,14 +97,14 @@ public class ShotEchoWeight extends EchoWeight {
         return null;
     }
 
-    private IteratorWE iterator(File weightFile) throws IOException {
+    private ShotWeightIterator iterator(File weightFile) throws IOException {
 
-        IteratorWE it = new IteratorWE(weightFile);
-        it.init();
-        return it;
+        ShotWeightIterator swIterator = new ShotWeightIterator(weightFile);
+        swIterator.init();
+        return swIterator;
     }
 
-    private class IteratorWE implements IteratorWithException<ShotWeight> {
+    private class ShotWeightIterator implements IteratorWithException<ShotWeight> {
 
         private final File weightFile;
         private boolean hasNextCalled;
@@ -109,7 +113,7 @@ public class ShotEchoWeight extends EchoWeight {
         private int l = 1;
         private BufferedReader reader;
 
-        IteratorWE(File weightFile) {
+        ShotWeightIterator(File weightFile) {
             this.weightFile = weightFile;
         }
 

@@ -13,17 +13,16 @@ import org.amapvox.commons.raytracing.geometry.LineElement;
 import org.amapvox.commons.raytracing.geometry.LineSegment;
 import org.amapvox.commons.raytracing.voxel.VoxelManager;
 import org.amapvox.commons.raytracing.voxel.VoxelManager.VoxelCrossingContext;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.vecmath.Point3i;
 
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 import org.amapvox.shot.Echo;
+import org.amapvox.shot.weight.EchoWeight;
 import org.apache.log4j.Logger;
 
 public class Voxelization extends org.amapvox.commons.util.Process implements Cancellable {
@@ -47,9 +46,6 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
     private int subVoxelSplit;
     private boolean subSamplingEnabled;
 
-    private double[][] weightTable;
-    private EchoWeightsFile echoWeightCorrection;
-
     private boolean constantBeamSection;
 
     private final VoxelizationCfg cfg;
@@ -60,6 +56,7 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
 
     private final List<Filter<Shot>> shotFilters;
     private final List<Filter<Echo>> echoFilters;
+    private final List<EchoWeight> echoWeights;
     private EchoProperties currentEchoProperties;
 
     private boolean padEnabled;
@@ -99,8 +96,11 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         // user defined shot filters
         shotFilters = cfg.getShotFilters();
 
-        // user defined echo filters
+        // echo filters
         this.echoFilters = cfg.getEchoFilters();
+
+        // echo weight
+        this.echoWeights = cfg.getEchoWeights();
     }
 
     public String logHeader() {
@@ -587,19 +587,6 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         return indexVoxel.equals(indexEcho);
     }
 
-    private double beamAttenuation(int rankEcho, int nEcho, double weightCorr) {
-
-        // compute beam fraction of current echo
-        double beamFractionCurrentEcho = 1;
-        // beam fraction pondered by weight table
-        if (null != weightTable && (nEcho > 0)) {
-            beamFractionCurrentEcho *= weightTable[nEcho - 1][rankEcho];
-        }
-        // beam fraction pondered by weight from CSV file
-        beamFractionCurrentEcho *= weightCorr;
-        return beamFractionCurrentEcho;
-    }
-
     /**
      * Compute the average beam section of the shot in given voxel by estimating
      * it at voxel centre.
@@ -631,55 +618,22 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
 
         if (laserSpec.isMonoEcho()) {
             // mono echo laser
-            EchoProperties context = new EchoProperties(Math.min(1, shot.getEchoesNumber()));
-            if (context.nEcho > 0) {
-                context.retained[0] = retainEcho(shot.echoes[0]);
-                context.bfIntercepted[0] = 1.d;
+            EchoProperties echoProperties = new EchoProperties(Math.min(1, shot.getEchoesNumber()));
+            if (echoProperties.nEcho > 0) {
+                echoProperties.retained[0] = retainEcho(shot.echoes[0]);
+                echoProperties.bfIntercepted[0] = 1.d;
             }
-            return context;
+            return echoProperties;
 
         } else {
             // multi echo laser
             EchoProperties echoProperties = new EchoProperties(shot.getEchoesNumber());
             if (echoProperties.nEcho > 0) {
-                // apply echo filter
                 for (int k = 0; k < echoProperties.nEcho; k++) {
+                    // echo filter
                     echoProperties.retained[k] = retainEcho(shot.echoes[k]);
-                }
-
-                // echo weight 
-                if (cfg.isEchoWeightsFromRelativeIntensityEnabled()) {
-                    // echo weights from relative intensity
-                    float[] intensity = new float[shot.echoes.length];
-                    float sumIntensity = 0.f;
-                    for (int k = 0; k < intensity.length; k++) {
-                        intensity[k] = shot.echoes[k].getFloat("intensity");
-                        sumIntensity += intensity[k];
-                    }
-                    for (int k = 0; k < intensity.length; k++) {
-                        echoProperties.bfIntercepted[k] = intensity[k] / sumIntensity;
-                    }
-//                    if (intensity.length > 2) {
-//                        System.out.println(Arrays.toString(echoProperties.bfIntercepted));
-//                    }
-                } else {
-                    // specific weight attenuation (EchoesWeightByFileParams.java) for this shot
-                    double weightCorr = (null != echoWeightCorrection)
-                            ? echoWeightCorrection.getWeightCorrection(shot.index)
-                            : 1.d;
-                    // discard shot whith more echoes than weights provided in the weighting table
-                    if (echoProperties.nEcho > weightTable.length) {
-                        throw new ArrayIndexOutOfBoundsException(
-                                "Shot " + shot.index
-                                + " has been discarded. More echoes ("
-                                + echoProperties.nEcho
-                                + ") than weights in the echo weighting table ("
-                                + weightTable.length + ").");
-                    }
-                    // weight table
-                    for (int k = 0; k < echoProperties.nEcho; k++) {
-                        echoProperties.bfIntercepted[k] = beamAttenuation(k, echoProperties.nEcho, weightCorr);
-                    }
+                    // echo weight
+                    echoProperties.bfIntercepted[k] = weightEcho(shot.echoes[k]);
                 }
             }
             return echoProperties;
@@ -708,39 +662,14 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
             }
         }
 
-        // echo weighting table with security check to ensure values <= 1
-        if (null != cfg.getEchoesWeightMatrix()) {
-            weightTable = cfg.getEchoesWeightMatrix().getData();
-            for (int i = 0; i < weightTable.length; i++) {
-                for (int j = 0; j < weightTable[i].length; j++) {
-                    if (!Double.isNaN(weightTable[i][j])) {
-                        BigDecimal w = BigDecimal.valueOf(weightTable[i][j]);
-                        if (w.compareTo(BigDecimal.ONE) > 0) {
-                            throw new IOException(logHeader + " Inconsistent echo weighting table with values greater than one. Please fix it in the configuration file.");
-                        }
-                    }
-                    if (sum(weightTable[i]).compareTo(BigDecimal.ONE) > 0) {
-                        throw new IOException(logHeader + " Inconsistent echo weighting table. Cumulated values at line " + (i + 1) + " greater than one. " + Arrays.toString(weightTable[i]));
-                    }
+        // initialise echo weights
+        if (null != echoWeights) {
+            for (EchoWeight echoWeight : echoWeights) {
+                if (echoWeight.isEnabled()) {
+                    echoWeight.init(cfg);
+                    LOGGER.info(logHeader + " Initialized echo weight " + echoWeight.getClass().getSimpleName());
                 }
             }
-        } else {
-            // no energy ponderation by rank
-            weightTable = new double[30][30];
-            for (int i = 0; i < weightTable.length; i++) {
-                for (int j = 0; j < weightTable[i].length; j++) {
-                    weightTable[i][j] = j < (i + 1) ? 1.d : Double.NaN;
-                }
-            }
-            // warn user that current algorithm, without ponderation table, will
-            // behave as mono-echo voxelisation even though the scan is multi-echo
-            LOGGER.warn(logHeader + " No echo weighting table provided. AMAPVox will voxelize the scans as mono-echo (even though they are multi-echoes).");
-        }
-
-        if (null != cfg.getEchoWeightsFile()) {
-            echoWeightCorrection = new EchoWeightsFile(cfg.getEchoWeightsFile());
-            echoWeightCorrection.setScanName(cfg.getLidarScan().getFile().getName());
-            echoWeightCorrection.init();
         }
 
         laserSpec = cfg.getLaserSpecification();
@@ -855,6 +784,21 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         return vcoord;
     }
 
+    double weightEcho(Echo echo) {
+
+        double weight = 1.d;
+
+        // multiply weights of every weight function
+        if (echo.getRank() >= 0 && echoWeights != null) {
+            weight = echoWeights.stream()
+                    .mapToDouble(echoWeight -> echoWeight.getWeight(echo))
+                    .reduce(1.d, (partialw, w) -> partialw * w);
+
+        }
+
+        return weight;
+    }
+
     boolean retainEcho(Echo echo) throws Exception {
 
         if (echo.getRank() >= 0 && echoFilters != null) {
@@ -944,17 +888,6 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
 
     public Voxel getVoxel(int i, int j, int k) {
         return vxsp.getVoxel(i, j, k);
-    }
-
-    private BigDecimal sum(double[] array) {
-
-        BigDecimal sum = BigDecimal.ZERO;
-        for (double d : array) {
-            if (!Double.isNaN(d)) {
-                sum = sum.add(BigDecimal.valueOf(d));
-            }
-        }
-        return sum;
     }
 
     /**

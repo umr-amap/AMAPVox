@@ -36,7 +36,11 @@
                                 </MenuItem>
                                 <MenuItem mnemonicParsing="false" onAction="#onActionMenuSaveAsTask" text="Save As..." />
                                 <SeparatorMenuItem />
-                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuExit" text="Exit" />
+                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuExit" text="Exit (Ctrl+Q)">
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                    </accelerator>
+                                </MenuItem>
                             </items>
                         </Menu>
                         <Menu mnemonicParsing="false" text="Edit">

@@ -787,10 +787,12 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
     double weightEcho(Echo echo) {
 
         double weight = 1.d;
+        Shot shot = echo.getShot();
 
         // multiply weights of every weight function
         if (echo.getRank() >= 0 && echoWeights != null) {
             weight = echoWeights.stream()
+                    .peek(echoWeight -> echoWeight.setWeight(shot))
                     .mapToDouble(echoWeight -> echoWeight.getWeight(echo))
                     .reduce(1.d, (partialw, w) -> partialw * w);
 

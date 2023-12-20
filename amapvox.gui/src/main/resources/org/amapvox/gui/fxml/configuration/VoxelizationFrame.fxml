@@ -642,7 +642,7 @@
                                 </AnchorPane>
                             </content>
                         </TitledPane>
-                        <TitledPane animated="false" expanded="false" text="Weighting">
+                        <TitledPane animated="false" expanded="false" text="Echo weights">
                             <content>
                                 <AnchorPane minHeight="0.0" minWidth="0.0">
                                     <children>
@@ -650,11 +650,17 @@
                                             <children>
                                                 <HBox spacing="10.0">
                                                     <children>
-                                                        <CheckBox fx:id="checkboxWeightingByRank" mnemonicParsing="false" text="Echo weighting by rank" />
-                                                        <fx:include fx:id="helpButtonWeightingByRank" source="../HelpButton.fxml" />
+                                                        <RadioButton fx:id="rdbtnEqualEchoWeight" mnemonicParsing="false" text="Equal echo weights" />
+                                                        <fx:include fx:id="helpButtonEqualEchoWeight" source="../HelpButton.fxml" />
                                                     </children>
                                                 </HBox>
-                                                <VBox fx:id="vboxWeightingByRank" spacing="10.0">
+                                                <HBox spacing="10.0">
+                                                    <children>
+                                                        <RadioButton fx:id="rdbtnRankEchoWeight" mnemonicParsing="false" text="Rank echo weights" />
+                                                        <fx:include fx:id="helpButtonRankEchoWeight" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <VBox fx:id="vboxRankEchoWeight" spacing="10.0">
                                                     <children>
                                                         <Label text="Echo range (1...n)" />
                                                         <HBox alignment="CENTER_LEFT">
@@ -664,12 +670,45 @@
                                                                         <Insets left="-55.0" right="-55.0" />
                                                                     </HBox.margin>
                                                                 </Label>
-                                                                <TextArea fx:id="textAreaWeighting" HBox.hgrow="ALWAYS" />
+                                                                <TextArea fx:id="textAreaRankEchoWeightMatrix" HBox.hgrow="ALWAYS" />
                                                             </children>
                                                         </HBox>
-                                                        <Button mnemonicParsing="false" text="Reset to default values" onAction="#onActionButtonFillDefaultWeight" />
+                                                        <Button mnemonicParsing="false" text="Reset to default values" onAction="#onActionButtonEqualEchoWeight" />
                                                     </children>
+                                                    <padding>
+                                                        <Insets left="25.0" />
+                                                    </padding>
                                                 </VBox>
+                                                <HBox spacing="10.0">
+                                                    <children>
+                                                        <RadioButton fx:id="rdbtnRelativeEchoWeight" mnemonicParsing="false" text="Relative echo weights" />
+                                                        <fx:include fx:id="helpButtonRelativeEchoWeight" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <HBox fx:id="hboxRelativeEchoWeight" spacing="10.0">
+                                                    <children>
+                                                        <Label text="Weighting variable:" />
+                                                        <TextField fx:id="textFieldRelativeEchoWeightVariable" prefHeight="26.0" prefWidth="80.0" text="intensity" />
+                                                    </children>
+                                                    <padding>
+                                                        <Insets left="25.0" />
+                                                    </padding>
+                                                </HBox>
+                                                <HBox spacing="10.0">
+                                                    <children>
+                                                        <RadioButton fx:id="rdbtnStrongestEchoWeight" mnemonicParsing="false" text="Strongest echo weights" />
+                                                        <fx:include fx:id="helpButtonStrongestEchoWeight" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <HBox fx:id="hboxStrongestEchoWeight" spacing="10.0">
+                                                    <children>
+                                                        <Label text="Weighting variable:" />
+                                                        <TextField fx:id="textFieldStrongestEchoWeightVariable" prefHeight="26.0" prefWidth="80.0" text="intensity" />
+                                                    </children>
+                                                    <padding>
+                                                        <Insets left="25.0" />
+                                                    </padding>
+                                                </HBox>
                                             </children>
                                         </VBox>
                                     </children>

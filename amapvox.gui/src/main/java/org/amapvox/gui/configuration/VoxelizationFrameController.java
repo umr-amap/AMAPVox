@@ -171,7 +171,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         initTransformationPane(rb);
         initVoxelSpacePane(rb);
         initFilterPane(rb);
-        initWeightingPane(rb);
+        initEchoWeightPane(rb);
         initScannerPane(rb);
         initLeafPane(rb);
 
@@ -260,8 +260,8 @@ public class VoxelizationFrameController extends ConfigurationController {
                     echoFilterProperty,
                     checkboxEchoFilterByClass.selectedProperty(),
                     // WEIGHTING
-                    checkboxWeightingByRank.selectedProperty(),
-                    textAreaWeighting.textProperty(),
+                    rdbtnRankEchoWeight.selectedProperty(),
+                    textAreaRankEchoWeightMatrix.textProperty(),
                     // LASER
                     comboboxLaserSpecification.getSelectionModel().selectedItemProperty(),
                     checkboxCustomLaserSpecification.selectedProperty(),
@@ -272,7 +272,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                     textFieldLeafArea.textProperty()
                 }));
 
-        return properties.toArray(new ObservableValue[properties.size()]);
+        return properties.toArray(ObservableValue[]::new);
     }
 
     private void initInputPane(ResourceBundle rb) {
@@ -677,20 +677,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         });
 
         addPointcloudFilter(null);
-
-        initEchoFiltering();
-
-        // dtm filter
-        buttonHelpDTMFilter.setOnAction((ActionEvent event)
-                -> {
-            buttonHelpDTMFilterController.showHelpDialog(resourceBundle.getString("help_dtm_filter"));
-        });
-
-        filterFrameController = FilterFrameController.newInstance();
-    }
-
-    private void initWeightingPane(ResourceBundle resourceBundle) {
-
+        
         BooleanBinding binding = labelLidarType.textProperty().isEqualTo("LAS").or(labelLidarType.textProperty().isEqualTo("LAZ"));
 
         checkboxEchoFilterByClass.disableProperty().bind(binding.not());
@@ -707,16 +694,59 @@ public class VoxelizationFrameController extends ConfigurationController {
             buttonHelpByClassEchoFilterController.showHelpDialog(resourceBundle.getString("help_byclass_echo_filter"));
         });
 
-        vboxWeightingByRank.disableProperty().bind(checkboxWeightingByRank.selectedProperty().not());
-        checkboxWeightingByRank.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+        initEchoFiltering();
+
+        // dtm filter
+        buttonHelpDTMFilter.setOnAction((ActionEvent event)
                 -> {
-            if (newValue && textAreaWeighting.getText().isEmpty()) {
-                textAreaWeighting.setText(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS.toExternalString());
+            buttonHelpDTMFilterController.showHelpDialog(resourceBundle.getString("help_dtm_filter"));
+        });
+
+        filterFrameController = FilterFrameController.newInstance();
+    }
+
+    private void initEchoWeightPane(ResourceBundle resourceBundle) {
+        
+        // create toggle group
+        toggleGroupEchoWeight = new ToggleGroup();
+        toggleGroupEchoWeight.getToggles().add(rdbtnEqualEchoWeight);
+        toggleGroupEchoWeight.getToggles().add(rdbtnRankEchoWeight);
+        toggleGroupEchoWeight.getToggles().add(rdbtnRelativeEchoWeight);
+        toggleGroupEchoWeight.getToggles().add(rdbtnStrongestEchoWeight);
+        // select equal echo weight by default
+        toggleGroupEchoWeight.selectToggle(rdbtnEqualEchoWeight);
+        
+        // equal echo weight
+        helpButtonEqualEchoWeight.setOnAction((ActionEvent event)
+                -> {
+            helpButtonEqualEchoWeightController.showHelpDialog(resourceBundle.getString("help_equal_echo_weight"));
+        });
+        
+        // rank echo weight
+        vboxRankEchoWeight.disableProperty().bind(rdbtnRankEchoWeight.selectedProperty().not());
+        rdbtnRankEchoWeight.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+                -> {
+            if (newValue && textAreaRankEchoWeightMatrix.getText().isEmpty()) {
+                textAreaRankEchoWeightMatrix.setText(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS.toExternalString());
             }
         });
-        helpButtonWeightingByRank.setOnAction((ActionEvent event)
+        helpButtonRankEchoWeight.setOnAction((ActionEvent event)
                 -> {
-            helpButtonWeightingByRankController.showHelpDialog(resourceBundle.getString("help_weighting_rank"));
+            helpButtonRankEchoWeightController.showHelpDialog(resourceBundle.getString("help_rank_echo_weight"));
+        });
+        
+        // relative echo weight
+        hboxRelativeEchoWeight.disableProperty().bind(rdbtnRelativeEchoWeight.selectedProperty().not());
+        helpButtonRelativeEchoWeight.setOnAction((ActionEvent event)
+                -> {
+            helpButtonRelativeEchoWeightController.showHelpDialog(resourceBundle.getString("help_relative_echo_weight"));
+        });
+        
+        // strongest echo weight
+        hboxStrongestEchoWeight.disableProperty().bind(rdbtnStrongestEchoWeight.selectedProperty().not());
+        helpButtonStrongestEchoWeight.setOnAction((ActionEvent event)
+                -> {
+            helpButtonStrongestEchoWeightController.showHelpDialog(resourceBundle.getString("help_strongest_echo_weight"));
         });
 
     }
@@ -977,9 +1007,8 @@ public class VoxelizationFrameController extends ConfigurationController {
         cfg.setSubVoxelSplit(Integer.valueOf(textFieldSubVoxel.getText()));
 
         // echo weighting
-        if (checkboxWeightingByRank.isSelected()) {
-            cfg.setEchoesWeightMatrix(
-                    Matrix.valueOf(textAreaWeighting.getText()));
+        if (rdbtnRankEchoWeight.isSelected()) {
+            //cfg.setRankEchoWeightMatrix(Matrix.valueOf(textAreaWeighting.getText()));
         }
 
         if (checkboxCustomLaserSpecification.isSelected()) {
@@ -1147,14 +1176,9 @@ public class VoxelizationFrameController extends ConfigurationController {
                 checkboxShotAttributeFilter.setSelected(true);
             }
         }
-        if (null == cfg.getEchoesWeightMatrix()) {
-            checkboxWeightingByRank.setSelected(false);
-        } else {
-            checkboxWeightingByRank.setSelected(true);
-            textAreaWeighting.setText(
-                    cfg
-                            .getEchoesWeightMatrix().toExternalString());
-        }
+        
+        // load echo weights
+        // @TODO
 
         textFieldLeafArea.setText(df.format(cfg.getMeanLeafArea()));
         spinnerTrNumError.getValueFactory().setValue((int) Math.abs(Math.log10(cfg.getTrNumEstimError())));
@@ -1975,21 +1999,51 @@ public class VoxelizationFrameController extends ConfigurationController {
     @FXML
     private ListView<CheckBox> listviewClassifications;
 
-    //////////////////
-    // WEIGHTING PANE
-    /////////////////
+    ///////////////////
+    // ECHO WEIGHT PANE
+    ///////////////////
     //
-    // Weighting by rank
+    private ToggleGroup toggleGroupEchoWeight;
+    // Equal echo weight
+    @FXML 
+    private RadioButton rdbtnEqualEchoWeight;
     @FXML
-    private CheckBox checkboxWeightingByRank;
+    private Button helpButtonEqualEchoWeight;
     @FXML
-    private Button helpButtonWeightingByRank;
+    private HelpButtonController helpButtonEqualEchoWeightController;
+    // Rank echo weight
     @FXML
-    private HelpButtonController helpButtonWeightingByRankController;
+    private RadioButton rdbtnRankEchoWeight;
     @FXML
-    private VBox vboxWeightingByRank;
+    private Button helpButtonRankEchoWeight;
     @FXML
-    private TextArea textAreaWeighting;
+    private HelpButtonController helpButtonRankEchoWeightController;
+    @FXML
+    private VBox vboxRankEchoWeight;
+    @FXML
+    private TextArea textAreaRankEchoWeightMatrix;
+    // Relative echo weight
+    @FXML
+    private RadioButton rdbtnRelativeEchoWeight;
+    @FXML
+    private Button helpButtonRelativeEchoWeight;
+    @FXML
+    private HelpButtonController helpButtonRelativeEchoWeightController;
+    @FXML
+    private HBox hboxRelativeEchoWeight;
+    @FXML
+    private TextField textFieldRelativeEchoWeightVariable;
+    // Strongest echo weight
+    @FXML
+    private RadioButton rdbtnStrongestEchoWeight;
+    @FXML
+    private Button helpButtonStrongestEchoWeight;
+    @FXML
+    private HelpButtonController helpButtonStrongestEchoWeightController;
+    @FXML
+    private HBox hboxStrongestEchoWeight;
+    @FXML
+    private TextField textFieldStrongestEchoWeightVariable;
 
     ////////////////
     // SCANNER PANE
@@ -2116,8 +2170,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     }
 
     @FXML
-    private void onActionButtonFillDefaultWeight(ActionEvent event) {
-        textAreaWeighting.setText(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS.toExternalString());
+    private void onActionButtonEqualEchoWeight(ActionEvent event) {
+        textAreaRankEchoWeightMatrix.setText(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS.toExternalString());
     }
 
     @FXML

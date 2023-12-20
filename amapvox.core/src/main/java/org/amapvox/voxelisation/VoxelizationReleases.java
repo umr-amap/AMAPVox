@@ -912,7 +912,7 @@ public class VoxelizationReleases {
                         rankEchoWeightElement.setAttribute("enabled", Boolean.TRUE.toString());
                         rankEchoWeightElement.setAttribute("classname", org.amapvox.shot.weight.RankEchoWeight.class.getCanonicalName());
                         Element matrixElement = echoWeightingElement.getChild("matrix").detach();
-                        Element parametersElement = new Element("paremeters");
+                        Element parametersElement = new Element("parameters");
                         parametersElement.addContent(matrixElement);
                         rankEchoWeightElement.addContent(parametersElement);
                         echoWeightsElement.addContent(rankEchoWeightElement);
@@ -926,7 +926,7 @@ public class VoxelizationReleases {
                         shotEchoWeight.setAttribute("classname", org.amapvox.shot.weight.ShotEchoWeight.class.getCanonicalName());
                         Element weightFileElement = echoWeightingElement.getChild("weight-file");
                         String file = weightFileElement.getAttributeValue("src");
-                        Element parametersElement = new Element("paremeters");
+                        Element parametersElement = new Element("parameters");
                         parametersElement.setAttribute("src", file);
                         shotEchoWeight.addContent(parametersElement);
                         echoWeightsElement.addContent(shotEchoWeight);

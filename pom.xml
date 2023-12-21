@@ -199,6 +199,10 @@
             <id>loca-maven-repository</id>
             <url>file:./maven-repository</url>
         </repository>
+        <repository>
+            <id>jogamp-repository</id>
+            <url>https://jogamp.org/deployment/maven</url>
+        </repository>
     </repositories>
     
     <!-- Shared dependencies between each child projects -->

@@ -360,18 +360,18 @@ public class VoxelizationFrameController extends ConfigurationController {
 
             Node content = null;
             switch (output) {
-                case EXPLORATION_RATE:
+                case EXPLORATION_RATE -> {
                     vboxOutputVariables.getChildren().remove(hboxSubVoxel);
                     content = hboxSubVoxel;
-                    break;
-                case ESTIMATED_TRANSMITTANCE:
+                }
+                case ESTIMATED_TRANSMITTANCE -> {
                     vboxOutputVariables.getChildren().remove(vboxTrNumEstim);
                     content = vboxTrNumEstim;
-                    break;
-                case ATTENUATION_PPL_MLE:
+                }
+                case ATTENUATION_PPL_MLE -> {
                     vboxOutputVariables.getChildren().remove(vboxAttenuation);
                     content = vboxAttenuation;
-                    break;
+                }
             }
             SelectableTitledPane stp = new SelectableTitledPane(output.getLongName(), content, new Insets(0, 0, 5, -20));
             stp.setTooltip(new Tooltip(sb.toString()));
@@ -589,11 +589,11 @@ public class VoxelizationFrameController extends ConfigurationController {
         textFieldVoxelSizeX.setTextFormatter(TextFieldUtil.createFloatTextFormatter(1.f, TextFieldUtil.Sign.POSITIVE));
         textFieldVoxelSizeX.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
             if (null != newValue && !newValue.isEmpty()) {
-                float vx = Float.valueOf(newValue);
+                float vx = Float.parseFloat(newValue);
                 voxelSpaceController.setResolution(new Point3f(
                         vx,
-                        checkBoxCubicVoxel.isSelected() ? vx : Float.valueOf(textFieldVoxelSizeY.getText()),
-                        checkBoxCubicVoxel.isSelected() ? vx : Float.valueOf(textFieldVoxelSizeZ.getText())
+                        checkBoxCubicVoxel.isSelected() ? vx : Float.parseFloat(textFieldVoxelSizeY.getText()),
+                        checkBoxCubicVoxel.isSelected() ? vx : Float.parseFloat(textFieldVoxelSizeZ.getText())
                 ));
             }
         });
@@ -603,9 +603,9 @@ public class VoxelizationFrameController extends ConfigurationController {
         textFieldVoxelSizeY.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
             if (null != newValue && !newValue.isEmpty()) {
                 voxelSpaceController.setResolution(new Point3f(
-                        Float.valueOf(textFieldVoxelSizeX.getText()),
-                        Float.valueOf(newValue),
-                        Float.valueOf(textFieldVoxelSizeZ.getText())
+                        Float.parseFloat(textFieldVoxelSizeX.getText()),
+                        Float.parseFloat(newValue),
+                        Float.parseFloat(textFieldVoxelSizeZ.getText())
                 ));
             }
         });
@@ -615,9 +615,9 @@ public class VoxelizationFrameController extends ConfigurationController {
         textFieldVoxelSizeZ.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
             if (null != newValue && !newValue.isEmpty()) {
                 voxelSpaceController.setResolution(new Point3f(
-                        Float.valueOf(textFieldVoxelSizeX.getText()),
-                        Float.valueOf(textFieldVoxelSizeY.getText()),
-                        Float.valueOf(newValue)));
+                        Float.parseFloat(textFieldVoxelSizeX.getText()),
+                        Float.parseFloat(textFieldVoxelSizeY.getText()),
+                        Float.parseFloat(newValue)));
             }
         });
         textFieldVoxelSizeZ.textProperty().addListener(voxelSpaceController.getChangeListener());
@@ -677,7 +677,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         });
 
         addPointcloudFilter(null);
-        
+
         BooleanBinding binding = labelLidarType.textProperty().isEqualTo("LAS").or(labelLidarType.textProperty().isEqualTo("LAZ"));
 
         checkboxEchoFilterByClass.disableProperty().bind(binding.not());
@@ -706,7 +706,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     }
 
     private void initEchoWeightPane(ResourceBundle resourceBundle) {
-        
+
         // create toggle group
         toggleGroupEchoWeight = new ToggleGroup();
         toggleGroupEchoWeight.getToggles().add(rdbtnEqualEchoWeight);
@@ -715,13 +715,13 @@ public class VoxelizationFrameController extends ConfigurationController {
         toggleGroupEchoWeight.getToggles().add(rdbtnStrongestEchoWeight);
         // select equal echo weight by default
         toggleGroupEchoWeight.selectToggle(rdbtnEqualEchoWeight);
-        
+
         // equal echo weight
         helpButtonEqualEchoWeight.setOnAction((ActionEvent event)
                 -> {
             helpButtonEqualEchoWeightController.showHelpDialog(resourceBundle.getString("help_equal_echo_weight"));
         });
-        
+
         // rank echo weight
         vboxRankEchoWeight.disableProperty().bind(rdbtnRankEchoWeight.selectedProperty().not());
         rdbtnRankEchoWeight.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
@@ -734,14 +734,14 @@ public class VoxelizationFrameController extends ConfigurationController {
                 -> {
             helpButtonRankEchoWeightController.showHelpDialog(resourceBundle.getString("help_rank_echo_weight"));
         });
-        
+
         // relative echo weight
         hboxRelativeEchoWeight.disableProperty().bind(rdbtnRelativeEchoWeight.selectedProperty().not());
         helpButtonRelativeEchoWeight.setOnAction((ActionEvent event)
                 -> {
             helpButtonRelativeEchoWeightController.showHelpDialog(resourceBundle.getString("help_relative_echo_weight"));
         });
-        
+
         // strongest echo weight
         hboxStrongestEchoWeight.disableProperty().bind(rdbtnStrongestEchoWeight.selectedProperty().not());
         helpButtonStrongestEchoWeight.setOnAction((ActionEvent event)
@@ -885,8 +885,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         cfg.setDTMUseVopMatrix(checkboxDTMVOPMatrix.isSelected());
 
         switch (lidarType) {
-            case LAS:
-            case LAZ:
+            case LAS, LAZ -> {
                 // trajectory
                 if (rdbtnLasTrajectory.isSelected() && trajectoryFile != null) {
                     CSVFile trajFile = new CSVFile(textFieldLasTrajectoryFile.getText());
@@ -901,23 +900,19 @@ public class VoxelizationFrameController extends ConfigurationController {
                 // scanner position
                 if (rdbtnLasPosition.isSelected()) {
                     cfg.setScannerPosition(new Point3d(
-                            Double.valueOf(textFieldLasPositionX.getText()),
-                            Double.valueOf(textFieldLasPositionY.getText()),
-                            Double.valueOf(textFieldLasPositionZ.getText())));
+                            Double.parseDouble(textFieldLasPositionX.getText()),
+                            Double.parseDouble(textFieldLasPositionY.getText()),
+                            Double.parseDouble(textFieldLasPositionZ.getText())));
                 }
                 // consistency checks
                 cfg.setEchoConsistencyCheckEnabled(checkboxLasConsistency.isSelected());
                 cfg.setEchoConsistencyWarningEnabled(rdbtnLasConsistencyWarn.isSelected());
                 cfg.setCollinearityCheckEnabled(checkboxLasCollinearity.isSelected());
                 cfg.setCollinearityWarningEnabled(rdbtnLasCollinearityWarn.isSelected());
-                cfg.setCollinearityMaxDeviation(Double.valueOf(textfieldMaxDeviation.getText()));
-                break;
-            case RXP:
-            case RSP:
-                // false empty shot filter
+                cfg.setCollinearityMaxDeviation(Double.parseDouble(textfieldMaxDeviation.getText()));
+            }
+            case RXP, RSP -> // false empty shot filter
                 cfg.setEnableEmptyShotsFiltering(checkboxEmptyShotsFilter.isSelected());
-                break;
-
         }
 
         // output
@@ -940,7 +935,7 @@ public class VoxelizationFrameController extends ConfigurationController {
             cfg.addEchoFilter(new ClassifiedPointFilter(getListOfClassificationPointToDiscard()));
         }
         if (checkboxUseDTMFilter.isSelected()) {
-            cfg.addEchoFilter(new DigitalTerrainModelFilter(Float.valueOf(textfieldDTMValue.getText())));
+            cfg.addEchoFilter(new DigitalTerrainModelFilter(Float.parseFloat(textfieldDTMValue.getText())));
         }
 
         List<Filter<Shot>> shotFilters = new ArrayList();
@@ -950,7 +945,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         }
         // shot decimation
         if (checkboxShotDecimation.isSelected()) {
-            shotFilters.add(new ShotDecimationFilter(Float.valueOf(textfieldDecimationFactor.getText())));
+            shotFilters.add(new ShotDecimationFilter(Float.parseFloat(textfieldDecimationFactor.getText())));
         }
         // shot integrity
         shotFilters.add(new EchoRangeFilter(checkboxBlankEchoDiscarded.isSelected(), rdbtnShotConsistencyWarn.isSelected()));
@@ -983,28 +978,28 @@ public class VoxelizationFrameController extends ConfigurationController {
     private void setVoxelParametersFromUI(VoxelizationCfg cfg) {
 
         cfg.setMinCorner(new Point3d(
-                Double.valueOf(voxelSpaceController.getTextFieldEnterXMin().getText()),
-                Double.valueOf(voxelSpaceController.getTextFieldEnterYMin().getText()),
-                Double.valueOf(voxelSpaceController.getTextFieldEnterZMin().getText())));
+                Double.parseDouble(voxelSpaceController.getTextFieldEnterXMin().getText()),
+                Double.parseDouble(voxelSpaceController.getTextFieldEnterYMin().getText()),
+                Double.parseDouble(voxelSpaceController.getTextFieldEnterZMin().getText())));
 
         cfg.setMaxCorner(new Point3d(
-                Double.valueOf(voxelSpaceController.getTextFieldEnterXMax().getText()),
-                Double.valueOf(voxelSpaceController.getTextFieldEnterYMax().getText()),
-                Double.valueOf(voxelSpaceController.getTextFieldEnterZMax().getText())));
+                Double.parseDouble(voxelSpaceController.getTextFieldEnterXMax().getText()),
+                Double.parseDouble(voxelSpaceController.getTextFieldEnterYMax().getText()),
+                Double.parseDouble(voxelSpaceController.getTextFieldEnterZMax().getText())));
 
         cfg.setDimension(new Point3i(
-                Integer.valueOf(voxelSpaceController.getTextFieldXNumber().getText()),
-                Integer.valueOf(voxelSpaceController.getTextFieldYNumber().getText()),
-                Integer.valueOf(voxelSpaceController.getTextFieldZNumber().getText())));
+                Integer.parseInt(voxelSpaceController.getTextFieldXNumber().getText()),
+                Integer.parseInt(voxelSpaceController.getTextFieldYNumber().getText()),
+                Integer.parseInt(voxelSpaceController.getTextFieldZNumber().getText())));
 
         cfg.setVoxelSize(new Point3d(
-                Double.valueOf(textFieldVoxelSizeX.getText()),
-                Double.valueOf(textFieldVoxelSizeY.getText()),
-                Double.valueOf(textFieldVoxelSizeZ.getText())
+                Double.parseDouble(textFieldVoxelSizeX.getText()),
+                Double.parseDouble(textFieldVoxelSizeY.getText()),
+                Double.parseDouble(textFieldVoxelSizeZ.getText())
         ));
 
         // sub voxel division
-        cfg.setSubVoxelSplit(Integer.valueOf(textFieldSubVoxel.getText()));
+        cfg.setSubVoxelSplit(Integer.parseInt(textFieldSubVoxel.getText()));
 
         // echo weighting
         if (rdbtnRankEchoWeight.isSelected()) {
@@ -1013,7 +1008,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         if (checkboxCustomLaserSpecification.isSelected()) {
             try {
-                cfg.setLaserSpecification(new LaserSpecification("custom", Double.valueOf(textFieldBeamDiameterAtExit.getText()), Double.valueOf(textFieldBeamDivergence.getText()), checkboxMonoEcho.isSelected()));
+                cfg.setLaserSpecification(new LaserSpecification("custom", Double.parseDouble(textFieldBeamDiameterAtExit.getText()), Double.parseDouble(textFieldBeamDivergence.getText()), checkboxMonoEcho.isSelected()));
             } catch (NumberFormatException ex) {
                 Util.showErrorDialog(getStage(),
                         new Exception("Cannot parse laser specification values.", ex), "[Voxelization]");
@@ -1024,7 +1019,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         }
 
         // mean leaf size
-        cfg.setMeanLeafArea(Double.valueOf(textFieldLeafArea.getText()));
+        cfg.setMeanLeafArea(Double.parseDouble(textFieldLeafArea.getText()));
 
         // output variables
         for (OutputVariable output : OutputVariable.values()) {
@@ -1042,10 +1037,10 @@ public class VoxelizationFrameController extends ConfigurationController {
         cfg.setTrNumEstimError(Math.pow(10, -ndigit));
         ndigit = (int) spinnerTrNumFallbackError.getValue();
         cfg.setTrNumEstimFallbackError(Math.pow(10, -ndigit));
-        cfg.setNTrRecordMax(Integer.valueOf(textFieldTrNumNRecordMax.getText()));
+        cfg.setNTrRecordMax(Integer.parseInt(textFieldTrNumNRecordMax.getText()));
 
         // maximal attenuation
-        cfg.setMaxAttenuation(Double.valueOf(textFieldMaxAttenuation.getText()));
+        cfg.setMaxAttenuation(Double.parseDouble(textFieldMaxAttenuation.getText()));
         ndigit = (int) spinnerAttenuationError.getValue();
         cfg.setAttenuationError(Math.pow(10, -ndigit));
     }
@@ -1054,7 +1049,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         return listviewClassifications.getItems().stream()
                 .filter(checkBox -> !checkBox.isSelected())
-                .map(checkBox -> Integer.valueOf(checkBox.getText().substring(0, checkBox.getText().indexOf("-") - 1)))
+                .map(checkBox -> Integer.parseInt(checkBox.getText().substring(0, checkBox.getText().indexOf("-") - 1)))
                 .collect(Collectors.toList());
     }
 
@@ -1119,19 +1114,26 @@ public class VoxelizationFrameController extends ConfigurationController {
         checkboxUsePointcloudFilter.setSelected(false);
         listviewEchoFilters.getItems().clear();
         cfg.getEchoFilters().forEach(filter -> {
-            if (filter instanceof EchoAttributeFilter) {
-                EchoAttributeFilter f = (EchoAttributeFilter) filter;
-                listviewEchoFilters.getItems().add(f.getFilter());
-            } else if (filter instanceof ClassifiedPointFilter) {
-                checkboxEchoFilterByClass.setSelected(true);
-                ((ClassifiedPointFilter) filter).getClasses()
-                        .forEach(iclass -> listviewClassifications.getItems().get(iclass).setSelected(false));
-            } else if (filter instanceof PointcloudFilter) {
-                checkboxUsePointcloudFilter.setSelected(true);
-                addPointcloudFilter((PointcloudFilter) filter);
-            } else if (filter instanceof DigitalTerrainModelFilter) {
-                checkboxUseDTMFilter.setSelected(true);
-                textfieldDTMValue.setText(df.format(((DigitalTerrainModelFilter) filter).getMinDistance()));
+            switch (filter) {
+                case EchoAttributeFilter echoAttributeFilter -> {
+                    listviewEchoFilters.getItems().add(echoAttributeFilter.getFilter());
+                }
+                case ClassifiedPointFilter classifiedPointFilter -> {
+                    checkboxEchoFilterByClass.setSelected(true);
+                    classifiedPointFilter
+                            .getClasses()
+                            .forEach(iclass -> listviewClassifications.getItems().get(iclass).setSelected(false));
+                }
+                case PointcloudFilter pointcloudFilter -> {
+                    checkboxUsePointcloudFilter.setSelected(true);
+                    addPointcloudFilter(pointcloudFilter);
+                }
+                case DigitalTerrainModelFilter digitalTerrainModelFilter -> {
+                    checkboxUseDTMFilter.setSelected(true);
+                    textfieldDTMValue.setText(df.format(digitalTerrainModelFilter.getMinDistance()));
+                }
+                default -> {
+                }
             }
         });
 
@@ -1159,27 +1161,26 @@ public class VoxelizationFrameController extends ConfigurationController {
             checkboxShotDecimation.setSelected(false);
 
             shotFilters.forEach(filter -> {
-                if (filter instanceof ShotAttributeFilter) {
-                    ShotAttributeFilter f = (ShotAttributeFilter) filter;
-                    listviewShotFilters.getItems().add(f.getFilter());
-                } else if (filter instanceof ShotDecimationFilter) {
-                    ShotDecimationFilter f = (ShotDecimationFilter) filter;
-                    checkboxShotDecimation.setSelected(true);
-                    textfieldDecimationFactor.setText(df.format(f.getDecimationFactor()));
-                } else if (filter instanceof EchoRangeFilter) {
-                    EchoRangeFilter f = (EchoRangeFilter) filter;
-                    checkboxBlankEchoDiscarded.setSelected(f.isBlankEchoDiscarded());
-                    toggleGroupShotConsistency.selectToggle(f.isWarningEnabled() ? rdbtnShotConsistencyWarn : rdbtnShotConsistencySilent);
+                switch (filter) {
+                    case ShotAttributeFilter f -> listviewShotFilters.getItems().add(f.getFilter());
+                    case ShotDecimationFilter f -> {
+                        checkboxShotDecimation.setSelected(true);
+                        textfieldDecimationFactor.setText(df.format(f.getDecimationFactor()));
+                    }
+                    case EchoRangeFilter f -> {
+                        checkboxBlankEchoDiscarded.setSelected(f.isBlankEchoDiscarded());
+                        toggleGroupShotConsistency.selectToggle(f.isWarningEnabled() ? rdbtnShotConsistencyWarn : rdbtnShotConsistencySilent);
+                    }
+                    default -> {}
                 }
             });
             if (!listviewShotFilters.getItems().isEmpty()) {
                 checkboxShotAttributeFilter.setSelected(true);
             }
         }
-        
+
         // load echo weights
         // @TODO
-
         textFieldLeafArea.setText(df.format(cfg.getMeanLeafArea()));
         spinnerTrNumError.getValueFactory().setValue((int) Math.abs(Math.log10(cfg.getTrNumEstimError())));
         spinnerTrNumFallbackError.getValueFactory().setValue((int) Math.abs(Math.log10(cfg.getTrNumEstimFallbackError())));
@@ -1266,8 +1267,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
     private SelectableTitledPane getOutputCheckBox(OutputVariable output) {
         for (Node node : vboxOutputVariables.getChildren()) {
-            if (node instanceof SelectableTitledPane) {
-                SelectableTitledPane stp = (SelectableTitledPane) node;
+            if (node instanceof SelectableTitledPane stp) {
                 if (stp.getText().startsWith(output.getLongName())) {
                     return (SelectableTitledPane) node;
                 }
@@ -1345,7 +1345,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     private Predicate<String> isIntegerBiggerThanOne() {
         return (String p) -> {
             try {
-                return Integer.valueOf(p) > 1;
+                return Integer.parseInt(p) > 1;
             } catch (NumberFormatException ex) {
             }
             return false;
@@ -1540,28 +1540,23 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         if (MultiScanProjectReader.isValid(selectedFile, lidarType.name())) {
             try {
-                switch (lidarType) {
-                    case PTG:
-                        lidarProjectExtractor = new MultiScanProjectExtractor(lidarType.name(), f -> {
-                            PTGScan scan = new PTGScan(f);
-                            scan.readHeader();
-                            return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
-                        });
-                        break;
-                    case XYB:
-                        lidarProjectExtractor = new MultiScanProjectExtractor(lidarType.name(), f -> {
-                            XYBScan scan = new XYBScan(f);
-                            scan.readHeader();
-                            return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
-                        });
-                        break;
-                    default:
-                        lidarProjectExtractor = new MultiScanProjectExtractor(lidarType.name(), f -> {
-                            Matrix4d identity = new Matrix4d();
-                            identity.setIdentity();
-                            return new LidarScan(f, identity);
-                        });
-                }
+                lidarProjectExtractor = switch (lidarType) {
+                    case PTG -> new MultiScanProjectExtractor(lidarType.name(), f -> {
+                        PTGScan scan = new PTGScan(f);
+                        scan.readHeader();
+                        return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
+                    });
+                    case XYB -> new MultiScanProjectExtractor(lidarType.name(), f -> {
+                        XYBScan scan = new XYBScan(f);
+                        scan.readHeader();
+                        return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
+                    });
+                    default -> new MultiScanProjectExtractor(lidarType.name(), f -> {
+                        Matrix4d identity = new Matrix4d();
+                        identity.setIdentity();
+                        return new LidarScan(f, identity);
+                    });
+                };
 
                 lidarProjectExtractor.read(selectedFile);
                 lidarProjectExtractor.getFrame().show();
@@ -1581,80 +1576,73 @@ public class VoxelizationFrameController extends ConfigurationController {
 
             switch (lidarType) {
 
-                case RXP:
-                case LAS:
-                case LAZ:
-                case SHT:
+                case RXP, LAS, LAZ, SHT -> {
                     Matrix4d identity = new Matrix4d();
                     identity.setIdentity();
                     scanItems = new ArrayList();
                     scanItems.add(new LidarScan(selectedFile, identity));
                     listviewLidarScans.getItems().setAll(scanItems);
-                    break;
-
-                case RSP:
-                    try {
-                    RSPReader rsp = new RSPReader(selectedFile);
-                    lidarProjectExtractor = new RiscanProjectExtractor();
-                    lidarProjectExtractor.read(selectedFile);
-                    lidarProjectExtractor.getFrame().show();
-
-                    lidarProjectExtractor.getFrame().setOnHidden((WindowEvent event) -> {
-                        final List<LidarScan> selectedScans = lidarProjectExtractor.getController().getSelectedScans();
-                        if (null != selectedScans && !selectedScans.isEmpty()) {
-                            scanItems = new ArrayList(selectedScans);
-                            popMatrix = new Matrix4d(rsp.getPopMatrix());
-                            updateResultMatrix();
-                            listviewLidarScans.getItems().setAll(scanItems);
-                        }
-                    });
-                } catch (Exception ex) {
-                    Util.showErrorDialog(getStage(), ex, "[Voxelization]");
                 }
-                break;
-
-                case PTG:
+                case RSP -> {
                     try {
-                    scanItems = new ArrayList();
-                    PTGScan scan = new PTGScan(selectedFile);
-                    scan.readHeader();
-                    scanItems.add(new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix())));
-                    listviewLidarScans.getItems().setAll(scanItems);
-                } catch (IOException ex) {
-                    Util.showErrorDialog(getStage(), ex, "[Voxelization]");
+                        RSPReader rsp = new RSPReader(selectedFile);
+                        lidarProjectExtractor = new RiscanProjectExtractor();
+                        lidarProjectExtractor.read(selectedFile);
+                        lidarProjectExtractor.getFrame().show();
+                        
+                        lidarProjectExtractor.getFrame().setOnHidden((WindowEvent event) -> {
+                            final List<LidarScan> selectedScans = lidarProjectExtractor.getController().getSelectedScans();
+                            if (null != selectedScans && !selectedScans.isEmpty()) {
+                                scanItems = new ArrayList(selectedScans);
+                                popMatrix = new Matrix4d(rsp.getPopMatrix());
+                                updateResultMatrix();
+                                listviewLidarScans.getItems().setAll(scanItems);
+                            }
+                        });
+                    } catch (Exception ex) {
+                        Util.showErrorDialog(getStage(), ex, "[Voxelization]");
+                    }
                 }
-                break;
-
-                case XYB:
+                case PTG -> {
                     try {
-                    scanItems = new ArrayList();
-                    XYBScan scan = new XYBScan(selectedFile);
-                    scan.readHeader();
-                    scanItems.add(new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix())));
-                    listviewLidarScans.getItems().setAll(scanItems);
-                } catch (IOException ex) {
-                    Util.showErrorDialog(getStage(), ex, "[Voxelization]");
+                        scanItems = new ArrayList();
+                        PTGScan scan = new PTGScan(selectedFile);
+                        scan.readHeader();
+                        scanItems.add(new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix())));
+                        listviewLidarScans.getItems().setAll(scanItems);
+                    } catch (IOException ex) {
+                        Util.showErrorDialog(getStage(), ex, "[Voxelization]");
+                    }
                 }
-                break;
-
-                case PTX:
+                case XYB -> {
                     try {
-                    lidarProjectExtractor = new PTXProjectExtractor();
-                    lidarProjectExtractor.read(selectedFile);
-                    lidarProjectExtractor.getFrame().show();
-
-                    lidarProjectExtractor.getFrame().setOnHidden((WindowEvent event) -> {
-                        final List<LidarScan> selectedScans = lidarProjectExtractor.getController().getSelectedScans();
-                        if (null != selectedScans && !selectedScans.isEmpty()) {
-                            scanItems = new ArrayList(selectedScans);
-                            updateResultMatrix();
-                            listviewLidarScans.getItems().setAll(scanItems);
-                        }
-                    });
-                } catch (Exception ex) {
-                    Util.showErrorDialog(getStage(), ex, "[Voxelization]");
+                        scanItems = new ArrayList();
+                        XYBScan scan = new XYBScan(selectedFile);
+                        scan.readHeader();
+                        scanItems.add(new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix())));
+                        listviewLidarScans.getItems().setAll(scanItems);
+                    } catch (IOException ex) {
+                        Util.showErrorDialog(getStage(), ex, "[Voxelization]");
+                    }
                 }
-                break;
+                case PTX -> {
+                    try {
+                        lidarProjectExtractor = new PTXProjectExtractor();
+                        lidarProjectExtractor.read(selectedFile);
+                        lidarProjectExtractor.getFrame().show();
+                        
+                        lidarProjectExtractor.getFrame().setOnHidden((WindowEvent event) -> {
+                            final List<LidarScan> selectedScans = lidarProjectExtractor.getController().getSelectedScans();
+                            if (null != selectedScans && !selectedScans.isEmpty()) {
+                                scanItems = new ArrayList(selectedScans);
+                                updateResultMatrix();
+                                listviewLidarScans.getItems().setAll(scanItems);
+                            }
+                        });
+                    } catch (Exception ex) {
+                        Util.showErrorDialog(getStage(), ex, "[Voxelization]");
+                    }
+                }
             }
         }
         lidarScansProperty.setValue(!lidarScansProperty.get());
@@ -1682,8 +1670,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     private Label labelLidarType;
 
     // LAS trajectory and position
-    @FXML
-    private HBox hboxLasTrajectory;
+//    @FXML
+//    private HBox hboxLasTrajectory;
     @FXML
     private Button buttonHelpScannerPosition;
     @FXML
@@ -1703,8 +1691,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     private TextField textFieldLasPositionZ;
 
     // LAS consistency
-    @FXML
-    private HBox hboxLasConsistency;
+//    @FXML
+//    private HBox hboxLasConsistency;
     @FXML
     private CheckBox checkboxLasConsistency;
     @FXML
@@ -1720,8 +1708,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     private ToggleGroup toggleGroupLasConsistency;
 
     // LAS collinearity
-    @FXML
-    private HBox hboxLasCollinearity;
+//    @FXML
+//    private HBox hboxLasCollinearity;
     @FXML
     private CheckBox checkboxLasCollinearity;
     @FXML
@@ -1770,8 +1758,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     private HelpButtonController helpButtonFractionDigitsController;
 
     // Output format
-    @FXML
-    private HBox hboxOutputFormat;
+//    @FXML
+//    private HBox hboxOutputFormat;
     @FXML
     private ComboBox<VoxelizationCfg.VoxelsFormat> comboboxVoxOutputFormat;
     @FXML
@@ -1888,16 +1876,16 @@ public class VoxelizationFrameController extends ConfigurationController {
     // Voxel space dimension
     @FXML
     private TextField textFieldVoxelSizeX;
-    @FXML
-    private Label labelVoxelSizeX;
+//    @FXML
+//    private Label labelVoxelSizeX;
     @FXML
     private TextField textFieldVoxelSizeY;
-    @FXML
-    private Label labelVoxelSizeY;
+//    @FXML
+//    private Label labelVoxelSizeY;
     @FXML
     private TextField textFieldVoxelSizeZ;
-    @FXML
-    private Label labelVoxelSizeZ;
+//    @FXML
+//    private Label labelVoxelSizeZ;
     // Bounding box
     @FXML
     private HBox hboxAutomaticBBox;
@@ -2005,7 +1993,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     //
     private ToggleGroup toggleGroupEchoWeight;
     // Equal echo weight
-    @FXML 
+    @FXML
     private RadioButton rdbtnEqualEchoWeight;
     @FXML
     private Button helpButtonEqualEchoWeight;
@@ -2031,8 +2019,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     private HelpButtonController helpButtonRelativeEchoWeightController;
     @FXML
     private HBox hboxRelativeEchoWeight;
-    @FXML
-    private TextField textFieldRelativeEchoWeightVariable;
+//    @FXML
+//    private TextField textFieldRelativeEchoWeightVariable;
     // Strongest echo weight
     @FXML
     private RadioButton rdbtnStrongestEchoWeight;
@@ -2042,8 +2030,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     private HelpButtonController helpButtonStrongestEchoWeightController;
     @FXML
     private HBox hboxStrongestEchoWeight;
-    @FXML
-    private TextField textFieldStrongestEchoWeightVariable;
+//    @FXML
+//    private TextField textFieldStrongestEchoWeightVariable;
 
     ////////////////
     // SCANNER PANE
@@ -2158,7 +2146,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         LasShotExtractor pts = new LasShotExtractor(trajectoryFile, null, alsFile, vopMatrix,
                 checkboxLasConsistency.isSelected(), rdbtnLasConsistencyWarn.isSelected(),
                 checkboxLasCollinearity.isSelected(), rdbtnLasCollinearityWarn.isSelected(),
-                Double.valueOf(textfieldMaxDeviation.getText()));
+                Double.parseDouble(textfieldMaxDeviation.getText()));
         try {
             pts.init();
             logger.info("Point to shot initialized.");

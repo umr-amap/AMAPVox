@@ -816,6 +816,7 @@ public class VoxelizationCfg extends Configuration {
                     parametersElement.setAttribute("variable", null != relativeEchoWeightVariable ? strongestEchoWeightVariable : "");
                 }
                 echoWeightElement.setAttribute("enabled", String.valueOf(echoWeight.isEnabled()));
+                echoWeightElement.setAttribute("classname", echoWeight.getClass().getCanonicalName());
                 echoWeightElement.addContent(parametersElement);
                 // add echo-weight element to echo-weights parent element
                 echoWeightsElement.addContent(echoWeightElement);

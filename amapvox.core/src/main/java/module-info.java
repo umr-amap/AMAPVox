@@ -29,6 +29,7 @@ module amapvox.core {
     exports org.amapvox.deprecated;
     exports org.amapvox.shot;
     exports org.amapvox.shot.filter;
+    exports org.amapvox.shot.weight;
     exports org.amapvox.voxelfile;
     exports org.amapvox.voxelisation;
     exports org.amapvox.voxelisation.gridded;

@@ -100,7 +100,9 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         this.echoFilters = cfg.getEchoFilters();
 
         // echo weight
-        this.echoWeights = cfg.getEchoWeights();
+        this.echoWeights = cfg.getEchoWeights().stream()
+                .filter(echoWeight -> echoWeight.isEnabled())
+                .toList();
     }
 
     public String logHeader() {

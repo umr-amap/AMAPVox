@@ -99,6 +99,10 @@ import javax.vecmath.Point3f;
 import javax.vecmath.Point3i;
 import org.amapvox.lidar.faro.XYBScan;
 import org.amapvox.lidar.leica.ptg.PTGScan;
+import org.amapvox.shot.weight.EqualEchoWeight;
+import org.amapvox.shot.weight.RankEchoWeight;
+import org.amapvox.shot.weight.RelativeEchoWeight;
+import org.amapvox.shot.weight.StrongestEchoWeight;
 import org.apache.log4j.Logger;
 import org.controlsfx.dialog.ProgressDialog;
 import org.controlsfx.validation.ValidationSupport;
@@ -259,9 +263,14 @@ public class VoxelizationFrameController extends ConfigurationController {
                     checkboxEchoFilterByAttributes.selectedProperty(),
                     echoFilterProperty,
                     checkboxEchoFilterByClass.selectedProperty(),
-                    // WEIGHTING
+                    // ECHO WEIGHT
+                    rdbtnEqualEchoWeight.selectedProperty(),
                     rdbtnRankEchoWeight.selectedProperty(),
                     textAreaRankEchoWeightMatrix.textProperty(),
+                    rdbtnRelativeEchoWeight.selectedProperty(),
+                    textFieldRelativeEchoWeightVariable.textProperty(),
+                    rdbtnStrongestEchoWeight.selectedProperty(),
+                    textFieldStrongestEchoWeightVariable.textProperty(),
                     // LASER
                     comboboxLaserSpecification.getSelectionModel().selectedItemProperty(),
                     checkboxCustomLaserSpecification.selectedProperty(),
@@ -970,6 +979,17 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         // echo filtering by attribute
         listviewEchoFilters.getItems().forEach(filter -> cfg.addEchoFilter(new EchoAttributeFilter(filter)));
+        
+        // echo weight
+        cfg.addEchoWeight(new EqualEchoWeight(rdbtnEqualEchoWeight.isSelected()));
+        cfg.addEchoWeight(new RankEchoWeight(rdbtnRankEchoWeight.isSelected()));
+        if (!textAreaRankEchoWeightMatrix.getText().isBlank()) {
+            cfg.setRankEchoWeightMatrix(Matrix.valueOf(textAreaRankEchoWeightMatrix.getText()));
+        }
+        cfg.addEchoWeight(new RelativeEchoWeight(rdbtnRelativeEchoWeight.isSelected()));
+        cfg.setRelativeEchoWeightVariable(textFieldRelativeEchoWeightVariable.getText());
+        cfg.addEchoWeight(new StrongestEchoWeight(rdbtnStrongestEchoWeight.isSelected()));
+        cfg.setStrongestEchoWeightVariable(textFieldStrongestEchoWeightVariable.getText());
 
         cfg.write(file);
 
@@ -1162,7 +1182,8 @@ public class VoxelizationFrameController extends ConfigurationController {
 
             shotFilters.forEach(filter -> {
                 switch (filter) {
-                    case ShotAttributeFilter f -> listviewShotFilters.getItems().add(f.getFilter());
+                    case ShotAttributeFilter f ->
+                        listviewShotFilters.getItems().add(f.getFilter());
                     case ShotDecimationFilter f -> {
                         checkboxShotDecimation.setSelected(true);
                         textfieldDecimationFactor.setText(df.format(f.getDecimationFactor()));
@@ -1171,7 +1192,8 @@ public class VoxelizationFrameController extends ConfigurationController {
                         checkboxBlankEchoDiscarded.setSelected(f.isBlankEchoDiscarded());
                         toggleGroupShotConsistency.selectToggle(f.isWarningEnabled() ? rdbtnShotConsistencyWarn : rdbtnShotConsistencySilent);
                     }
-                    default -> {}
+                    default -> {
+                    }
                 }
             });
             if (!listviewShotFilters.getItems().isEmpty()) {
@@ -1180,7 +1202,27 @@ public class VoxelizationFrameController extends ConfigurationController {
         }
 
         // load echo weights
-        // @TODO
+        cfg.getEchoWeights().forEach(echoWeight -> {
+            switch (echoWeight) {
+                case EqualEchoWeight equalEchoWeight ->
+                    rdbtnEqualEchoWeight.setSelected(equalEchoWeight.isEnabled());
+                case RankEchoWeight rankEchoWeight -> {
+                    rdbtnRankEchoWeight.setSelected(rankEchoWeight.isEnabled());
+                    textAreaRankEchoWeightMatrix.setText(cfg.getRankEchoWeightMatrix().toExternalString());
+                }
+                case RelativeEchoWeight relativeEchoWeight -> {
+                    rdbtnRelativeEchoWeight.setSelected(relativeEchoWeight.isEnabled());
+                    textFieldRelativeEchoWeightVariable.setText(cfg.getRelativeEchoWeightVariable());
+                }
+                case StrongestEchoWeight strongestEchoWeight -> {
+                    rdbtnStrongestEchoWeight.setSelected(strongestEchoWeight.isEnabled());
+                    textFieldStrongestEchoWeightVariable.setText(cfg.getStrongestEchoWeightVariable());
+                }
+                default ->
+                    rdbtnEqualEchoWeight.setSelected(true);
+            }
+        });
+
         textFieldLeafArea.setText(df.format(cfg.getMeanLeafArea()));
         spinnerTrNumError.getValueFactory().setValue((int) Math.abs(Math.log10(cfg.getTrNumEstimError())));
         spinnerTrNumFallbackError.getValueFactory().setValue((int) Math.abs(Math.log10(cfg.getTrNumEstimFallbackError())));
@@ -1541,21 +1583,24 @@ public class VoxelizationFrameController extends ConfigurationController {
         if (MultiScanProjectReader.isValid(selectedFile, lidarType.name())) {
             try {
                 lidarProjectExtractor = switch (lidarType) {
-                    case PTG -> new MultiScanProjectExtractor(lidarType.name(), f -> {
-                        PTGScan scan = new PTGScan(f);
-                        scan.readHeader();
-                        return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
-                    });
-                    case XYB -> new MultiScanProjectExtractor(lidarType.name(), f -> {
-                        XYBScan scan = new XYBScan(f);
-                        scan.readHeader();
-                        return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
-                    });
-                    default -> new MultiScanProjectExtractor(lidarType.name(), f -> {
-                        Matrix4d identity = new Matrix4d();
-                        identity.setIdentity();
-                        return new LidarScan(f, identity);
-                    });
+                    case PTG ->
+                        new MultiScanProjectExtractor(lidarType.name(), f -> {
+                            PTGScan scan = new PTGScan(f);
+                            scan.readHeader();
+                            return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
+                        });
+                    case XYB ->
+                        new MultiScanProjectExtractor(lidarType.name(), f -> {
+                            XYBScan scan = new XYBScan(f);
+                            scan.readHeader();
+                            return new LidarScan(scan.getFile(), new Matrix4d(scan.getHeader().getTransfMatrix()));
+                        });
+                    default ->
+                        new MultiScanProjectExtractor(lidarType.name(), f -> {
+                            Matrix4d identity = new Matrix4d();
+                            identity.setIdentity();
+                            return new LidarScan(f, identity);
+                        });
                 };
 
                 lidarProjectExtractor.read(selectedFile);
@@ -1589,7 +1634,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                         lidarProjectExtractor = new RiscanProjectExtractor();
                         lidarProjectExtractor.read(selectedFile);
                         lidarProjectExtractor.getFrame().show();
-                        
+
                         lidarProjectExtractor.getFrame().setOnHidden((WindowEvent event) -> {
                             final List<LidarScan> selectedScans = lidarProjectExtractor.getController().getSelectedScans();
                             if (null != selectedScans && !selectedScans.isEmpty()) {
@@ -1630,7 +1675,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                         lidarProjectExtractor = new PTXProjectExtractor();
                         lidarProjectExtractor.read(selectedFile);
                         lidarProjectExtractor.getFrame().show();
-                        
+
                         lidarProjectExtractor.getFrame().setOnHidden((WindowEvent event) -> {
                             final List<LidarScan> selectedScans = lidarProjectExtractor.getController().getSelectedScans();
                             if (null != selectedScans && !selectedScans.isEmpty()) {
@@ -2019,8 +2064,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     private HelpButtonController helpButtonRelativeEchoWeightController;
     @FXML
     private HBox hboxRelativeEchoWeight;
-//    @FXML
-//    private TextField textFieldRelativeEchoWeightVariable;
+    @FXML
+    private TextField textFieldRelativeEchoWeightVariable;
     // Strongest echo weight
     @FXML
     private RadioButton rdbtnStrongestEchoWeight;
@@ -2030,8 +2075,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     private HelpButtonController helpButtonStrongestEchoWeightController;
     @FXML
     private HBox hboxStrongestEchoWeight;
-//    @FXML
-//    private TextField textFieldStrongestEchoWeightVariable;
+    @FXML
+    private TextField textFieldStrongestEchoWeightVariable;
 
     ////////////////
     // SCANNER PANE

@@ -20,9 +20,9 @@ import org.amapvox.commons.util.Cancellable;
 import org.amapvox.commons.util.IterableWithException;
 import org.amapvox.commons.util.IteratorWithException;
 import org.amapvox.shot.Shot;
-import org.amapvox.lidar.laszip.LASHeader;
-import org.amapvox.lidar.laszip.LASPoint;
-import org.amapvox.lidar.laszip.LASReader;
+import com.github.mreutegg.laszip4j.LASHeader;
+import com.github.mreutegg.laszip4j.LASPoint;
+import com.github.mreutegg.laszip4j.LASReader;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Supplier;
@@ -172,45 +172,55 @@ public class LasShotExtractor extends Process implements IterableWithException<S
 
         LOGGER.info("Reading LAS file " + file.getName());
         // open LAS reader
-        try ( LASReader lasReader = new LASReader(file)) {
-            // read LAS header
-            header = lasReader.getHeader();
-            // number of LAS points
-            nPoint = header.getNPoint();
-            // loop over LAS points
-            IteratorWithException<LASPoint> it = lasReader.iterator();
-            while (it.hasNext()) {
-                fireProgress("Reading LAS file " + file.getName(), count++, nPoint);
-                if (isCancelled()) {
-                    return null;
-                }
-                LASPoint p = it.next();
-                Vector3d location = new Vector3d(
-                        (p.x * header.x_scale_factor) + header.x_offset,
-                        (p.y * header.y_scale_factor) + header.y_offset,
-                        (p.z * header.z_scale_factor) + header.z_offset);
-                LasPoint point = new LasPoint(location.x, location.y, location.z, p.return_number, p.number_of_returns, p.intensity, p.classification, p.gps_time);
-                points.add(point);
+        LASReader lasReader = new LASReader(file);
+        // read LAS header
+        header = lasReader.getHeader();
+        // number of LAS points
+        nPoint = Math.max(header.getLegacyNumberOfPointRecords(), header.getNumberOfPointRecords());
+        // scale factors and offsets
+        double x_offset = header.getXOffset();
+        double x_scale_factor = header.getXScaleFactor();
+        double y_offset = header.getYOffset();
+        double y_scale_factor = header.getYScaleFactor();
+        double z_offset = header.getZOffset();
+        double z_scale_factor = header.getZScaleFactor();
+        
+        // loop over LAS points
+        for (LASPoint p : lasReader.getPoints()) {
+            fireProgress("Reading LAS file " + file.getName(), count++, nPoint);
+            if (isCancelled()) {
+                return null;
             }
-
-            // sort LAS point by time stamp
-            LOGGER.info("Sorting LAS points");
-            fireProgress("Sorting LAS points", 50, 100);
-            Collections.sort(points, (LasPoint lp1, LasPoint lp2) -> {
-                int tcomp = Double.compare(lp1.t, lp2.t);
-                return tcomp == 0 ? Integer.compare(lp1.r, lp2.r) : tcomp;
-            });
-            fireProgress("Sorting LAS points", 100, 100);
-
-            double minTime = points.get(0).t;
-            double maxTime = points.get(points.size() - 1).t;
-
-            if (minTime >= maxTime) {
-                throw new IOException("LAS/LAZ file contains inconsistent time information, minimum time " + minTime + " >= maximum time " + maxTime);
-            }
-
-            return points;
+            Vector3d location = new Vector3d(
+                    (p.getX() * x_scale_factor) + x_offset,
+                    (p.getY() * y_scale_factor) + y_offset,
+                    (p.getZ() * z_scale_factor) + z_offset);
+            LasPoint point = new LasPoint(
+                    location.x, location.y, location.z, 
+                    p.getReturnNumber(), p.getNumberOfReturns(), 
+                    p.getIntensity(), 
+                    p.getClassification(), 
+                    p.getGPSTime());
+            points.add(point);
         }
+
+        // sort LAS point by time stamp
+        LOGGER.info("Sorting LAS points");
+        fireProgress("Sorting LAS points", 50, 100);
+        Collections.sort(points, (LasPoint lp1, LasPoint lp2) -> {
+            int tcomp = Double.compare(lp1.t, lp2.t);
+            return tcomp == 0 ? Integer.compare(lp1.r, lp2.r) : tcomp;
+        });
+        fireProgress("Sorting LAS points", 100, 100);
+
+        double minTime = points.get(0).t;
+        double maxTime = points.get(points.size() - 1).t;
+
+        if (minTime >= maxTime) {
+            throw new IOException("LAS/LAZ file contains inconsistent time information, minimum time " + minTime + " >= maximum time " + maxTime);
+        }
+
+        return points;
     }
 
     private List<TrajectoryPoint> readTrajectory(final CSVFile file) throws Exception {
@@ -332,7 +342,7 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                     shotIndex,
                     origin, direction,
                     ranges);
-            
+
             // add specific properties
             for (int r = 0; r < nEcho; r++) {
                 shot.getEcho(r).addInteger("classification", classifications[r]);

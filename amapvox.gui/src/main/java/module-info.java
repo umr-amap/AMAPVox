@@ -17,7 +17,6 @@ module amapvox.gui {
     requires amapvox.lidar.commons;
     requires amapvox.lidar.gridded;
     requires amapvox.lidar.gui;
-    requires amapvox.lidar.laszip;
     requires amapvox.lidar.riegl;
     requires transitive amapvox.canopy;
     requires transitive amapvox.commons.javafx;

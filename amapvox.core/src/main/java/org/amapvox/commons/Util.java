@@ -8,16 +8,13 @@ package org.amapvox.commons;
 import org.amapvox.commons.math.geometry.BoundingBox3D;
 import org.amapvox.commons.spds.Octree;
 import org.amapvox.commons.spds.OctreeFactory;
-import org.amapvox.commons.util.IteratorWithException;
 import org.amapvox.commons.util.io.file.CSVFile;
-import org.amapvox.lidar.laszip.LASHeader;
-import org.amapvox.lidar.laszip.LASPoint;
-import org.amapvox.lidar.laszip.LASReader;
+import com.github.mreutegg.laszip4j.LASHeader;
+import com.github.mreutegg.laszip4j.LASPoint;
+import com.github.mreutegg.laszip4j.LASReader;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import org.apache.log4j.Logger;
@@ -38,10 +35,10 @@ public class Util {
             buildVersion = ResourceBundle.getBundle("version").getString("amapvox.version");
         } catch (Exception ex) {
         }
-        
+
         return buildVersion;
     }
-    
+
     public static String humanReadableByteCount(long bytes, boolean si) {
         int unit = si ? 1000 : 1024;
         if (bytes < unit) {
@@ -54,18 +51,11 @@ public class Util {
 
     public static BoundingBox3D getALSMinAndMax(File file) {
 
-        try (LASReader lasReader = new LASReader(file)) {
-            LASHeader header = lasReader.getHeader();
-
-            return new BoundingBox3D(
-                    new Point3d(header.min_x, header.min_y, header.min_z),
-                    new Point3d(header.max_x, header.max_y, header.max_z));
-
-        } catch (IOException ex) {
-            java.util.logging.Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return null;
+        LASReader lasReader = new LASReader(file);
+        LASHeader header = lasReader.getHeader();
+        return new BoundingBox3D(
+                new Point3d(header.getMinX(), header.getMinY(), header.getMinZ()),
+                new Point3d(header.getMaxZ(), header.getMaxY(), header.getMaxZ()));
     }
 
     public static Octree loadOctree(CSVFile pointcloudFile, Matrix4d vopMatrix) {
@@ -114,65 +104,62 @@ public class Util {
             double xMin = 0, yMin = 0, zMin = 0;
             double xMax = 0, yMax = 0, zMax = 0;
 
-            LASHeader lasHeader;
-            try (LASReader lasReader = new LASReader(pointFile)) {
-                lasHeader = lasReader.getHeader();
-                IteratorWithException<LASPoint> iterator = lasReader.iterator();
-                while (iterator.hasNext()) {
+            LASReader lasReader = new LASReader(pointFile);
+            LASHeader lasHeader = lasReader.getHeader();
+            // scale factors and offsets
+            double x_offset = lasHeader.getXOffset();
+            double x_scale_factor = lasHeader.getXScaleFactor();
+            double y_offset = lasHeader.getYOffset();
+            double y_scale_factor = lasHeader.getYScaleFactor();
+            double z_offset = lasHeader.getZOffset();
+            double z_scale_factor = lasHeader.getZScaleFactor();
+            for (LASPoint p : lasReader.getPoints()) {
 
-                    LASPoint point = iterator.next();
+                if (!classificationsToDiscard.contains((int) p.getClassification())) {
+                    //skip those
+                    Point3d pt = new Point3d(
+                            (p.getX() * x_scale_factor) + x_offset,
+                            (p.getY() * y_scale_factor) + y_offset,
+                            (p.getZ() * z_scale_factor) + z_offset);
+                    resultMatrix.transform(pt);
 
-                    if (!classificationsToDiscard.contains((int) point.classification)) {
-                        //skip those
-                        Point3d pt = new Point3d(
-                                (point.x * lasHeader.x_scale_factor) + lasHeader.x_offset,
-                                (point.y * lasHeader.y_scale_factor) + lasHeader.y_offset,
-                                (point.z * lasHeader.z_scale_factor) + lasHeader.z_offset);
-                        resultMatrix.transform(pt);
+                    if (count != 0) {
 
-                        if (count != 0) {
-
-                            if (pt.x < xMin) {
-                                xMin = pt.x;
-                            } else if (pt.x > xMax) {
-                                xMax = pt.x;
-                            }
-
-                            if (pt.y < yMin) {
-                                yMin = pt.y;
-                            } else if (pt.y > yMax) {
-                                yMax = pt.y;
-                            }
-
-                            if (pt.z < zMin) {
-                                zMin = pt.z;
-                            } else if (pt.z > zMax) {
-                                zMax = pt.z;
-                            }
-
-                        } else {
-
+                        if (pt.x < xMin) {
                             xMin = pt.x;
-                            yMin = pt.y;
-                            zMin = pt.z;
-
+                        } else if (pt.x > xMax) {
                             xMax = pt.x;
-                            yMax = pt.y;
-                            zMax = pt.z;
-
-                            count++;
                         }
+
+                        if (pt.y < yMin) {
+                            yMin = pt.y;
+                        } else if (pt.y > yMax) {
+                            yMax = pt.y;
+                        }
+
+                        if (pt.z < zMin) {
+                            zMin = pt.z;
+                        } else if (pt.z > zMax) {
+                            zMax = pt.z;
+                        }
+
+                    } else {
+
+                        xMin = pt.x;
+                        yMin = pt.y;
+                        zMin = pt.z;
+
+                        xMax = pt.x;
+                        yMax = pt.y;
+                        zMax = pt.z;
+
+                        count++;
                     }
                 }
-
-                boundingBox.min = new Point3d(xMin, yMin, zMin);
-                boundingBox.max = new Point3d(xMax, yMax, zMax);
-            } catch (IOException ex) {
-                LOGGER.error(ex);
-                java.util.logging.Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (Exception ex) {
-                LOGGER.error(ex);
             }
+
+            boundingBox.min = new Point3d(xMin, yMin, zMin);
+            boundingBox.max = new Point3d(xMax, yMax, zMax);
         }
 
         return boundingBox;

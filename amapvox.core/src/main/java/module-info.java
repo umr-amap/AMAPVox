@@ -13,7 +13,6 @@ module amapvox.core {
     requires amapvox.commons.raytracing;
     requires amapvox.lidar.commons;
     requires amapvox.lidar.gridded;
-    requires amapvox.lidar.laszip;
     requires amapvox.lidar.riegl;
     
     // external modules 
@@ -23,6 +22,7 @@ module amapvox.core {
     requires commons.math3; 
     requires sis.jhdf5;
     requires cdm;
+    requires laszip4j;
     
     // exports
     exports org.amapvox.commons;

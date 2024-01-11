@@ -8,7 +8,6 @@ package org.amapvox.shot.filter;
 import org.amapvox.commons.util.filter.Filter;
 import org.amapvox.commons.util.filter.FloatFilter;
 import org.amapvox.shot.Echo;
-import org.amapvox.shot.Shot;
 
 /**
  * Filter an echo based attribute values, not operational yet. Refactoring of

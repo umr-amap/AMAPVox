@@ -45,7 +45,7 @@ import org.amapvox.voxelisation.VoxelizationCfg;
 import org.amapvox.voxelisation.output.OutputVariable;
 import org.amapvox.lidar.commons.LidarScan;
 import org.amapvox.lidar.commons.MultiScanProjectReader;
-import org.amapvox.lidar.las.Classification;
+import org.amapvox.lidar.commons.LASClassification;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -951,7 +951,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         // echo classification filter
         if (checkboxEchoFilterByClass.isSelected()) {
-            cfg.addEchoFilter(new ClassifiedPointFilter(getListOfClassificationPointToDiscard()));
+            cfg.addEchoFilter(new ClassifiedPointFilter(getListOfLASClassificationPointToDiscard()));
         }
         if (checkboxUseDTMFilter.isSelected()) {
             cfg.addEchoFilter(new DigitalTerrainModelFilter(Float.parseFloat(textfieldDTMValue.getText())));
@@ -1073,7 +1073,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         cfg.setAttenuationError(Math.pow(10, -ndigit));
     }
 
-    private List<Integer> getListOfClassificationPointToDiscard() {
+    private List<Integer> getListOfLASClassificationPointToDiscard() {
 
         return listviewClassifications.getItems().stream()
                 .filter(checkBox -> !checkBox.isSelected())
@@ -1355,7 +1355,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                         @Override
                         protected Void call() throws InterruptedException {
 
-                            final BoundingBox3D boundingBox = org.amapvox.commons.Util.getBoundingBoxOfPoints(file, resultMatrix, quick, getListOfClassificationPointToDiscard());
+                            final BoundingBox3D boundingBox = org.amapvox.commons.Util.getBoundingBoxOfPoints(file, resultMatrix, quick, getListOfLASClassificationPointToDiscard());
 
                             Point3d minPoint = boundingBox.min;
                             Point3d maxPoint = boundingBox.max;
@@ -1499,33 +1499,33 @@ public class VoxelizationFrameController extends ConfigurationController {
     private void initEchoFiltering() {
 
         listviewClassifications.getItems().addAll(
-                createSelectedCheckbox(Classification.CREATED_NEVER_CLASSIFIED.getValue() + " - "
-                        + Classification.CREATED_NEVER_CLASSIFIED.getDescription()),
-                createSelectedCheckbox(Classification.UNCLASSIFIED.getValue() + " - "
-                        + Classification.UNCLASSIFIED.getDescription()),
-                new CheckBox(Classification.GROUND.getValue() + " - "
+                createSelectedCheckbox(LASClassification.CREATED_NEVER_CLASSIFIED.getValue() + " - "
+                        + LASClassification.CREATED_NEVER_CLASSIFIED.getDescription()),
+                createSelectedCheckbox(LASClassification.UNCLASSIFIED.getValue() + " - "
+                        + LASClassification.UNCLASSIFIED.getDescription()),
+                new CheckBox(LASClassification.GROUND.getValue() + " - "
                         + //by default unselected, ground point will be removed
-                        Classification.GROUND.getDescription()),
-                createSelectedCheckbox(Classification.LOW_VEGETATION.getValue() + " - "
-                        + Classification.LOW_VEGETATION.getDescription()),
-                createSelectedCheckbox(Classification.MEDIUM_VEGETATION.getValue() + " - "
-                        + Classification.MEDIUM_VEGETATION.getDescription()),
-                createSelectedCheckbox(Classification.HIGH_VEGETATION.getValue() + " - "
-                        + Classification.HIGH_VEGETATION.getDescription()),
-                createSelectedCheckbox(Classification.BUILDING.getValue() + " - "
-                        + Classification.BUILDING.getDescription()),
-                createSelectedCheckbox(Classification.LOW_POINT.getValue() + " - "
-                        + Classification.LOW_POINT.getDescription()),
-                createSelectedCheckbox(Classification.MODEL_KEY_POINT.getValue() + " - "
-                        + Classification.MODEL_KEY_POINT.getDescription()),
-                createSelectedCheckbox(Classification.WATER.getValue() + " - "
-                        + Classification.WATER.getDescription()),
-                createSelectedCheckbox(Classification.RESERVED_10.getValue() + " - "
-                        + Classification.RESERVED_10.getDescription()),
-                createSelectedCheckbox(Classification.RESERVED_11.getValue() + " - "
-                        + Classification.RESERVED_11.getDescription()),
-                createSelectedCheckbox(Classification.OVERLAP_POINTS.getValue() + " - "
-                        + Classification.OVERLAP_POINTS.getDescription()));
+                        LASClassification.GROUND.getDescription()),
+                createSelectedCheckbox(LASClassification.LOW_VEGETATION.getValue() + " - "
+                        + LASClassification.LOW_VEGETATION.getDescription()),
+                createSelectedCheckbox(LASClassification.MEDIUM_VEGETATION.getValue() + " - "
+                        + LASClassification.MEDIUM_VEGETATION.getDescription()),
+                createSelectedCheckbox(LASClassification.HIGH_VEGETATION.getValue() + " - "
+                        + LASClassification.HIGH_VEGETATION.getDescription()),
+                createSelectedCheckbox(LASClassification.BUILDING.getValue() + " - "
+                        + LASClassification.BUILDING.getDescription()),
+                createSelectedCheckbox(LASClassification.LOW_POINT.getValue() + " - "
+                        + LASClassification.LOW_POINT.getDescription()),
+                createSelectedCheckbox(LASClassification.MODEL_KEY_POINT.getValue() + " - "
+                        + LASClassification.MODEL_KEY_POINT.getDescription()),
+                createSelectedCheckbox(LASClassification.WATER.getValue() + " - "
+                        + LASClassification.WATER.getDescription()),
+                createSelectedCheckbox(LASClassification.RESERVED_10.getValue() + " - "
+                        + LASClassification.RESERVED_10.getDescription()),
+                createSelectedCheckbox(LASClassification.RESERVED_11.getValue() + " - "
+                        + LASClassification.RESERVED_11.getDescription()),
+                createSelectedCheckbox(LASClassification.OVERLAP_POINTS.getValue() + " - "
+                        + LASClassification.OVERLAP_POINTS.getDescription()));
     }
 
     private void updateLastFCOpenFiles(File file) {

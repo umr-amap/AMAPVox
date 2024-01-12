@@ -82,17 +82,6 @@ public class VoxelizationCfg extends Configuration {
         RXP, RSP, PTX, PTG, XYB, LAS, LAZ, SHT;
     }
 
-    public final static Matrix DEFAULT_ECHO_WEIGHTS = new Matrix(
-            new double[][]{
-                {1.d, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
-                {0.5d, 0.5d, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
-                {1 / 3.d, 1 / 3.d, 1 / 3.d, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
-                {0.25d, 0.25d, 0.25d, 0.25d, Double.NaN, Double.NaN, Double.NaN},
-                {0.2d, 0.2d, 0.2d, 0.2d, 0.2d, Double.NaN, Double.NaN},
-                {1 / 6.d, 1 / 6.d, 1 / 6.d, 1 / 6.d, 1 / 6.d, 1 / 6.d, Double.NaN},
-                {1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d}}
-    );
-
     private final static Logger LOGGER = Logger.getLogger(VoxelizationCfg.class);
 
     protected File dtmFile;

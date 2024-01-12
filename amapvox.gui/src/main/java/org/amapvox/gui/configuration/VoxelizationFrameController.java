@@ -123,6 +123,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     private ValidationSupport voxSpaceValidationSupport;
     private ValidationSupport inputValidationSupport;
     private ValidationSupport outputValidationSupport;
+    private ValidationSupport echoWeightValidationSupport;
 
     /**
      * Transformation variables
@@ -733,10 +734,11 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         // rank echo weight
         vboxRankEchoWeight.disableProperty().bind(rdbtnRankEchoWeight.selectedProperty().not());
+        textAreaRankEchoWeightMatrix.setText(RankEchoWeight.DEFAULT_WEIGHT.toExternalString());
         rdbtnRankEchoWeight.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
                 -> {
             if (newValue && textAreaRankEchoWeightMatrix.getText().isEmpty()) {
-                textAreaRankEchoWeightMatrix.setText(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS.toExternalString());
+                textAreaRankEchoWeightMatrix.setText(RankEchoWeight.DEFAULT_WEIGHT.toExternalString());
             }
         });
         helpButtonRankEchoWeight.setOnAction((ActionEvent event)
@@ -844,10 +846,13 @@ public class VoxelizationFrameController extends ConfigurationController {
         // output validation support
         outputValidationSupport = new ValidationSupport();
         outputValidationSupport.registerValidator(textFieldOutputFile, Validators.fileValidityValidator("Voxelspace file"));
-
+        
+        // echo weight validation support
+        echoWeightValidationSupport = new ValidationSupport();
+        echoWeightValidationSupport.registerValidator(textAreaRankEchoWeightMatrix, true, Validator.createPredicateValidator(isValidMatrix(), "Echo weight matrix must be a non-empty square matrix."));
     }
 
-    private void checkInputSVoxelizationParametersValidity() throws IOException {
+    private void checkVoxelizationParametersValidity() throws IOException {
 
         StringBuilder sb = new StringBuilder();
 
@@ -865,6 +870,11 @@ public class VoxelizationFrameController extends ConfigurationController {
             outputValidationSupport.initInitialDecoration();
             outputValidationSupport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
         }
+        
+        if (echoWeightValidationSupport.isInvalid()) {
+            echoWeightValidationSupport.initInitialDecoration();
+            echoWeightValidationSupport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
+        }
 
         if (!sb.toString().isEmpty()) {
             throw new IOException(sb.toString());
@@ -875,7 +885,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     @Override
     public void saveConfiguration(File file) throws Exception {
 
-        checkInputSVoxelizationParametersValidity();
+        checkVoxelizationParametersValidity();
 
         // new configuration
         VoxelizationCfg cfg = new VoxelizationCfg();
@@ -983,9 +993,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         // echo weight
         cfg.addEchoWeight(new EqualEchoWeight(rdbtnEqualEchoWeight.isSelected()));
         cfg.addEchoWeight(new RankEchoWeight(rdbtnRankEchoWeight.isSelected()));
-        if (!textAreaRankEchoWeightMatrix.getText().isBlank()) {
-            cfg.setRankEchoWeightMatrix(Matrix.valueOf(textAreaRankEchoWeightMatrix.getText()));
-        }
+        cfg.setRankEchoWeightMatrix(Matrix.valueOf(textAreaRankEchoWeightMatrix.getText()));
         cfg.addEchoWeight(new RelativeEchoWeight(rdbtnRelativeEchoWeight.isSelected()));
         cfg.setRelativeEchoWeightVariable(textFieldRelativeEchoWeightVariable.getText());
         cfg.addEchoWeight(new StrongestEchoWeight(rdbtnStrongestEchoWeight.isSelected()));
@@ -1390,6 +1398,16 @@ public class VoxelizationFrameController extends ConfigurationController {
                 return Integer.parseInt(p) > 1;
             } catch (NumberFormatException ex) {
             }
+            return false;
+        };
+    }
+    
+    private Predicate<String> isValidMatrix() {
+        return (String p) -> {
+            try {
+                Matrix.valueOf(p);
+                return true;
+            } catch (NullPointerException | IllegalArgumentException ex) {}
             return false;
         };
     }
@@ -2204,7 +2222,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
     @FXML
     private void onActionButtonEqualEchoWeight(ActionEvent event) {
-        textAreaRankEchoWeightMatrix.setText(VoxelizationCfg.DEFAULT_ECHO_WEIGHTS.toExternalString());
+        textAreaRankEchoWeightMatrix.setText(RankEchoWeight.DEFAULT_WEIGHT.toExternalString());
     }
 
     @FXML

@@ -3,6 +3,7 @@ package org.amapvox.shot.weight;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import org.amapvox.commons.Matrix;
 import org.amapvox.shot.Echo;
 import org.amapvox.shot.Shot;
 import org.amapvox.voxelisation.VoxelizationCfg;
@@ -21,6 +22,20 @@ import org.apache.log4j.Logger;
 public class RankEchoWeight extends EchoWeight {
 
     private final static Logger LOGGER = Logger.getLogger(RankEchoWeight.class);
+    
+    /**
+     * Default echo weights, evenly distributed.
+     */
+    public final static Matrix DEFAULT_WEIGHT = new Matrix(
+            new double[][]{
+                {1.d, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
+                {0.5d, 0.5d, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
+                {1 / 3.d, 1 / 3.d, 1 / 3.d, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
+                {0.25d, 0.25d, 0.25d, 0.25d, Double.NaN, Double.NaN, Double.NaN},
+                {0.2d, 0.2d, 0.2d, 0.2d, 0.2d, Double.NaN, Double.NaN},
+                {1 / 6.d, 1 / 6.d, 1 / 6.d, 1 / 6.d, 1 / 6.d, 1 / 6.d, Double.NaN},
+                {1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d}}
+    );
 
     private double[][] weightTable;
 

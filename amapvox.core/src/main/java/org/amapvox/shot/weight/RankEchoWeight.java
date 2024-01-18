@@ -3,6 +3,7 @@ package org.amapvox.shot.weight;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.stream.IntStream;
 import org.amapvox.commons.Matrix;
 import org.amapvox.shot.Echo;
 import org.amapvox.shot.Shot;
@@ -13,16 +14,16 @@ import org.apache.log4j.Logger;
  * Using intensity in pre-processing stage to estimate the mean target size
  * given the number of returns and the rank of the return.
  *
- * User provides an array with estimated weights.
- *
- * https://forge.ird.fr/amap/amapvox/-/issues/5
+ * User provides an array with estimated weights https://forge.ird.fr/amap/amapvox/-/issues/5
+ * 
+ * Supernumerary echoes are discarded https://forge.ird.fr/amap/amapvox/-/issues/12
  *
  * @author Philippe Verley
  */
 public class RankEchoWeight extends EchoWeight {
 
     private final static Logger LOGGER = Logger.getLogger(RankEchoWeight.class);
-    
+
     /**
      * Default echo weights, evenly distributed.
      */
@@ -38,6 +39,8 @@ public class RankEchoWeight extends EchoWeight {
     );
 
     private double[][] weightTable;
+
+    private int cachedShotIndex = -1;
 
     public RankEchoWeight(boolean enabled) {
         super(enabled);
@@ -77,27 +80,45 @@ public class RankEchoWeight extends EchoWeight {
 
     @Override
     public void setWeight(Shot shot) {
-       // nothing to do
+        // nothing to do
     }
 
     @Override
     public double getWeight(Echo echo) {
 
         int nEcho = echo.getShot().getEchoesNumber();
+        int rank = echo.getRank();
 
-        // discard shot whith more echoes than weights provided in the weighting table
+        // handles shots whith more echoes than weights provided in the weight matrix
         if (nEcho > weightTable.length) {
 
-            LOGGER.warn(
-                    "Shot " + echo.getShot().index
-                    + " has been discarded. More echoes ("
-                    + nEcho
-                    + ") than weights in the echo weighting table ("
-                    + weightTable.length + ").");
-            return 1.d;
+            // only warns once
+            if (echo.getShot().index != cachedShotIndex) {
+                cachedShotIndex = echo.getShot().index;
+                StringBuilder msg = new StringBuilder();
+                int[] discardedEchoRank = IntStream.range(weightTable.length + 1, nEcho + 1).toArray();
+                msg.append("Shot ")
+                        .append(cachedShotIndex)
+                        .append(" contains more echoes (")
+                        .append(nEcho)
+                        .append(") than rows in the weight matrix (")
+                        .append(weightTable.length)
+                        .append("). Supernumerary echoes ")
+                        .append(Arrays.toString(discardedEchoRank))
+                        .append(" will be discarded.");
+                LOGGER.warn(msg.toString());
+            }
+
+            // ignore supernumerary echoes, let's put a zero weight, they will
+            // not be processed anyhow
+            if (rank >= weightTable.length) {
+                return 0.d;
+            }
+            
+            // top number of returns and return number to the length of the weight matrix
+            nEcho = weightTable.length;
         }
 
-        int rank = echo.getRank();
         return nEcho > 0 ? weightTable[nEcho - 1][rank] : 1.d;
     }
 

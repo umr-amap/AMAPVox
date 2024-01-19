@@ -277,7 +277,6 @@ public class VoxelizationFrameController extends ConfigurationController {
                     checkboxCustomLaserSpecification.selectedProperty(),
                     textFieldBeamDiameterAtExit.textProperty(),
                     textFieldBeamDivergence.textProperty(),
-                    checkboxMonoEcho.selectedProperty(),
                     // LEAF
                     textFieldLeafArea.textProperty()
                 }));
@@ -770,7 +769,6 @@ public class VoxelizationFrameController extends ConfigurationController {
                 -> {
             textFieldBeamDiameterAtExit.setText(df.format(newValue.getBeamDiameterAtExit()));
             textFieldBeamDivergence.setText(df.format(newValue.getBeamDivergence()));
-            checkboxMonoEcho.setSelected(newValue.isMonoEcho());
         });
 
         comboboxLaserSpecification.getSelectionModel().select(LaserSpecification.LMS_Q560);
@@ -778,7 +776,6 @@ public class VoxelizationFrameController extends ConfigurationController {
         comboboxLaserSpecification.disableProperty().bind(checkboxCustomLaserSpecification.selectedProperty());
         textFieldBeamDiameterAtExit.disableProperty().bind(checkboxCustomLaserSpecification.selectedProperty().not());
         textFieldBeamDivergence.disableProperty().bind(checkboxCustomLaserSpecification.selectedProperty().not());
-        checkboxMonoEcho.disableProperty().bind(checkboxCustomLaserSpecification.selectedProperty().not());
 
         textFieldBeamDiameterAtExit.setTextFormatter(TextFieldUtil.createFloatTextFormatter(0.f, TextFieldUtil.Sign.POSITIVE));
         textFieldBeamDivergence.setTextFormatter(TextFieldUtil.createFloatTextFormatter(0.f, TextFieldUtil.Sign.POSITIVE));
@@ -1036,7 +1033,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         if (checkboxCustomLaserSpecification.isSelected()) {
             try {
-                cfg.setLaserSpecification(new LaserSpecification("custom", Double.parseDouble(textFieldBeamDiameterAtExit.getText()), Double.parseDouble(textFieldBeamDivergence.getText()), checkboxMonoEcho.isSelected()));
+                cfg.setLaserSpecification(new LaserSpecification("custom", Double.parseDouble(textFieldBeamDiameterAtExit.getText()), Double.parseDouble(textFieldBeamDivergence.getText())));
             } catch (NumberFormatException ex) {
                 Util.showErrorDialog(getStage(),
                         new Exception("Cannot parse laser specification values.", ex), "[Voxelization]");
@@ -1107,7 +1104,6 @@ public class VoxelizationFrameController extends ConfigurationController {
                 checkboxCustomLaserSpecification.setSelected(true);
                 textFieldBeamDiameterAtExit.setText(df.format(laserSpecification.getBeamDiameterAtExit()));
                 textFieldBeamDivergence.setText(df.format(laserSpecification.getBeamDivergence()));
-                checkboxMonoEcho.setSelected(laserSpecification.isMonoEcho());
             } else {
                 checkboxCustomLaserSpecification.setSelected(false);
                 // look at laser specification presets
@@ -2108,8 +2104,6 @@ public class VoxelizationFrameController extends ConfigurationController {
     private TextField textFieldBeamDiameterAtExit;
     @FXML
     private TextField textFieldBeamDivergence;
-    @FXML
-    private CheckBox checkboxMonoEcho;
 
     /////////////
     // LEAF PANE

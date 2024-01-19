@@ -724,7 +724,7 @@
                                                 <Label text="Predefined specifications:" />
                                                 <ComboBox fx:id="comboboxLaserSpecification" prefHeight="26.0" prefWidth="400.0" />
                                                 <CheckBox fx:id="checkboxCustomLaserSpecification" mnemonicParsing="false" text="Custom specifications:" />
-                                                <VBox>
+                                                <VBox spacing="10.0">
                                                     <children>
                                                         <HBox alignment="CENTER_LEFT" spacing="5.0">
                                                             <children>
@@ -738,11 +738,6 @@
                                                                 <TextField fx:id="textFieldBeamDivergence" disable="true" prefHeight="26.0" prefWidth="80.0" text="0.005" />
                                                             </children>
                                                         </HBox>
-                                                        <CheckBox fx:id="checkboxMonoEcho" disable="true" prefHeight="26.0" text="Mono-echo">
-                                                            <tooltip>
-                                                                <Tooltip text="Selected = mono-echo, unselected = multi-echo" />
-                                                            </tooltip>
-                                                        </CheckBox>
                                                     </children>
                                                     <padding>
                                                         <Insets left="15.0" />

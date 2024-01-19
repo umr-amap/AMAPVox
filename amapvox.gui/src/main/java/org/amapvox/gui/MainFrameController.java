@@ -62,6 +62,8 @@ import javafx.stage.Stage;
 import java.awt.Desktop;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -192,7 +194,7 @@ public class MainFrameController implements Initializable {
                         saveToolbarButton.disableProperty().bind(
                                 tabPaneEditor.getSelectionModel().selectedItemProperty().isNull()
                                         .or(f.savedProperty().not())
-                                        .or(f.savedProperty().and(getCfg(f).getController().changedProperty().not())));
+                                        .or(getCfg(f).getController().changedProperty().not()));
                     }
                 }
         );
@@ -593,7 +595,6 @@ public class MainFrameController implements Initializable {
             if (!f.savedProperty().getValue()) {
                 // not yet saved to file, switch to save as function
                 saveAsTask(f);
-                f.setSaved();
             } else {
                 saveTask(f);
             }
@@ -636,8 +637,20 @@ public class MainFrameController implements Initializable {
                 sourceUI.updateLinkedFile(target);
                 configurations.remove(source);
                 configurations.put(target, sourceUI);
-                // save target
-                saveTask(target, true);
+                // save target file
+                Files.copy(
+                        Paths.get(source.getFile().toURI()),
+                        Paths.get(selectedFile.toURI()),
+                        StandardCopyOption.REPLACE_EXISTING);
+                target.setSaved();
+                // clear and select current tab to update the save button binding
+                int tabIndex = tabPaneEditor.getSelectionModel().getSelectedIndex();
+                tabPaneEditor.getSelectionModel().clearSelection();
+                tabPaneEditor.getSelectionModel().select(tabIndex);
+                // save current modifications if any
+                if (sourceUI.getController().changedProperty().get()) {
+                    saveTask(target, true);
+                }
                 LOGGER.info(source.getName() + " saved as " + target.getName() + ".");
                 if (source.savedProperty().get()) {
                     // re open source unless it was a temp file
@@ -929,6 +942,7 @@ public class MainFrameController implements Initializable {
                     taskElement.setButtonDisable(true);
                     taskElement.setDisable(true);
                 } else {
+                    taskElement.setButtonDisable(file.savedProperty().not().get());
                     preloadTask(file, edit);
                     if (!quiet) {
                         LOGGER.info(file.getName() + " opened.");
@@ -1004,7 +1018,7 @@ public class MainFrameController implements Initializable {
                         getCfg(file).setListener(listener);
                         getCfg(file).getTask().setTaskIcon(icon);
                         getCfg(file).updateLinkedFile(file);
-                        setTaskModified(file, !file.savedProperty().getValue());
+                        setTaskModified(file, false);
                         // edit ?
                         if (thenEdit) {
                             editTask(file);
@@ -1054,6 +1068,7 @@ public class MainFrameController implements Initializable {
             Util.showErrorDialog(stage,
                     new IOException("Cannot write configuration file.", ex), getCfg(file).getClassName());
         }
+        getCfg(file).getTask().setButtonDisable(true);
         return false;
     }
 
@@ -1250,7 +1265,7 @@ public class MainFrameController implements Initializable {
         final private String icon;
         private Tab tab;
         private ConfigurationController controller;
-        private ConfigurationChangeListener listener;
+        private ConfigurationChangeListener changeListener;
         private TaskElement task;
 
         CfgUI(Class clazz) {
@@ -1270,7 +1285,7 @@ public class MainFrameController implements Initializable {
             // tab title
             tab.setText(file.getName());
             // configuration change listener
-            listener.setFile(file);
+            changeListener.setFile(file);
             // check save on close
             tab.setOnCloseRequest(e -> {
                 checkSaveTask(file, e);
@@ -1357,14 +1372,14 @@ public class MainFrameController implements Initializable {
          * @return the listener
          */
         public ConfigurationChangeListener getListener() {
-            return listener;
+            return changeListener;
         }
 
         /**
          * @param listener the listener to set
          */
         public void setListener(ConfigurationChangeListener listener) {
-            this.listener = listener;
+            this.changeListener = listener;
         }
     }
 

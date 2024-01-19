@@ -80,19 +80,22 @@ public class VoxelizationReleases {
             public void update(Element processElement) {
 
                 // new attribute mono-echo (true/false) in the laser specification
+                // phv-2023-01-19: mono-echo attribute deleted in v2.2.0
                 Element laserSpecElement = processElement.getChild("laser-specification");
                 if (null != laserSpecElement) {
                     String laserSpecName = laserSpecElement.getAttributeValue("name");
                     boolean monoEchoSet = false;
                     for (LaserSpecification laserSpec : LaserSpecification.getPresets()) {
                         if (laserSpec.isValidName(laserSpecName)) {
-                            laserSpecElement.setAttribute(new Attribute("mono-echo", String.valueOf(laserSpec.isMonoEcho())));
+                            // phv-2023-01-19: assumes false because we'd rather use echo rank weight function to mimic mono-echo
+                            laserSpecElement.setAttribute(new Attribute("mono-echo", String.valueOf(false)));
                             monoEchoSet = true;
                             break;
                         }
                     }
                     if (!monoEchoSet) {
-                        Logger.getLogger(Release.class).warn("Your laser specification does not match any known specification. AMAPVox cannot guess whether the laser is either mono or multi echo. New parameter <laser-specification mono-echo=\"true|false\" cannot be automatically updated. You will have to set it manually.");
+                        // phv-2023-01-19: no need to warn since v2.2.0 will delete later on the attibute introduced in v1.2.0
+//                        Logger.getLogger(Release.class).warn("Your laser specification does not match any known specification. AMAPVox cannot guess whether the laser is either mono or multi echo. New parameter <laser-specification mono-echo=\"true|false\" cannot be automatically updated. You will have to set it manually.");
                     }
                 }
             }
@@ -937,7 +940,19 @@ public class VoxelizationReleases {
                     processElement.removeChild("echo-weighting");
                 }
             }
+        },
+        // 2023-01-19
+        new Release("2.2.0") {
+        @Override
+        public void update(Element processElement) {
+           
+            // delete mono-echo attribute in laser-specification element
+            Element laserSpecElement = processElement.getChild("laser-specification");
+            if (null != laserSpecElement) {
+                laserSpecElement.removeAttribute("mono-echo");
+            }
         }
+    }
     };
 
     // remove deprecated output variables for version >= 1.10.2

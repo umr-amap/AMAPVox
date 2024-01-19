@@ -49,7 +49,7 @@ public class TaskElement extends AnchorPane implements Initializable {
 
     private ButtonType buttonType;
     private final Service service;
-    private final CfgFile linkedFile;
+    private CfgFile linkedFile;
 
     private ImageView stopImage;
     private ImageView startImage;
@@ -124,6 +124,11 @@ public class TaskElement extends AnchorPane implements Initializable {
                 expandButton.setText("+");
             }
         });
+    }
+    
+    public void updateFile(CfgFile file) {
+        this.linkedFile = file;
+        updateTitle("-".equals(expandButton.getText()));
     }
 
     private void updateTitle(boolean expanded) {

@@ -62,8 +62,6 @@ import javafx.stage.Stage;
 import java.awt.Desktop;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -78,6 +76,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.Event;
@@ -596,43 +595,54 @@ public class MainFrameController implements Initializable {
 
     @FXML
     private void onActionMenuSaveAsTask(ActionEvent event) {
+        CfgFile f = getSelectedTab();
+        if (null != f) {
+            saveAsTask(f);
+        }
+    }
 
-        CfgFile source = getSelectedTab();
+    private boolean saveAsTask(CfgFile source) {
 
-        if (null != source) {
+        // update file chooser to last opened configuration file
+        fileChooserSaveConfiguration.setInitialDirectory(source.getFile().getParentFile());
+        fileChooserSaveConfiguration.setInitialFileName(source.getName());
 
-            // update file chooser to last opened configuration file
-            fileChooserSaveConfiguration.setInitialDirectory(source.getFile().getParentFile());
-            fileChooserSaveConfiguration.setInitialFileName(source.getName());
-
-            File selectedFile = fileChooserSaveConfiguration.showSaveDialog(stage);
-            if (selectedFile != null) {
-                try {
-                    // add xml extension
-                    if (!selectedFile.getName().endsWith(".xml")) {
-                        selectedFile = new File(selectedFile.getAbsolutePath() + ".xml");
-                    }
-                    CfgFile target = new CfgFile(selectedFile);
-                    // special case selectedFile is alread opened, close it
-                    if (configurations.containsKey(target)) {
-                        getCfg(target).getController().unload();
-                        tabPaneEditor.getTabs().remove(getCfg(target).getTab());
-                    }
-                    // copy source to target
-                    Files.copy(
-                            Paths.get(source.getFile().toURI()),
-                            Paths.get(selectedFile.toURI()),
-                            StandardCopyOption.REPLACE_EXISTING);
-                    LOGGER.info(source.getName() + " saved as " + selectedFile.getName() + ".");
-                    // open new configuration
-                    openTask(target, true);
-                } catch (Exception ex) {
-                    Util.showErrorDialog(stage,
-                            new IOException("Cannot write configuration file.", ex), getCfg(source).getClassName());
-
+        File selectedFile = fileChooserSaveConfiguration.showSaveDialog(stage);
+        if (selectedFile != null) {
+            // add xml extension
+            if (!selectedFile.getName().endsWith(".xml")) {
+                selectedFile = new File(selectedFile.getAbsolutePath() + ".xml");
+            }
+            // save as itself == save
+            if (selectedFile.equals(source.getFile())) {
+                return saveTask(source);
+            }
+            try {
+                CfgFile target = new CfgFile(selectedFile);
+                // if target is alread opened, close it first
+                if (configurations.containsKey(target)) {
+                    getCfg(target).getController().unload();
+                    removeTask(target);
                 }
+                // swap source and target
+                CfgUI sourceUI = getCfg(source);
+                sourceUI.updateLinkedFile(target);
+                configurations.remove(source);
+                configurations.put(target, sourceUI);
+                // save target
+                saveTask(target);
+                LOGGER.info(source.getName() + " saved as " + target.getName() + ".");
+                // re open source
+                int pos = listViewTaskList.getItems().indexOf(sourceUI.getTask());
+                openTask(source, pos, false, true);
+                listViewTaskList.getSelectionModel().clearAndSelect(pos + 1);
+                return true;
+            } catch (Exception ex) {
+                Util.showErrorDialog(stage,
+                        new IOException("Cannot write configuration file.", ex), getCfg(source).getClassName());
             }
         }
+        return false;
     }
 
     @FXML
@@ -712,7 +722,7 @@ public class MainFrameController implements Initializable {
 
         File file = fc.showSaveDialog(stage);
         if (null != file) {
-            try ( FileWriter writer = new FileWriter(file)) {
+            try (FileWriter writer = new FileWriter(file)) {
                 writer.write(textAreaLog.getText());
             } catch (IOException ex) {
                 LOGGER.error("Failed to save log file", ex);
@@ -876,6 +886,10 @@ public class MainFrameController implements Initializable {
     }
 
     private void openTask(CfgFile file, boolean edit) {
+        openTask(file, -1, edit, false);
+    }
+
+    private void openTask(CfgFile file, int position, boolean edit, boolean quiet) {
 
         if (!configurations.containsKey(file)) {
             TaskElement taskElement = null;
@@ -892,16 +906,24 @@ public class MainFrameController implements Initializable {
                 CfgUI cfgUI = new CfgUI(cfg.getClass());
                 cfgUI.setTask(taskElement);
                 configurations.put(file, cfgUI);
-                listViewTaskList.getItems().add(taskElement);
+                if (position < 0 || position > listViewTaskList.getItems().size()) {
+                    listViewTaskList.getItems().add(taskElement);
+                } else {
+                    listViewTaskList.getItems().add(position, taskElement);
+                }
                 // preload task controller
                 if (cfg.isDeprecated()) {
-                    LOGGER.info(file.getName() + " is deprecated.");
-                    LOGGER.info(cfg.getDescription());
+                    if (!quiet) {
+                        LOGGER.info(file.getName() + " is deprecated.");
+                        LOGGER.info(cfg.getDescription());
+                    }
                     taskElement.setButtonDisable(true);
                     taskElement.setDisable(true);
                 } else {
                     preloadTask(file, edit);
-                    LOGGER.info(file.getName() + " opened.");
+                    if (!quiet) {
+                        LOGGER.info(file.getName() + " opened.");
+                    }
                 }
             } catch (Exception ex) {
                 Util.showErrorDialog(stage, ex, null);
@@ -963,36 +985,16 @@ public class MainFrameController implements Initializable {
                         controller.setStage(stage);
                         Tab tab = new Tab();
                         tab.setContent(frame);
-                        tab.setText(file.getName());
-                        controller.changedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
-                            if (null != oldValue && null != newValue) {
-                                boolean modified = (newValue & !oldValue)
-                                        | !((oldValue & !newValue));
-                                setTaskModified(file, modified);
-                            }
-                        });
-                        tab.setOnCloseRequest(e -> {
-                            checkSaveTask(file, e);
-                        });
-
-                        Tooltip tooltip = new Tooltip(file.getFile().getAbsolutePath());
-                        Util.hackTooltipStartTiming(tooltip, 0);
-                        tab.setTooltip(tooltip);
+                        ConfigurationChangeListener listener = new ConfigurationChangeListener(file);
+                        controller.changedProperty().addListener(listener);
                         String iconURI = getCfg(file).getIcon();
                         Image icon = new Image(MainFrameController.class.getResource(iconURI).toExternalForm());
                         tab.setGraphic(new ImageView(icon));
-                        // double click on tab
                         getCfg(file).setTab(tab);
                         getCfg(file).setController(controller);
+                        getCfg(file).setListener(listener);
                         getCfg(file).getTask().setTaskIcon(icon);
-                        // edit on double click
-                        getCfg(file).getTask().setOnMouseClicked(mouseEvent -> {
-                            if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-                                if (mouseEvent.getClickCount() == 2) {
-                                    editTask(file);
-                                }
-                            }
-                        });
+                        getCfg(file).updateLinkedFile(file);
                         setTaskModified(file, !file.savedProperty().getValue());
                         // edit ?
                         if (thenEdit) {
@@ -1178,11 +1180,17 @@ public class MainFrameController implements Initializable {
         }
         // remove from list
         if (!event.isConsumed()) {
-            tabPaneEditor.getTabs().remove(tab);
-            listViewTaskList.getItems().remove(getCfg(file).getTask());
-            configurations.remove(file);
-            LOGGER.info(file.getName() + " closed.");
+            removeTask(file);
         }
+    }
+
+    private void removeTask(CfgFile file) {
+
+        Tab tab = getCfg(file).getTab();
+        tabPaneEditor.getTabs().remove(tab);
+        listViewTaskList.getItems().remove(getCfg(file).getTask());
+        configurations.remove(file);
+        LOGGER.info(file.getName() + " closed.");
     }
 
     private void addFileToOutput(File cfg, File output) {
@@ -1266,6 +1274,7 @@ public class MainFrameController implements Initializable {
         final private String icon;
         private Tab tab;
         private ConfigurationController controller;
+        private ConfigurationChangeListener listener;
         private TaskElement task;
 
         CfgUI(Class clazz) {
@@ -1278,6 +1287,31 @@ public class MainFrameController implements Initializable {
             return uiTasks.stream()
                     .filter(t -> t.getClassName().equals(className))
                     .findFirst().get();
+        }
+
+        private void updateLinkedFile(CfgFile file) {
+
+            // tab title
+            tab.setText(file.getName());
+            // configuration change listener
+            listener.setFile(file);
+            // check save on close
+            tab.setOnCloseRequest(e -> {
+                checkSaveTask(file, e);
+            });
+            // tool tip
+            Tooltip tooltip = new Tooltip(file.getFile().getAbsolutePath());
+            Util.hackTooltipStartTiming(tooltip, 0);
+            tab.setTooltip(tooltip);
+            // edit on double click
+            task.setOnMouseClicked(mouseEvent -> {
+                if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+                    if (mouseEvent.getClickCount() == 2) {
+                        editTask(file);
+                    }
+                }
+            });
+            task.updateFile(file);
         }
 
         /**
@@ -1341,6 +1375,42 @@ public class MainFrameController implements Initializable {
          */
         public void setTask(TaskElement task) {
             this.task = task;
+        }
+
+        /**
+         * @return the listener
+         */
+        public ConfigurationChangeListener getListener() {
+            return listener;
+        }
+
+        /**
+         * @param listener the listener to set
+         */
+        public void setListener(ConfigurationChangeListener listener) {
+            this.listener = listener;
+        }
+    }
+
+    private class ConfigurationChangeListener implements ChangeListener<Boolean> {
+
+        private CfgFile file;
+
+        ConfigurationChangeListener(CfgFile file) {
+            this.file = file;
+        }
+
+        @Override
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+            if (null != oldValue && null != newValue) {
+                boolean modified = (newValue & !oldValue)
+                        | !((oldValue & !newValue));
+                setTaskModified(file, modified);
+            }
+        }
+
+        public void setFile(CfgFile file) {
+            this.file = file;
         }
     }
 

@@ -50,7 +50,7 @@ public class ALSVoxelelizationTest {
         cfg.setMaxCorner(new Point3d(5, 5, 5));
         cfg.setDimension(new Point3i(5, 5, 5));
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MONO_ECHO);
+        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
         
         // create new voxel analysis
         Voxelization voxelisation = new Voxelization(cfg, "[Voxelisation]",
@@ -127,7 +127,7 @@ public class ALSVoxelelizationTest {
         cfg.setDimension(new Point3i(5, 5, 5));
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
         cfg.addEchoWeight(new EqualEchoWeight(true));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
+        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
 
         // create new voxel analysis
         Voxelization voxelisation = new Voxelization(cfg, "[Voxelisation]",
@@ -260,7 +260,7 @@ public class ALSVoxelelizationTest {
         cfg.setDimension(new Point3i(5, 5, 5));
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
         cfg.addEchoWeight(new EqualEchoWeight(true));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
+        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
 
         // create new voxel analysis
         Voxelization voxelisation = new Voxelization(cfg, "[Voxelisation]",
@@ -367,7 +367,7 @@ public class ALSVoxelelizationTest {
         cfg.setDimension(new Point3i(5, 5, 5));
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
         cfg.addEchoWeight(new EqualEchoWeight(true));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
+        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
 
         // create new voxel analysis
         Voxelization voxelisation = new Voxelization(cfg, "[Voxelisation]",

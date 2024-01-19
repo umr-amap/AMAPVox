@@ -16,36 +16,33 @@ import java.util.List;
  */
 public class LaserSpecification {
 
-    public final static LaserSpecification LMS_Q560 = new LaserSpecification("LMS_Q560", 0.0003d, 0.0005d, false);
-    public final static LaserSpecification LMS_Q780 = new LaserSpecification("LMS_Q780", 0.005d, 0.00025d, false);
-    public final static LaserSpecification VZ_400 = new LaserSpecification("VZ_400/VZ_400i", new String[] {"VZ_400"}, 0.007d, 0.00035d, false);
-    public final static LaserSpecification LEICA_SCANSTATION_P30_40 = new LaserSpecification("LEICA_SCANSTATION_P30_40", 0.0035d, 0.00023d, true);
-    public final static LaserSpecification LEICA_SCANSTATION_C10 = new LaserSpecification("LEICA_SCANSTATION_C10", 0.004d, 0.0001d, true);
-    public final static LaserSpecification FARO_FOCUS_X330 = new LaserSpecification("FARO_FOCUS_X330", 0.0025d, 0.00019d, true);
-    public final static LaserSpecification MINIVUX1UAV = new LaserSpecification("miniVUX-1UAV", 0.0145, 0.00105d, false);
-    public final static LaserSpecification UNITARY_BEAM_SECTION_MONO_ECHO = new LaserSpecification("Unitary beam section & mono echo", 0.d, 0.d, true);
-    public final static LaserSpecification UNITARY_BEAM_SECTION_MULTI_ECHO = new LaserSpecification("Unitary beam section & multi echo", 0.d, 0.d, false);
-
+    public final static LaserSpecification LMS_Q560 = new LaserSpecification("LMS_Q560", 0.0003d, 0.0005d);
+    public final static LaserSpecification LMS_Q780 = new LaserSpecification("LMS_Q780", 0.005d, 0.00025d);
+    public final static LaserSpecification VZ_400 = new LaserSpecification("VZ_400/VZ_400i", new String[] {"VZ_400"}, 0.007d, 0.00035d);
+    public final static LaserSpecification LEICA_SCANSTATION_P30_40 = new LaserSpecification("LEICA_SCANSTATION_P30_40", 0.0035d, 0.00023d);
+    public final static LaserSpecification LEICA_SCANSTATION_C10 = new LaserSpecification("LEICA_SCANSTATION_C10", 0.004d, 0.0001d);
+    public final static LaserSpecification FARO_FOCUS_X330 = new LaserSpecification("FARO_FOCUS_X330", 0.0025d, 0.00019d);
+    public final static LaserSpecification MINIVUX1UAV = new LaserSpecification("miniVUX-1UAV", 0.0145, 0.00105d);
+    public final static LaserSpecification UNITARY_BEAM_SECTION = new LaserSpecification("Unitary beam section", 0.d, 0.d);
+    
     private final double beamDiameterAtExit;
     private final double beamDivergence;
     private final String name;
-    private final boolean monoEcho;
     private final String[] deprecatedNames;
 
-    public LaserSpecification(String name, String[] deprecatedNames, double beamDiameterAtExit, double beamDivergence, boolean monoEcho) {
+    public LaserSpecification(String name, String[] deprecatedNames, double beamDiameterAtExit, double beamDivergence) {
         this.beamDiameterAtExit = beamDiameterAtExit;
         this.beamDivergence = beamDivergence;
         this.name = name;
         this.deprecatedNames = deprecatedNames;
-        this.monoEcho = monoEcho;
     }
 
-    public LaserSpecification(String name, double beamDiameterAtExit, double beamDivergence, boolean monoEcho) {
-        this(name, null, beamDiameterAtExit, beamDivergence, monoEcho);
+    public LaserSpecification(String name, double beamDiameterAtExit, double beamDivergence) {
+        this(name, null, beamDiameterAtExit, beamDivergence);
     }
 
-    public LaserSpecification(double beamDiameterAtExit, double beamDivergence, boolean monoEcho) {
-        this("custom", null, beamDiameterAtExit, beamDivergence, monoEcho);
+    public LaserSpecification(double beamDiameterAtExit, double beamDivergence) {
+        this("custom", null, beamDiameterAtExit, beamDivergence);
     }
 
     public double getBeamDiameterAtExit() {
@@ -54,10 +51,6 @@ public class LaserSpecification {
 
     public double getBeamDivergence() {
         return beamDivergence;
-    }
-
-    public boolean isMonoEcho() {
-        return monoEcho;
     }
 
     public String getName() {
@@ -78,7 +71,6 @@ public class LaserSpecification {
         str.append("Laser ").append(name).append("\n");
         str.append("  beam diameter at exit (meter) ").append((float) beamDiameterAtExit).append("\n");
         str.append("  beam divergence (radian) ").append((float) beamDivergence).append("\n");
-        str.append("  mono-echo ").append(monoEcho);
         return str.toString();
     }
 
@@ -98,7 +90,6 @@ public class LaserSpecification {
         }
 
         return presets;
-
     }
 
 }

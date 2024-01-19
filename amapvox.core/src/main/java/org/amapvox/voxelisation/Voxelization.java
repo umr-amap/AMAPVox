@@ -13,7 +13,6 @@ import org.amapvox.commons.raytracing.geometry.LineElement;
 import org.amapvox.commons.raytracing.geometry.LineSegment;
 import org.amapvox.commons.raytracing.voxel.VoxelManager;
 import org.amapvox.commons.raytracing.voxel.VoxelManager.VoxelCrossingContext;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -618,28 +617,16 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
 
     private EchoProperties setEchoProperties(Shot shot) throws Exception {
 
-        if (laserSpec.isMonoEcho()) {
-            // mono echo laser
-            EchoProperties echoProperties = new EchoProperties(Math.min(1, shot.getEchoesNumber()));
-            if (echoProperties.nEcho > 0) {
-                echoProperties.retained[0] = retainEcho(shot.echoes[0]);
-                echoProperties.bfIntercepted[0] = 1.d;
+        EchoProperties echoProperties = new EchoProperties(shot.getEchoesNumber());
+        if (echoProperties.nEcho > 0) {
+            for (int k = 0; k < echoProperties.nEcho; k++) {
+                // echo filter
+                echoProperties.retained[k] = retainEcho(shot.echoes[k]);
+                // echo weight
+                echoProperties.bfIntercepted[k] = weightEcho(shot.echoes[k]);
             }
-            return echoProperties;
-
-        } else {
-            // multi echo laser
-            EchoProperties echoProperties = new EchoProperties(shot.getEchoesNumber());
-            if (echoProperties.nEcho > 0) {
-                for (int k = 0; k < echoProperties.nEcho; k++) {
-                    // echo filter
-                    echoProperties.retained[k] = retainEcho(shot.echoes[k]);
-                    // echo weight
-                    echoProperties.bfIntercepted[k] = weightEcho(shot.echoes[k]);
-                }
-            }
-            return echoProperties;
         }
+        return echoProperties;
     }
 
     public void init() throws Exception {

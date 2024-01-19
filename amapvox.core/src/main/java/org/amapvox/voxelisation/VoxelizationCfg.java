@@ -593,32 +593,6 @@ public class VoxelizationCfg extends Configuration {
             String laserSpecName = laserSpecElement.getAttributeValue("name");
             double beamDivergence = Double.valueOf(laserSpecElement.getAttributeValue("beam-divergence"));
             double beamDiameterAtExit = Double.valueOf(laserSpecElement.getAttributeValue("beam-diameter-at-exit"));
-            boolean monoEcho = true;
-            if (null != laserSpecElement.getAttribute("mono-echo")) {
-                // AMAPVox > 1.0.#
-                monoEcho = Boolean.valueOf(laserSpecElement.getAttributeValue("mono-echo"));
-            } else {
-                // AMAPVox 1.0.#, the mono-echo attribute did not exist yet
-                // check if the laser specification is among the presets
-                // and set the mono echo property accordingly
-                boolean monoEchoSet = false;
-                for (LaserSpecification laserSpec : LaserSpecification.getPresets()) {
-                    if (laserSpec.isValidName(laserSpecName)) {
-                        monoEcho = laserSpec.isMonoEcho();
-                        monoEchoSet = true;
-                        break;
-                    }
-                }
-                // laser specification not found amon presets, better not make
-                // any guess and throw error message
-                if (!monoEchoSet) {
-                    StringBuilder msg = new StringBuilder();
-                    msg.append("Could not find mono-echo attribute in the laser specification. ");
-                    msg.append("Edit manually the XML configuration file and add missing attribute <laser-specification mono-echo=\"true|false\"");
-                    LOGGER.error(msg.toString());
-                    throw new IOException("laser specification mono-echo attribute missing");
-                }
-            }
 
             // check with preset values
             for (LaserSpecification laserSpec : LaserSpecification.getPresets()) {
@@ -629,17 +603,14 @@ public class VoxelizationCfg extends Configuration {
                     if (beamDivergence != laserSpec.getBeamDivergence()) {
                         LOGGER.warn("Laser " + laserSpecName + " beam divergence " + beamDivergence + " differs from preset value " + laserSpec.getBeamDivergence());
                     }
-                    if (monoEcho != laserSpec.isMonoEcho()) {
-                        LOGGER.warn("Laser " + laserSpecName + " mono echo " + monoEcho + " differs from preset value " + laserSpec.isMonoEcho());
-                    }
                     break;
                 }
             }
 
-            setLaserSpecification(new LaserSpecification(laserSpecName, beamDiameterAtExit, beamDivergence, monoEcho));
+            setLaserSpecification(new LaserSpecification(laserSpecName, beamDiameterAtExit, beamDivergence));
         } else {
             // laser-specification element does not exist in XML configuration file
-            setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MONO_ECHO);
+            setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
             // inform user that a default value has been set
             LOGGER.warn("Could not find laser specification element in configuration file. Default specification:\n" + getLaserSpecification().toString());
         }
@@ -818,7 +789,6 @@ public class VoxelizationCfg extends Configuration {
         laserSpecElement.setAttribute("name", getLaserSpecification().getName());
         laserSpecElement.setAttribute("beam-diameter-at-exit", String.valueOf(getLaserSpecification().getBeamDiameterAtExit()));
         laserSpecElement.setAttribute("beam-divergence", String.valueOf(getLaserSpecification().getBeamDivergence()));
-        laserSpecElement.setAttribute("mono-echo", String.valueOf(getLaserSpecification().isMonoEcho()));
         processElement.addContent(laserSpecElement);
 
         // transformation
@@ -1398,7 +1368,6 @@ public class VoxelizationCfg extends Configuration {
         properties.put("laser.specification.name", getLaserSpecification().getName());
         properties.put("laser.specification.diameter", String.valueOf(getLaserSpecification().getBeamDiameterAtExit()));
         properties.put("laser.specification.divergence", String.valueOf(getLaserSpecification().getBeamDivergence()));
-        properties.put("laser.specification.mono", String.valueOf(getLaserSpecification().isMonoEcho()));
         properties.put("echo.weights.matrix", getRankEchoWeightMatrix().toString());
         properties.put("output.fraction.digits", String.valueOf(getDecimalFormat().getMaximumFractionDigits()));
         properties.put("leaf.area", String.valueOf(meanLeafArea));

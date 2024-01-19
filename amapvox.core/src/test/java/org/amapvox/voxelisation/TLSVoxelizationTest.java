@@ -50,7 +50,7 @@ public class TLSVoxelizationTest {
         cfg.setMaxCorner(new Point3d(5, 5, 5));
         cfg.setDimension(new Point3i(5, 5, 5));
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
+        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
 
         // create new voxel analysis
         Voxelization voxelisation = new Voxelization(cfg, "[Voxelisation]",
@@ -128,7 +128,7 @@ public class TLSVoxelizationTest {
         cfg.setDimension(new Point3i(5, 5, 5));
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
         cfg.addEchoWeight(new EqualEchoWeight(true));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
+        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
 
         // create new voxel analysis
         Voxelization voxelisation = new Voxelization(cfg, "[Voxelisation]",
@@ -281,7 +281,7 @@ public class TLSVoxelizationTest {
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
         cfg.setRankEchoWeightMatrix(overweight);
         cfg.addEchoWeight(new RankEchoWeight(true));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
+        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
 
         // create new voxel analysis
         Voxelization voxelisation = new Voxelization(cfg, "[Voxelisation]",
@@ -322,7 +322,7 @@ public class TLSVoxelizationTest {
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
         cfg.setRankEchoWeightMatrix(underweight);
         cfg.addEchoWeight(new RankEchoWeight(true));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
+        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
 
         // create new voxel analysis
         Voxelization voxelisation = new Voxelization(cfg, "[Voxelisation]",
@@ -355,68 +355,6 @@ public class TLSVoxelizationTest {
     }
 
     @Test
-    public void testShotMonoEcho() throws Exception {
-
-        VoxelizationCfg cfg = new VoxelizationCfg();
-        cfg.setVoxelsFormat(VoxelizationCfg.VoxelsFormat.VOXEL);
-        cfg.setOutputFile(java.io.File.createTempFile("testTLSShotMonoEcho", ".vox"));
-        cfg.setMinCorner(new Point3d(0, 0, 0));
-        cfg.setMaxCorner(new Point3d(5, 5, 5));
-        cfg.setDimension(new Point3i(5, 5, 5));
-        cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
-        cfg.addEchoWeight(new EqualEchoWeight(true));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MONO_ECHO);
-
-        // create new voxel analysis
-        Voxelization voxelisation = new Voxelization(cfg, "[Voxelisation]",
-                null, // dtm
-                new VoxelSpace(cfg.getDimension(), cfg.getMinCorner(), cfg.getVoxelSize(), null),
-                new PathLengthOutput(null, cfg, null, false));
-        voxelisation.init();
-
-        // one shot goinp up z-axis without echo
-        voxelisation.processOneShot(new Shot(0, new Point3d(0.5, 0.5, 0.5), new Vector3d(0, 0, 1), null));
-        // one shot goinp up z-axis with 1 echo
-        voxelisation.processOneShot(new Shot(0, new Point3d(0.5, 1.5, 0.5), new Vector3d(0, 0, 1), new double[]{2.d}));
-        // one shot goinp up z-axis with 2 echoes
-        // (non sense but voxelisation algorithm should stop propagation after first echo anyway)
-        voxelisation.processOneShot(new Shot(0, new Point3d(0.5, 2.5, 0.5), new Vector3d(0, 0, 1), new double[]{1.d, 3.d}));
-
-        // write voxel file in temporary directory
-        if (WRITE_OUTPUT) {
-            TxtVoxelFileOutput output = new TxtVoxelFileOutput(null, cfg, voxelisation.getVoxelSpace(), true);
-            output.write();
-        }
-
-        // assertions
-        Voxel voxel;
-        // first shot
-        for (int k = 1; k < 5; k++) {
-            voxel = voxelisation.getVoxel(0, 0, k);
-            assert (voxel.nhit == 0);
-            assert (voxel.enteringBeamSection == 1);
-            assert (voxel.interceptedBeamSection == 0);
-            assert (voxel.npulse == 1);
-        }
-        // second shot
-        voxel = voxelisation.getVoxel(0, 1, 2);
-        assert (voxel.nhit == 1);
-        assert (voxel.interceptedBeamSection == 1);
-        voxel = voxelisation.getVoxel(0, 1, 3);
-        assert (voxel.nhit == 0);
-        assert (voxel.npulse == 0);
-        assert (voxel.enteringBeamSection == 0);
-        // third shot
-        voxel = voxelisation.getVoxel(0, 2, 1);
-        assert (voxel.nhit == 1);
-        assert (Util.equal(voxel.interceptedBeamSection, 1));
-        voxel = voxelisation.getVoxel(0, 2, 2);
-        assert (voxel.nhit == 0);
-        assert (voxel.npulse == 0);
-        assert (voxel.enteringBeamSection == 0);
-    }
-
-    @Test
     public void testShotFilteredEchoes() throws Exception {
 
         VoxelizationCfg cfg = new VoxelizationCfg();
@@ -427,7 +365,7 @@ public class TLSVoxelizationTest {
         cfg.setDimension(new Point3i(5, 5, 5));
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
         cfg.addEchoWeight(new EqualEchoWeight(true));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
+        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
 
         // list of shots
         List<Shot> shots = new ArrayList<>();
@@ -581,7 +519,7 @@ public class TLSVoxelizationTest {
         cfg.setVoxelSize(new Point3d(1.d, 1.d, 1.d));
         cfg.setRankEchoWeightMatrix(underweight);
         cfg.addEchoWeight(new RankEchoWeight(true));
-        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION_MULTI_ECHO);
+        cfg.setLaserSpecification(LaserSpecification.UNITARY_BEAM_SECTION);
 
         // list of shots
         List<Shot> shots = new ArrayList<>();

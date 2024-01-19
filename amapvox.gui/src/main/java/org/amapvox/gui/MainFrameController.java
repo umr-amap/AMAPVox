@@ -191,6 +191,7 @@ public class MainFrameController implements Initializable {
                         CfgFile f = findFile(newValue);
                         saveToolbarButton.disableProperty().bind(
                                 tabPaneEditor.getSelectionModel().selectedItemProperty().isNull()
+                                        .or(f.savedProperty().not())
                                         .or(f.savedProperty().and(getCfg(f).getController().changedProperty().not())));
                     }
                 }
@@ -589,7 +590,13 @@ public class MainFrameController implements Initializable {
     private void onActionMenuSaveTask(ActionEvent event) {
         CfgFile f = getSelectedTab();
         if (null != f) {
-            saveTask(f);
+            if (!f.savedProperty().getValue()) {
+                // not yet saved to file, switch to save as function
+                saveAsTask(f);
+                f.setSaved();
+            } else {
+                saveTask(f);
+            }
         }
     }
 
@@ -622,7 +629,7 @@ public class MainFrameController implements Initializable {
                 // if target is alread opened, close it first
                 if (configurations.containsKey(target)) {
                     getCfg(target).getController().unload();
-                    removeTask(target);
+                    removeTask(target, false);
                 }
                 // swap source and target
                 CfgUI sourceUI = getCfg(source);
@@ -630,12 +637,14 @@ public class MainFrameController implements Initializable {
                 configurations.remove(source);
                 configurations.put(target, sourceUI);
                 // save target
-                saveTask(target);
+                saveTask(target, true);
                 LOGGER.info(source.getName() + " saved as " + target.getName() + ".");
-                // re open source
-                int pos = listViewTaskList.getItems().indexOf(sourceUI.getTask());
-                openTask(source, pos, false, true);
-                listViewTaskList.getSelectionModel().clearAndSelect(pos + 1);
+                if (source.savedProperty().get()) {
+                    // re open source unless it was a temp file
+                    int pos = listViewTaskList.getItems().indexOf(sourceUI.getTask());
+                    openTask(source, pos, false, true);
+                    listViewTaskList.getSelectionModel().clearAndSelect(pos + 1);
+                }
                 return true;
             } catch (Exception ex) {
                 Util.showErrorDialog(stage,
@@ -856,7 +865,7 @@ public class MainFrameController implements Initializable {
             public void onStarted() {
                 CfgFile file = task.getLinkedFile();
                 if (getCfg(file).getController().changedProperty().get()) {
-                    saveTask(file, true);
+                    saveTask(file);
                 }
             }
 
@@ -1034,48 +1043,13 @@ public class MainFrameController implements Initializable {
     private boolean saveTask(CfgFile file, boolean quiet) {
 
         try {
-            if (!quiet && !file.savedProperty().getValue()) {
-
-                // file save dialog
-                File selectedFile = fileChooserSaveConfiguration.showSaveDialog(stage);
-
-                if (selectedFile != null) {
-                    // add xml extension
-                    if (!selectedFile.getName().endsWith(".xml")) {
-                        selectedFile = new File(selectedFile.getAbsolutePath() + ".xml");
-                    }
-                    CfgFile target = new CfgFile(selectedFile);
-                    // special case selectedFile is already opened, close it
-                    if (configurations.containsKey(target)) {
-                        getCfg(target).getController().unload();
-                        tabPaneEditor.getTabs().remove(getCfg(target).getTab());
-                    }
-                    // write empty configuration file
-                    Configuration cfg = Configuration.newInstance(getCfg(file).getClassName());
-                    cfg.write(selectedFile, true);
-                    try {
-                        // try to save configuration file in case user already filled up parameters
-                        getCfg(file).getController().save(selectedFile);
-                    } catch (Exception ex) {
-                    }
-                    CfgUI cfgUI = getCfg(file);
-                    configurations.remove(file);
-                    file.setFile(selectedFile);
-                    file.setName(selectedFile.getName());
-                    file.setSaved();
-                    configurations.put(file, cfgUI);
-                    setTaskModified(file, false);
-                    LOGGER.info(file.getName() + " saved as " + selectedFile.getName() + ".");
-                    return true;
-                }
-            } else {
-                getCfg(file).getController().save(file.getFile(), !quiet);
-                getCfg(file).getTask().setButtonDisable(false);
-                if (!quiet) {
-                    LOGGER.info(file.getName() + " saved.");
-                }
-                return true;
+            getCfg(file).getController().save(file.getFile());
+            setTaskModified(file, false);
+            getCfg(file).getTask().setButtonDisable(false);
+            if (!quiet) {
+                LOGGER.info(file.getName() + " saved.");
             }
+            return true;
         } catch (Exception ex) {
             Util.showErrorDialog(stage,
                     new IOException("Cannot write configuration file.", ex), getCfg(file).getClassName());
@@ -1180,17 +1154,19 @@ public class MainFrameController implements Initializable {
         }
         // remove from list
         if (!event.isConsumed()) {
-            removeTask(file);
+            removeTask(file, false);
         }
     }
 
-    private void removeTask(CfgFile file) {
+    private void removeTask(CfgFile file, boolean quiet) {
 
         Tab tab = getCfg(file).getTab();
         tabPaneEditor.getTabs().remove(tab);
         listViewTaskList.getItems().remove(getCfg(file).getTask());
         configurations.remove(file);
-        LOGGER.info(file.getName() + " closed.");
+        if (!quiet) {
+            LOGGER.info(file.getName() + " closed.");
+        }
     }
 
     private void addFileToOutput(File cfg, File output) {

@@ -126,10 +126,9 @@ public class MainFrameController implements Initializable {
 
     private Map<CfgFile, CfgUI> configurations;
 
-    private File lastFCAddTask;
+    final private String lastOpenedFile = "last.opened.file";
     private FileChooser fileChooserOpenConfiguration;
     private FileChooser fileChooserSaveConfiguration;
-    private FileChooser fileChooserAddTask;
 
     final private AtomicInteger fileIndex = new AtomicInteger(0);
 
@@ -316,12 +315,6 @@ public class MainFrameController implements Initializable {
                 new ExtensionFilter("XML files (*.xml)", "*.xml"),
                 new ExtensionFilter("All Files", "*.*"));
 
-        fileChooserAddTask = new FileChooser();
-        fileChooserAddTask.setTitle("Choose parameter file");
-        fileChooserAddTask.getExtensionFilters().addAll(
-                new ExtensionFilter("All Files", "*.*"),
-                new ExtensionFilter("XML Files (*.xml)", "*.xml"));
-
         preferencesFrameController = PreferencesFrameController.newInstance();
         preferencesFrameController.setPreferences(prefs);
 
@@ -385,8 +378,10 @@ public class MainFrameController implements Initializable {
             newMenu.getItems().sort(menuItemComparator);
         }
     }
-    
+
     void addRecentFile(CfgFile file) {
+        // ugly hack to force reorder the hashmap
+        recentFiles.remove(file.getFile().getAbsolutePath());
         recentFiles.put(file.getFile().getAbsolutePath(), getCfg(file).getIcon());
         int i = 0;
         for (String f : recentFiles.keySet()) {
@@ -623,10 +618,10 @@ public class MainFrameController implements Initializable {
         item.setText(cfg.getLongName()); // trick to be able to sort menuItem
         item.setOnAction(event -> {
             LOGGER.debug("[" + cfg.getLongName() + "] New configuration.");
-            // update file chooser to last opened configuration file
-            if (null != lastFCAddTask) {
-                fileChooserSaveConfiguration.setInitialDirectory(lastFCAddTask.getParentFile());
-                fileChooserSaveConfiguration.setInitialFileName(lastFCAddTask.getName());
+            // set file chooser to last opened configuration file
+            if (!prefs.get(lastOpenedFile, "").isBlank()) {
+                fileChooserSaveConfiguration.setInitialDirectory(new File(prefs.get(lastOpenedFile, "")).getParentFile());
+                fileChooserSaveConfiguration.setInitialFileName(new File(prefs.get(lastOpenedFile, "")).getName());
             }
             try {
                 CfgFile cfgFile = CfgFile.create(fileIndex.incrementAndGet());
@@ -683,6 +678,7 @@ public class MainFrameController implements Initializable {
             if (!selectedFile.getName().endsWith(".xml")) {
                 selectedFile = new File(selectedFile.getAbsolutePath() + ".xml");
             }
+            prefs.put("last.opened.file", selectedFile.getAbsolutePath());
             // save as itself == save
             if (selectedFile.equals(source.getFile())) {
                 return saveTask(source);
@@ -1141,14 +1137,14 @@ public class MainFrameController implements Initializable {
 
     private void addTask(boolean edit) {
 
-        if (lastFCAddTask != null) {
-            fileChooserAddTask.setInitialDirectory(lastFCAddTask.getParentFile());
+        if (lastOpenedFile != null) {
+            fileChooserOpenConfiguration.setInitialDirectory(new File(prefs.get(lastOpenedFile, "")).getParentFile());
         }
 
-        List<File> selectedFiles = fileChooserAddTask.showOpenMultipleDialog(stage);
+        List<File> selectedFiles = fileChooserOpenConfiguration.showOpenMultipleDialog(stage);
 
         if (selectedFiles != null) {
-            lastFCAddTask = selectedFiles.get(0).getAbsoluteFile();
+            prefs.put(lastOpenedFile, selectedFiles.get(0).getAbsolutePath());
             selectedFiles.forEach(f -> openTask(new CfgFile(f), edit));
         }
     }

@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -33,6 +34,7 @@ import org.amapvox.gui.Validators;
 import org.amapvox.gui.viewer3d.Viewer3dConfiguration;
 import org.apache.log4j.Logger;
 import org.controlsfx.validation.ValidationSupport;
+import org.controlsfx.validation.Validator;
 
 /**
  * FXML Controller class
@@ -147,6 +149,10 @@ public class Viewer3dFrameController extends ConfigurationController {
             buttonSetTransformationMatrix.setDisable(!newValue);
             buttonResetTransformationMatrix.setDisable(!newValue);
             transformationMatrixController.setDisable(!newValue);
+        });
+        
+        checkboxFitRasterToVoxelSpace.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+            textfieldRasterFittingMargin.setDisable(!newValue);
         });
     }
 
@@ -313,7 +319,7 @@ public class Viewer3dFrameController extends ConfigurationController {
         identity.setIdentity();
         checkboxUseTransformationMatrix.setSelected(!rasterTransfMatrix.equals(identity));
 
-        textfieldRasterFittingMargin.setText(String.valueOf(cfg.getDtmMargin()));
+        textfieldRasterFittingMargin.setText(String.valueOf(Math.max(0, cfg.getDtmMargin())));
         checkboxFitRasterToVoxelSpace.setSelected(cfg.getDtmMargin() >= 0);
     }
 
@@ -327,7 +333,17 @@ public class Viewer3dFrameController extends ConfigurationController {
         } else {
             viewer3dValidationSupport.registerValidator(textfieldRasterFilePath, false, Validators.fileExistValidator("DTM file"));
         }
-        viewer3dValidationSupport.registerValidator(textfieldRasterFittingMargin, true, Validators.fieldIntegerValidator);
+        viewer3dValidationSupport.registerValidator(textfieldRasterFittingMargin, true, Validator.createPredicateValidator(positiveInteger(), "Positive integer"));
+    }
+    
+    private Predicate<String> positiveInteger() {
+        return (String p) -> {
+            try {
+                return Integer.parseInt(p) >= 0;
+            } catch (NumberFormatException ex) {
+            }
+            return false;
+        };
     }
 
     @Override

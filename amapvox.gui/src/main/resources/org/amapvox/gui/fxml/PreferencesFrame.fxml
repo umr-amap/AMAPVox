@@ -93,6 +93,7 @@
                 </TitledPane>
                 <HBox alignment="CENTER_RIGHT" spacing="10.0">
                     <children>
+                        <Button fx:id="btnClear" mnemonicParsing="false" onAction="#onActionButtonClear" text="Clear preferences" />
                         <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#onActionButtonCancel" text="Cancel" /> 
                         <Button fx:id="btnOK" mnemonicParsing="false" onAction="#onActionButtonOK" text="OK" />
                     </children>

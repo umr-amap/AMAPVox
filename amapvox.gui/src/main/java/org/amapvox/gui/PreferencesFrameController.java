@@ -11,7 +11,10 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -19,6 +22,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -42,6 +46,8 @@ public class PreferencesFrameController implements Initializable {
     private Parent root;
 
     private int ncpu = 1;
+    
+    private Preferences prefs;
 
     // FXML imports
     @FXML
@@ -52,8 +58,10 @@ public class PreferencesFrameController implements Initializable {
     private VBox vboxInactiveTools;
     @FXML
     private VBox vboxDeprecatedTools;
+    @FXML
+    private Button btnClear;
 
-    static PreferencesFrameController newInstance() {
+    static PreferencesFrameController newInstance(Preferences prefs) {
 
         PreferencesFrameController controller = null;
 
@@ -63,6 +71,7 @@ public class PreferencesFrameController implements Initializable {
             Parent root = loader.load();
             controller = loader.getController();
             controller.root = root;
+            controller.prefs = prefs;
 
         } catch (IOException ex) {
             Logger.getLogger(PreferencesFrameController.class.getName()).log(Level.SEVERE, "Cannot load PreferencesFrame.fxml", ex);
@@ -86,7 +95,7 @@ public class PreferencesFrameController implements Initializable {
         sliderNCPU.setValue(availableCores);
         ncpu = availableCores;
     }
-
+    
     void addTasks(TaskUI task, MainFrameController mainController) {
 
         try {
@@ -118,6 +127,11 @@ public class PreferencesFrameController implements Initializable {
             Logger.getLogger(PreferencesFrameController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+    
+    @FXML
+    private void onActionButtonClear(ActionEvent event) throws BackingStoreException {
+        prefs.clear();
     }
 
     @FXML

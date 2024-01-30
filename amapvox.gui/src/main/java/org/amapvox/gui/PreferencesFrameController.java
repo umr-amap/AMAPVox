@@ -7,14 +7,11 @@ package org.amapvox.gui;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import java.util.stream.Collectors;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -46,12 +43,14 @@ public class PreferencesFrameController implements Initializable {
     private Parent root;
 
     private int ncpu = 1;
-    
+
     private Preferences prefs;
 
     // FXML imports
     @FXML
     private Slider sliderNCPU;
+    @FXML
+    Label labelNCPU;
     @FXML
     private VBox vboxActiveTools;
     @FXML
@@ -61,7 +60,7 @@ public class PreferencesFrameController implements Initializable {
     @FXML
     private Button btnClear;
 
-    static PreferencesFrameController newInstance(Preferences prefs) {
+    static PreferencesFrameController newInstance() {
 
         PreferencesFrameController controller = null;
 
@@ -71,7 +70,6 @@ public class PreferencesFrameController implements Initializable {
             Parent root = loader.load();
             controller = loader.getController();
             controller.root = root;
-            controller.prefs = prefs;
 
         } catch (IOException ex) {
             Logger.getLogger(PreferencesFrameController.class.getName()).log(Level.SEVERE, "Cannot load PreferencesFrame.fxml", ex);
@@ -94,8 +92,25 @@ public class PreferencesFrameController implements Initializable {
         sliderNCPU.setMax(availableCores);
         sliderNCPU.setValue(availableCores);
         ncpu = availableCores;
+        labelNCPU.textProperty().bind(sliderNCPU.valueProperty().asString("%02.0f"));
     }
-    
+
+    public void setPreferences(Preferences prefs) {
+        this.prefs = prefs;
+
+        prefs.addPreferenceChangeListener(event -> {
+            try {
+                btnClear.setDisable(prefs.keys().length <= 0);
+            } catch (BackingStoreException ex) {
+                // just ignore
+            }
+        });
+
+        // apply prefs
+        ncpu = prefs.getInt("ncpu", ncpu);
+        sliderNCPU.setValue(ncpu);
+    }
+
     void addTasks(TaskUI task, MainFrameController mainController) {
 
         try {
@@ -121,14 +136,14 @@ public class PreferencesFrameController implements Initializable {
                 case INACTIVE ->
                     vboxInactiveTools.getChildren().add(checkbox);
                 case MOVED ->
-                     vboxDeprecatedTools.getChildren().add(checkbox);   
+                    vboxDeprecatedTools.getChildren().add(checkbox);
             }
         } catch (Exception ex) {
             Logger.getLogger(PreferencesFrameController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
-    
+
     @FXML
     private void onActionButtonClear(ActionEvent event) throws BackingStoreException {
         prefs.clear();
@@ -145,6 +160,7 @@ public class PreferencesFrameController implements Initializable {
     private void onActionButtonOK(ActionEvent event) {
 
         ncpu = (int) sliderNCPU.getValue();
+        prefs.putInt("ncpu", ncpu);
         stage.close();
     }
 

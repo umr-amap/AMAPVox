@@ -20,8 +20,9 @@
                                     <children>
                                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                                             <children>
-                                                <Label text="Number of CPU" />
-                                                <Slider fx:id="sliderNCPU" blockIncrement="1.0" majorTickUnit="1.0" max="4.0" min="1.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="4.0">
+                                                <Label text="Number of CPU: " />
+                                                <Label fx:id="labelNCPU" />
+                                                <Slider fx:id="sliderNCPU" blockIncrement="1" majorTickUnit="1" max="4" min="1" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="4">
                                                     <tooltip>
                                                         <Tooltip text="Select number of CPU(s) allocated to AMAPVox" />
                                                     </tooltip>

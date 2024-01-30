@@ -321,7 +321,8 @@ public class MainFrameController implements Initializable {
                 new ExtensionFilter("All Files", "*.*"),
                 new ExtensionFilter("XML Files (*.xml)", "*.xml"));
 
-        preferencesFrameController = PreferencesFrameController.newInstance(prefs);
+        preferencesFrameController = PreferencesFrameController.newInstance();
+        preferencesFrameController.setPreferences(prefs);
 
         /**
          * DRAG GESTURES

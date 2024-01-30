@@ -71,9 +71,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
@@ -136,7 +136,7 @@ public class MainFrameController implements Initializable {
     private ResourceBundle rb;
 
     private Preferences prefs;
-    private LinkedHashSet<String> recentFiles;
+    private HashMap<String, String> recentFiles;
     private final int maxRecentFiles = 10;
 
     @FXML
@@ -239,22 +239,15 @@ public class MainFrameController implements Initializable {
 
         // initial set of recent files from preferences
         prefs = Preferences.userRoot().node(this.getClass().getName());
-        recentFiles = new LinkedHashSet();
+        recentFiles = new FifoHashMap<>(maxRecentFiles);
         IntStream.range(0, maxRecentFiles).forEach(i -> {
             String f = prefs.get("recent.file." + i, "");
+            String icon = prefs.get("recent.file.icon." + i, "");
             if (!f.isBlank()) {
-                recentFiles.add(f);
+                recentFiles.put(f, icon);
             }
         });
-        if (!recentFiles.isEmpty()) {
-            recentFiles.forEach(f -> {
-                MenuItem recentMenuItem = new MenuItem(f);
-                recentMenuItem.setOnAction(event -> {
-                    openTask(new CfgFile(new File(f)), false);
-                });
-                recentMenu.getItems().add(recentMenuItem);
-            });
-        }
+        updateRecentMenu();
         recentMenu.disableProperty().bind(Bindings.isEmpty(recentMenu.getItems()));
 
         listViewTaskList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -362,7 +355,7 @@ public class MainFrameController implements Initializable {
         newToolbarButton.getStyleClass().add("button");
         newToolbarButton.disableProperty().bind(Bindings.isEmpty(newToolbarButton.getItems()));
         newMenu.disableProperty().bind(Bindings.isEmpty(newMenu.getItems()));
-        
+
         editMenuItem.disableProperty().bind(editToolbarButton.disabledProperty());
         closeMenuItem.disableProperty().bind(closeToolbarButton.disabledProperty());
         saveMenuItem.disableProperty().bind(saveToolbarButton.disabledProperty());
@@ -392,23 +385,29 @@ public class MainFrameController implements Initializable {
             newMenu.getItems().sort(menuItemComparator);
         }
     }
-
-    void updateRecentMenu(CfgFile f) {
-
-        recentFiles.addFirst(f.getFile().getAbsolutePath());
-        recentMenu.getItems().clear();
+    
+    void addRecentFile(CfgFile file) {
+        recentFiles.put(file.getFile().getAbsolutePath(), getCfg(file).getIcon());
         int i = 0;
-        for (String rf : recentFiles) {
-            if (i >= maxRecentFiles) {
-                break;
-            }
-            MenuItem recentMenuItem = new MenuItem(rf);
-            recentMenuItem.setOnAction(event -> {
-                openTask(new CfgFile(new File(rf)), false);
-            });
-            recentMenu.getItems().add(recentMenuItem);
-            prefs.put("recent.file." + i, rf);
+        for (String f : recentFiles.keySet()) {
+            prefs.put("recent.file." + i, f);
+            prefs.put("recent.file.icon." + i, recentFiles.get(f));
             i++;
+        }
+    }
+
+    void updateRecentMenu() {
+
+        recentMenu.getItems().clear();
+        for (String file : recentFiles.keySet()) {
+            ImageView icon = new ImageView(new Image(MainFrameController.class.getResource(recentFiles.get(file)).toExternalForm()));
+            icon.setFitHeight(24);
+            icon.setFitWidth(24);
+            MenuItem recentMenuItem = new MenuItem(file, new Label("", icon));
+            recentMenuItem.setOnAction(event -> {
+                openTask(new CfgFile(new File(file)), false);
+            });
+            recentMenu.getItems().addFirst(recentMenuItem);
         }
     }
 
@@ -1025,8 +1024,8 @@ public class MainFrameController implements Initializable {
         if (!getCfg(file).getTask().isDisabled()) {
             listViewTaskList.getSelectionModel().select(getCfg(file).getTask());
         }
-        updateRecentMenu(file);
-
+        addRecentFile(file);
+        updateRecentMenu();
     }
 
     private void setTaskModified(CfgFile file, boolean modified) {
@@ -1511,4 +1510,18 @@ public class MainFrameController implements Initializable {
             return status;
         }
     }
+
+    class FifoHashMap<K, V> extends LinkedHashMap<K, V> {
+
+        private final int n;
+
+        FifoHashMap(int capacity) {
+            n = capacity;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Entry<K, V> entry) {
+            return size() > n;
+        }
+    };
 }

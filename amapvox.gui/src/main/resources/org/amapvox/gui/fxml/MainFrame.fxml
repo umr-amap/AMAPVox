@@ -21,21 +21,22 @@
                         <Menu mnemonicParsing="false" text="File">
                             <items>
                                 <Menu fx:id="newMenu" mnemonicParsing="false" text="New" />
+                                <SeparatorMenuItem />
                                 <MenuItem mnemonicParsing="false" onAction="#onActionMenuAddTask" text="Open (Ctrl+O)">
                                     <accelerator>
                                         <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                                     </accelerator>
                                 </MenuItem>
                                 <Menu fx:id="recentMenu" mnemonicParsing="false" text="Recent Files" />
-                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuEditTask" text="Edit" />
-                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuRemoveTask" text="Close" />
+                                <MenuItem fx:id="editMenuItem" mnemonicParsing="false" onAction="#onActionMenuEditTask" text="Edit" />
+                                <MenuItem fx:id="closeMenuItem" mnemonicParsing="false" onAction="#onActionMenuRemoveTask" text="Close" />
                                 <SeparatorMenuItem />
-                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuSaveTask" text="Save (Ctrl+S)">
+                                <MenuItem fx:id="saveMenuItem" mnemonicParsing="false" onAction="#onActionMenuSaveTask" text="Save (Ctrl+S)">
                                     <accelerator>
                                         <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                                     </accelerator>
                                 </MenuItem>
-                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuSaveAsTask" text="Save As..." />
+                                <MenuItem fx:id="saveAsMenuItem" mnemonicParsing="false" onAction="#onActionMenuSaveAsTask" text="Save As..." />
                                 <SeparatorMenuItem />
                                 <MenuItem mnemonicParsing="false" onAction="#onActionMenuExit" text="Exit (Ctrl+Q)">
                                     <accelerator>

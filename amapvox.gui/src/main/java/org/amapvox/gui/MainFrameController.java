@@ -144,6 +144,14 @@ public class MainFrameController implements Initializable {
     @FXML
     private Menu recentMenu;
     @FXML
+    private MenuItem editMenuItem;
+    @FXML
+    private MenuItem closeMenuItem;
+    @FXML
+    private MenuItem saveMenuItem;
+    @FXML
+    private MenuItem saveAsMenuItem;
+    @FXML
     private MenuButton newToolbarButton;
     @FXML
     private Button editToolbarButton;
@@ -347,13 +355,18 @@ public class MainFrameController implements Initializable {
             return listViewTaskList.getSelectionModel().getSelectedItems().stream()
                     .allMatch(taskElement -> taskElement.isDisabled());
         }, listViewTaskList.getSelectionModel().getSelectedItems());
-        editToolbarButton.disableProperty().bind(binding2);
-        runToolbarButton.disableProperty().bind(binding2);
+        editToolbarButton.disableProperty().bind(binding1.or(binding2));
+        runToolbarButton.disableProperty().bind(binding1.or(binding2));
 
         newToolbarButton.getStyleClass().remove("menu-button");
         newToolbarButton.getStyleClass().add("button");
         newToolbarButton.disableProperty().bind(Bindings.isEmpty(newToolbarButton.getItems()));
         newMenu.disableProperty().bind(Bindings.isEmpty(newMenu.getItems()));
+        
+        editMenuItem.disableProperty().bind(editToolbarButton.disabledProperty());
+        closeMenuItem.disableProperty().bind(closeToolbarButton.disabledProperty());
+        saveMenuItem.disableProperty().bind(saveToolbarButton.disabledProperty());
+        saveAsMenuItem.disableProperty().bind(saveAsToolbarButton.disabledProperty());
 
         clearOutputButton.disableProperty().bind(treeViewOutput.getRoot().leafProperty());
 

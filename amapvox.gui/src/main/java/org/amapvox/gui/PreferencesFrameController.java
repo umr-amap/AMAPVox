@@ -120,11 +120,12 @@ public class PreferencesFrameController implements Initializable {
             icon.setFitHeight(24);
             icon.setFitWidth(24);
             checkbox.setGraphic(icon);
-            checkbox.setSelected(task.getStatus().equals(RepoStatus.ACTIVE));
+            checkbox.setSelected(prefs.getBoolean(task.getClassName(), task.getStatus().equals(RepoStatus.ACTIVE)));
             checkbox.setDisable(task.getStatus().equals(RepoStatus.MOVED));
             checkbox.selectedProperty().addListener(
                     (ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) -> {
                         mainController.updateNewMenuItem(task);
+                        prefs.putBoolean(task.getClassName(), new_val);
                     });
             Tooltip tooltip = new Tooltip();
             tooltip.setText(cfg.getDescription());

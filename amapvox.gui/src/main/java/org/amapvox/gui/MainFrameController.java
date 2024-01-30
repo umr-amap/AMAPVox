@@ -404,7 +404,8 @@ public class MainFrameController implements Initializable {
         TaskUI task = new TaskUI(clazz, fxml, icon, status);
         uiTasks.add(task);
         newMenuItemMap.put(task.getClassName(), newMenuItem(task));
-        if (status.equals(RepoStatus.ACTIVE)) {
+        boolean enabled = prefs.getBoolean(task.getClassName(), status.equals(RepoStatus.ACTIVE));
+        if (enabled) {
             updateNewMenuItem(task);
         }
         preferencesFrameController.addTasks(task, this);

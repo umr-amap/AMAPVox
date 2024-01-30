@@ -26,6 +26,7 @@
                                         <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                                     </accelerator>
                                 </MenuItem>
+                                <Menu fx:id="recentMenu" mnemonicParsing="false" text="Recent Files" />
                                 <MenuItem mnemonicParsing="false" onAction="#onActionMenuEditTask" text="Edit" />
                                 <MenuItem mnemonicParsing="false" onAction="#onActionMenuRemoveTask" text="Close" />
                                 <SeparatorMenuItem />

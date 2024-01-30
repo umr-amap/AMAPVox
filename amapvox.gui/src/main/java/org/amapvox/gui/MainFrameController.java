@@ -71,11 +71,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
@@ -132,8 +135,14 @@ public class MainFrameController implements Initializable {
 
     private ResourceBundle rb;
 
+    private Preferences prefs;
+    private LinkedHashSet<String> recentFiles;
+    private final int maxRecentFiles = 10;
+
     @FXML
     private Menu newMenu;
+    @FXML
+    private Menu recentMenu;
     @FXML
     private MenuButton newToolbarButton;
     @FXML
@@ -219,6 +228,26 @@ public class MainFrameController implements Initializable {
                 -> {
             splitPaneVoxelization.setDividerPositions(0.35f);
         });
+
+        // initial set of recent files from preferences
+        prefs = Preferences.userRoot().node(this.getClass().getName());
+        recentFiles = new LinkedHashSet();
+        IntStream.range(0, maxRecentFiles).forEach(i -> {
+            String f = prefs.get("recent.file." + i, "");
+            if (!f.isBlank()) {
+                recentFiles.add(f);
+            }
+        });
+        if (!recentFiles.isEmpty()) {
+            recentFiles.forEach(f -> {
+                MenuItem recentMenuItem = new MenuItem(f);
+                recentMenuItem.setOnAction(event -> {
+                    openTask(new CfgFile(new File(f)), false);
+                });
+                recentMenu.getItems().add(recentMenuItem);
+            });
+        }
+        recentMenu.disableProperty().bind(Bindings.isEmpty(recentMenu.getItems()));
 
         listViewTaskList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         Util.linkSelectorToList(selectorTaskList, listViewTaskList);
@@ -347,6 +376,25 @@ public class MainFrameController implements Initializable {
             newToolbarButton.getItems().sort(menuItemComparator);
             newMenu.getItems().add(menuItem);
             newMenu.getItems().sort(menuItemComparator);
+        }
+    }
+
+    void updateRecentMenu(CfgFile f) {
+
+        recentFiles.addFirst(f.getFile().getAbsolutePath());
+        recentMenu.getItems().clear();
+        int i = 0;
+        for (String rf : recentFiles) {
+            if (i >= maxRecentFiles) {
+                break;
+            }
+            MenuItem recentMenuItem = new MenuItem(rf);
+            recentMenuItem.setOnAction(event -> {
+                openTask(new CfgFile(new File(rf)), false);
+            });
+            recentMenu.getItems().add(recentMenuItem);
+            prefs.put("recent.file." + i, rf);
+            i++;
         }
     }
 
@@ -962,6 +1010,7 @@ public class MainFrameController implements Initializable {
         if (!getCfg(file).getTask().isDisabled()) {
             listViewTaskList.getSelectionModel().select(getCfg(file).getTask());
         }
+        updateRecentMenu(file);
 
     }
 

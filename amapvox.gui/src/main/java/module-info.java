@@ -3,6 +3,7 @@ module amapvox.gui {
     // java modules
     requires java.datatransfer;
     requires java.logging;
+    requires java.prefs;
     requires transitive java.desktop;
     
     // javafx modules

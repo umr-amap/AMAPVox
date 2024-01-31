@@ -14,7 +14,6 @@ import org.amapvox.voxelfile.VoxelFileHeader;
 import org.amapvox.voxelfile.VoxelFileReader;
 import org.amapvox.gui.configuration.ConfigurationController;
 import org.amapvox.gui.logging.TextAreaAppender;
-import org.amapvox.gui.task.AVoxService;
 import org.amapvox.gui.task.TaskAdapter;
 import org.amapvox.gui.task.TaskElementExecutor;
 import java.io.File;
@@ -316,6 +315,9 @@ public class MainFrameController implements Initializable {
                 new ExtensionFilter("All Files", "*.*"));
 
         preferencesFrameController = PreferencesFrameController.newInstance();
+        if (prefs.getInt("ncpu", -1) < 0) {
+            prefs.putInt("ncpu", Runtime.getRuntime().availableProcessors() - 1);
+        }
         preferencesFrameController.setPreferences(prefs);
 
         /**
@@ -669,7 +671,11 @@ public class MainFrameController implements Initializable {
     private boolean saveAsTask(CfgFile source) {
 
         // update file chooser to last opened configuration file
-        fileChooserSaveConfiguration.setInitialDirectory(source.getFile().getParentFile());
+        if (source.savedProperty().get()) {
+            fileChooserSaveConfiguration.setInitialDirectory(source.getFile().getParentFile());
+        } else {
+            fileChooserSaveConfiguration.setInitialDirectory(new File(prefs.get(lastOpenedFile, "")).getParentFile());
+        }
         fileChooserSaveConfiguration.setInitialFileName(source.getName());
 
         File selectedFile = fileChooserSaveConfiguration.showSaveDialog(stage);
@@ -710,8 +716,11 @@ public class MainFrameController implements Initializable {
                     saveTask(target, true);
                 }
                 LOGGER.info(source.getName() + " saved as " + target.getName() + ".");
+                // update recent file
+                addRecentFile(target);
+                updateRecentMenu();
+                // re open source unless it was a temp file
                 if (source.savedProperty().get()) {
-                    // re open source unless it was a temp file
                     int pos = listViewTaskList.getItems().indexOf(sourceUI.getTask());
                     openTask(source, pos, false, true);
                     listViewTaskList.getSelectionModel().clearAndSelect(pos + 1);
@@ -976,11 +985,8 @@ public class MainFrameController implements Initializable {
             try {
                 Configuration cfg = Configuration.newInstance(file.getFile());
                 file.setDeprecated(cfg.isDeprecated());
-                // ncpu available for the task
-                int ncpu = preferencesFrameController.getNCPU();
                 // create new task element
-                taskElement = new TaskElement(file,
-                        new AVoxService(cfg.getTaskClass(), file, ncpu));
+                taskElement = new TaskElement(file, prefs);
                 addTaskListeners(taskElement);
                 // add it to listView
                 CfgUI cfgUI = new CfgUI(cfg.getClass());
@@ -1020,8 +1026,10 @@ public class MainFrameController implements Initializable {
         if (!getCfg(file).getTask().isDisabled()) {
             listViewTaskList.getSelectionModel().select(getCfg(file).getTask());
         }
-        addRecentFile(file);
-        updateRecentMenu();
+        if (file.savedProperty().get()) {
+            addRecentFile(file);
+            updateRecentMenu();
+        }
     }
 
     private void setTaskModified(CfgFile file, boolean modified) {
@@ -1106,7 +1114,7 @@ public class MainFrameController implements Initializable {
             String result = choiceDialog.getResult();
             if (result != null) {
                 ncpu = result.equalsIgnoreCase("Sequential execution")
-                        ? 1 : preferencesFrameController.getNCPU();
+                        ? 1 : prefs.getInt("ncpu", 1);
             }
         }
         executor = new TaskElementExecutor(ncpu, taskElements);

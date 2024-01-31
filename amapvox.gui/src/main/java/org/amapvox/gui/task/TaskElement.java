@@ -8,6 +8,7 @@ package org.amapvox.gui.task;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.prefs.Preferences;
 import javafx.beans.property.StringProperty;
 import javafx.concurrent.Service;
 import javafx.concurrent.Worker.State;
@@ -23,6 +24,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javax.swing.event.EventListenerList;
+import org.amapvox.commons.Configuration;
 import org.amapvox.gui.CfgFile;
 
 /**
@@ -48,8 +50,9 @@ public class TaskElement extends AnchorPane implements Initializable {
     private final EventListenerList listeners;
 
     private ButtonType buttonType;
-    private final Service service;
+    private Service service;
     private CfgFile linkedFile;
+    private final Preferences prefs;
 
     private ImageView stopImage;
     private ImageView startImage;
@@ -61,10 +64,10 @@ public class TaskElement extends AnchorPane implements Initializable {
         CANCEL;
     }
 
-    public TaskElement(CfgFile linkedFile, Service service) {
+    public TaskElement(CfgFile linkedFile, Preferences prefs) {
 
         this.linkedFile = linkedFile;
-        this.service = service;
+        this.prefs = prefs;
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/amapvox/gui/fxml/task/TaskElement.fxml"));
@@ -124,6 +127,11 @@ public class TaskElement extends AnchorPane implements Initializable {
                 expandButton.setText("+");
             }
         });
+    }
+    
+    private Service createService() throws Exception {
+        Configuration cfg = Configuration.newInstance(linkedFile.getFile());
+        return new AVoxService(cfg.getTaskClass(), linkedFile, prefs.getInt("ncpu", 1));
     }
     
     public void updateFile(CfgFile file) {
@@ -202,14 +210,21 @@ public class TaskElement extends AnchorPane implements Initializable {
     }
 
     private void reset() {
-        if (State.READY != service.getState()) {
-            service.reset();
+        
+        try {
+            service = createService();
+            
+            if (State.READY != service.getState()) {
+                service.reset();
+            }
+            initService();
+            taskMessage.setTextFill(new Color(0, 0, 0, 1));
+            taskMessage.textProperty().bind(service.messageProperty());
+            taskProgress.progressProperty().bind(service.progressProperty());
+            taskProgress.setDisable(false);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
-        initService();
-        taskMessage.setTextFill(new Color(0, 0, 0, 1));
-        taskMessage.textProperty().bind(service.messageProperty());
-        taskProgress.progressProperty().bind(service.progressProperty());
-        taskProgress.setDisable(false);
     }
 
     public void setTaskIcon(Image image) {

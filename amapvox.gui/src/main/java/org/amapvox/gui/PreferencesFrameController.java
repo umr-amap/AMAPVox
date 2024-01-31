@@ -42,8 +42,6 @@ public class PreferencesFrameController implements Initializable {
     private Stage stage;
     private Parent root;
 
-    private int ncpu = 1;
-
     private Preferences prefs;
 
     // FXML imports
@@ -90,8 +88,7 @@ public class PreferencesFrameController implements Initializable {
         int availableCores = Runtime.getRuntime().availableProcessors();
         sliderNCPU.setMin(1);
         sliderNCPU.setMax(availableCores);
-        sliderNCPU.setValue(availableCores);
-        ncpu = availableCores;
+        sliderNCPU.setValue(availableCores - 1);
         labelNCPU.textProperty().bind(sliderNCPU.valueProperty().asString("%02.0f"));
     }
 
@@ -107,8 +104,7 @@ public class PreferencesFrameController implements Initializable {
         });
 
         // apply prefs
-        ncpu = prefs.getInt("ncpu", ncpu);
-        sliderNCPU.setValue(ncpu);
+        sliderNCPU.setValue(prefs.getInt("ncpu", Runtime.getRuntime().availableProcessors() - 1));
     }
 
     void addTasks(TaskUI task, MainFrameController mainController) {
@@ -153,14 +149,14 @@ public class PreferencesFrameController implements Initializable {
     @FXML
     private void onActionButtonCancel(ActionEvent event) {
 
-        sliderNCPU.setValue(ncpu);
+        sliderNCPU.setValue(prefs.getInt("ncpu", Runtime.getRuntime().availableProcessors() - 1));
         stage.close();
     }
 
     @FXML
     private void onActionButtonOK(ActionEvent event) {
 
-        ncpu = (int) sliderNCPU.getValue();
+        int ncpu = (int) sliderNCPU.getValue();
         prefs.putInt("ncpu", ncpu);
         stage.close();
     }
@@ -174,9 +170,4 @@ public class PreferencesFrameController implements Initializable {
         }
         return stage;
     }
-
-    int getNCPU() {
-        return ncpu;
-    }
-
 }

@@ -356,6 +356,12 @@ public class VoxelizationTask extends AVoxTask {
         if (voxel.interceptedBeamSection == 0) {
             return 0.d;
         }
+        
+        // no light transmitted, attenuation = maxAttenuation
+        double bsOut = voxel.enteringBeamSection - voxel.interceptedBeamSection;
+        if (Math.abs(bsOut) < EPSILON) {
+            return maxAttenuation;
+        }
 
         double k = Double.NaN;
         double kMin = 0.d;

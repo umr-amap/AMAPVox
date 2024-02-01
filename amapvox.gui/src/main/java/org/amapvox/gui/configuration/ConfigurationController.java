@@ -84,8 +84,12 @@ abstract public class ConfigurationController implements Initializable {
             for (ObservableValue value : getListenedProperties()) {
                 value.addListener(uiChangeListener);
             }
-            changeListenerAdded = false;
+            changeListenerAdded = true;
         }
+    }
+    
+    final public ChangeListener getUIChangeListener() {
+        return uiChangeListener;
     }
 
     final public void save(File file, boolean reset) throws Exception {

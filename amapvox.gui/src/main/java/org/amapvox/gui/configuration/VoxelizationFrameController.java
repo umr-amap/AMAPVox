@@ -129,7 +129,7 @@ public class VoxelizationFrameController extends ConfigurationController {
      * Transformation variables
      */
     private Matrix4d popMatrix;
-    
+
     private Matrix4d sopMatrix;
     private Matrix4d vopMatrix;
     private Matrix4d resultMatrix;
@@ -263,8 +263,6 @@ public class VoxelizationFrameController extends ConfigurationController {
                     checkboxShotAttributeFilter.selectedProperty(),
                     shotFilterProperty,
                     checkboxEmptyShotsFilter.selectedProperty(),
-                    checkboxUsePointcloudFilter.selectedProperty(),
-                    //          @TODO pointcloud filter
                     checkboxEchoFilterByAttributes.selectedProperty(),
                     echoFilterProperty,
                     checkboxEchoFilterByClass.selectedProperty(),
@@ -655,16 +653,6 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         checkboxEmptyShotsFilter.disableProperty().bind(labelLidarType.textProperty().isNotEqualTo(VoxelizationCfg.LidarType.RXP.name()));
 
-        BooleanBinding pcfBindig = checkboxUsePointcloudFilter.selectedProperty().not();
-        hBoxPointCloudFiltering.disableProperty().bind(pcfBindig);
-        checkboxUsePointcloudFilter.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-                -> {
-            vBoxPointCloudFiltering.getChildren().stream()
-                    .filter(node -> node instanceof PointcloudFilterController)
-                    .map(PointcloudFilterController.class::cast)
-                    .forEach(pcf -> pcf.disableContent(!newValue));
-        });
-
         // Shot decimation filter
         textfieldDecimationFactor.disableProperty().bind(checkboxShotDecimation.selectedProperty().not());
         textfieldDecimationFactor.setTextFormatter(TextFieldUtil.createRatioTextFormatter(2, 0.f, false));
@@ -847,7 +835,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         // output validation support
         outputValidationSupport = new ValidationSupport();
         outputValidationSupport.registerValidator(textFieldOutputFile, Validators.fileValidityValidator("Voxelspace file"));
-        
+
         // echo weight validation support
         echoWeightValidationSupport = new ValidationSupport();
         echoWeightValidationSupport.registerValidator(textAreaRankEchoWeightMatrix, true, Validator.createPredicateValidator(isValidMatrix(), "Echo weight matrix must be a non-empty square matrix."));
@@ -871,7 +859,7 @@ public class VoxelizationFrameController extends ConfigurationController {
             outputValidationSupport.initInitialDecoration();
             outputValidationSupport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
         }
-        
+
         if (echoWeightValidationSupport.isInvalid()) {
             echoWeightValidationSupport.initInitialDecoration();
             echoWeightValidationSupport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
@@ -974,23 +962,21 @@ public class VoxelizationFrameController extends ConfigurationController {
         cfg.setShotFilters(shotFilters);
 
         // pointcloud filter
-        if (checkboxUsePointcloudFilter.isSelected()) {
-            vBoxPointCloudFiltering.getChildrenUnmodifiable().stream()
-                    .filter(node -> node instanceof PointcloudFilterController)
-                    .forEach(node -> {
-                        PointcloudFilterController controller = (PointcloudFilterController) node;
-                        Matrix4d identity = new Matrix4d();
-                        identity.setIdentity();
-                        cfg.addEchoFilter(new PointcloudFilter(controller.getCsvFile(),
-                                controller.getMarginOfError(),
-                                controller.getBehavior(),
-                                (controller.isApplyVOPMatrix() && (null != vopMatrix)) ? vopMatrix : identity));
-                    });
-        }
+        vBoxPointCloudFiltering.getChildrenUnmodifiable().stream()
+                .filter(node -> node instanceof PointcloudFilterController)
+                .forEach(node -> {
+                    PointcloudFilterController controller = (PointcloudFilterController) node;
+                    Matrix4d identity = new Matrix4d();
+                    identity.setIdentity();
+                    cfg.addEchoFilter(new PointcloudFilter(controller.getCsvFile(),
+                            controller.getMarginOfError(),
+                            controller.getBehavior(),
+                            (controller.isApplyVOPMatrix() && (null != vopMatrix)) ? vopMatrix : identity));
+                });
 
         // echo filtering by attribute
         listviewEchoFilters.getItems().forEach(filter -> cfg.addEchoFilter(new EchoAttributeFilter(filter)));
-        
+
         // echo weight
         cfg.addEchoWeight(new EqualEchoWeight(rdbtnEqualEchoWeight.isSelected()));
         cfg.addEchoWeight(new RankEchoWeight(rdbtnRankEchoWeight.isSelected()));
@@ -1139,7 +1125,6 @@ public class VoxelizationFrameController extends ConfigurationController {
         // echo filters
         clearPointcloudFiltersPane();
         checkboxEchoFilterByClass.setSelected(false);
-        checkboxUsePointcloudFilter.setSelected(false);
         listviewEchoFilters.getItems().clear();
         cfg.getEchoFilters().forEach(filter -> {
             switch (filter) {
@@ -1153,7 +1138,6 @@ public class VoxelizationFrameController extends ConfigurationController {
                             .forEach(iclass -> listviewClassifications.getItems().get(iclass).setSelected(false));
                 }
                 case PointcloudFilter pointcloudFilter -> {
-                    checkboxUsePointcloudFilter.setSelected(true);
                     addPointcloudFilter(pointcloudFilter);
                 }
                 case DigitalTerrainModelFilter digitalTerrainModelFilter -> {
@@ -1401,13 +1385,14 @@ public class VoxelizationFrameController extends ConfigurationController {
             return false;
         };
     }
-    
+
     private Predicate<String> isValidMatrix() {
         return (String p) -> {
             try {
                 Matrix.valueOf(p);
                 return true;
-            } catch (NullPointerException | IllegalArgumentException ex) {}
+            } catch (NullPointerException | IllegalArgumentException ex) {
+            }
             return false;
         };
     }
@@ -1474,13 +1459,14 @@ public class VoxelizationFrameController extends ConfigurationController {
                 vBoxPointCloudFiltering,
                 getStage(),
                 initialDirectory);
-        pcfpc.disableContent(!checkboxUsePointcloudFilter.isSelected());
+        pcfpc.disableContent(false);
         if (null != f) {
             pcfpc.setCSVFile(f.getPointcloudFile());
             pcfpc.setMarginOfError(f.getPointcloudErrorMargin());
             pcfpc.setBehavior(f.behavior());
             pcfpc.setApplyVOPMatrix(f.isApplyVOPMatrix());
         }
+        pcfpc.addChangeListener(getUIChangeListener());
         vBoxPointCloudFiltering.getChildren().add(pcfpc);
     }
 
@@ -2019,8 +2005,6 @@ public class VoxelizationFrameController extends ConfigurationController {
     private HelpButtonController buttonHelpEmptyShotsFilterController;
 
     // Point cloud filter
-    @FXML
-    private CheckBox checkboxUsePointcloudFilter;
     @FXML
     private HBox hBoxPointCloudFiltering;
     @FXML

@@ -538,7 +538,7 @@
                                                         </AnchorPane>
                                                     </content>
                                                 </TitledPane>
-                                                <TitledPane animated="false" expanded="false" text="Point cloud">
+                                                <TitledPane animated="false" expanded="false" text="Point cloud filter">
                                                     <content>
                                                         <AnchorPane>
                                                             <children>
@@ -546,7 +546,6 @@
                                                                     <children>
                                                                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                                                                             <children>
-                                                                                <CheckBox fx:id="checkboxUsePointcloudFilter" mnemonicParsing="false" text="Point cloud filter" />
                                                                                 <HBox fx:id="hBoxPointCloudFiltering" spacing="10.0">
                                                                                     <children>
                                                                                         <Button mnemonicParsing="false" onAction="#onActionButtonAddPointcloudFilter" text="Add">

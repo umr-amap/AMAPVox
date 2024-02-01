@@ -20,8 +20,12 @@ import org.amapvox.commons.util.io.file.CSVFile;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -80,6 +84,9 @@ public class PointcloudFilterController extends HBox implements Initializable {
 
     private File initialDirectory;
 
+    private final List<ChangeListener> changeListeners;
+    private final SimpleBooleanProperty pointcloudRemovedProperty = new SimpleBooleanProperty();
+
     public PointcloudFilterController(VBox parent, Stage stage, File file) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/PointcloudFilter.fxml"));
@@ -98,6 +105,7 @@ public class PointcloudFilterController extends HBox implements Initializable {
         this.parent = parent;
         this.stage = stage;
         this.initialDirectory = file;
+        changeListeners = new LinkedList<>();
     }
 
     @Override
@@ -126,6 +134,15 @@ public class PointcloudFilterController extends HBox implements Initializable {
 
         // close button
         buttonRemovePointCloudFilter.setOnAction((event) -> {
+            pointcloudRemovedProperty.setValue(!pointcloudRemovedProperty.get());
+            changeListeners.forEach(listener -> {
+                textfieldPointCloudPath.textProperty().removeListener(listener);
+                textfieldPointCloudErrorMargin.textProperty().removeListener(listener);
+                comboboxPointCloudFilteringType.getSelectionModel().selectedItemProperty().removeListener(listener);
+                checkboxApplyVopMatrix.selectedProperty().removeListener(listener);
+                pointcloudRemovedProperty.removeListener(listener);
+            });
+            changeListeners.clear();
             Platform.runLater(() -> {
                 parent.getChildren().remove(this);
             });
@@ -176,6 +193,16 @@ public class PointcloudFilterController extends HBox implements Initializable {
         });
     }
 
+    public void addChangeListener(ChangeListener listener) {
+
+        textfieldPointCloudPath.textProperty().addListener(listener);
+        textfieldPointCloudErrorMargin.textProperty().addListener(listener);
+        comboboxPointCloudFilteringType.getSelectionModel().selectedItemProperty().addListener(listener);
+        checkboxApplyVopMatrix.selectedProperty().addListener(listener);
+        pointcloudRemovedProperty.addListener(listener);
+        changeListeners.add(listener);
+    }
+
     public void setCSVFile(CSVFile file) {
 
         if (file != null) {
@@ -189,7 +216,7 @@ public class PointcloudFilterController extends HBox implements Initializable {
     }
 
     public float getMarginOfError() {
-        return Float.valueOf(textfieldPointCloudErrorMargin.getText());
+        return Float.parseFloat(textfieldPointCloudErrorMargin.getText());
     }
 
     public void setMarginOfError(float error) {
@@ -212,10 +239,9 @@ public class PointcloudFilterController extends HBox implements Initializable {
         buttonOpenPointCloudFile.setDisable(disable);
         buttonRemovePointCloudFilter.setDisable(disable);
         textfieldPointCloudErrorMargin.setDisable(disable);
-        textfieldPointCloudPath.setDisable(disable);
         comboboxPointCloudFilteringType.setDisable(disable);
         labelPointCloudErrorMarginValue.setDisable(disable);
-        //checkboxApplyVopMatrix.setDisable(disable);
+        checkboxApplyVopMatrix.setDisable(disable);
     }
 
     public boolean isApplyVOPMatrix() {

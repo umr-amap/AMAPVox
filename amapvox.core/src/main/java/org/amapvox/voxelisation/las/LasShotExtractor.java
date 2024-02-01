@@ -184,7 +184,7 @@ public class LasShotExtractor extends Process implements IterableWithException<S
         double y_scale_factor = header.getYScaleFactor();
         double z_offset = header.getZOffset();
         double z_scale_factor = header.getZScaleFactor();
-        
+
         // loop over LAS points
         for (LASPoint p : lasReader.getPoints()) {
             fireProgress("Reading LAS file " + file.getName(), count++, nPoint);
@@ -196,10 +196,10 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                     (p.getY() * y_scale_factor) + y_offset,
                     (p.getZ() * z_scale_factor) + z_offset);
             LasPoint point = new LasPoint(
-                    location.x, location.y, location.z, 
-                    p.getReturnNumber(), p.getNumberOfReturns(), 
-                    p.getIntensity(), 
-                    p.getClassification(), 
+                    location.x, location.y, location.z,
+                    p.getReturnNumber(), p.getNumberOfReturns(),
+                    p.getIntensity(),
+                    p.getClassification(),
                     p.getGPSTime());
             points.add(point);
         }
@@ -626,7 +626,7 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                     shotIndex++;
                     pointIndex += points.size();
                 }
-            } catch (InterruptedException ex) {
+            } catch (Exception ex) {
                 error = ex;
             }
         }

@@ -129,6 +129,7 @@ public class VoxelizationFrameController extends ConfigurationController {
      * Transformation variables
      */
     private Matrix4d popMatrix;
+    
     private Matrix4d sopMatrix;
     private Matrix4d vopMatrix;
     private Matrix4d resultMatrix;
@@ -229,9 +230,12 @@ public class VoxelizationFrameController extends ConfigurationController {
                     spinnerAttenuationError.valueProperty(),
                     // Transformation
                     checkboxUsePopMatrix.selectedProperty(),
+                    popMatrixController.changedProperty(),
                     checkboxUseSopMatrix.selectedProperty(),
+                    sopMatrixController.changedProperty(),
                     checkboxUseVopMatrix.selectedProperty(),
-                    //          @TODO matrix changes
+                    vopMatrixController.changedProperty(),
+                    transformationMatrixController.changedProperty(),
                     // Voxel Space
                     checkBoxCubicVoxel.selectedProperty(),
                     textFieldVoxelSizeX.textProperty(),

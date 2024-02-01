@@ -7,6 +7,8 @@ package org.amapvox.gui;
  */
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -53,6 +55,8 @@ public class TransformationMatrixController implements Initializable {
     @FXML
     private Label labelM33;
 
+    private final SimpleBooleanProperty matrixChangedProperty = new SimpleBooleanProperty();
+
     /**
      * Initializes the controller class.
      *
@@ -64,6 +68,10 @@ public class TransformationMatrixController implements Initializable {
         Matrix4d identity = new Matrix4d();
         identity.setIdentity();
         setMatrix(identity);
+    }
+    
+    public ReadOnlyBooleanProperty changedProperty() {
+        return matrixChangedProperty;
     }
 
     public void setMatrix(Matrix4d matrix) {
@@ -99,10 +107,11 @@ public class TransformationMatrixController implements Initializable {
         labelM32.setTooltip(new Tooltip(String.valueOf(matrix.m32)));
         labelM33.setText(String.format("%f", matrix.m33));
         labelM33.setTooltip(new Tooltip(String.valueOf(matrix.m33)));
+        matrixChangedProperty.setValue(!matrixChangedProperty.get());
     }
 
     public void setDisable(boolean value) {
-        
+
         String white = "-fx-background-color: white; -fx-text-fill: black;";
         String grey = "-fx-background-color: #F4F4F4; -fx-text-fill: lightgrey;";
 

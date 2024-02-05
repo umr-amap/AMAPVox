@@ -70,7 +70,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -80,6 +79,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
@@ -115,8 +116,7 @@ public class MainFrameController implements Initializable {
 
     final Logger LOGGER = Logger.getLogger(MainFrameController.class);
 
-    final private List<TaskUI> uiTasks = new LinkedList();
-    final private Map<String, MenuItem> newMenuItemMap = new HashMap();
+    final private Map<String, TaskUI> uiTasks = new LinkedHashMap();
 
     private Stage stage;
 
@@ -238,13 +238,7 @@ public class MainFrameController implements Initializable {
         // initial set of recent files from preferences
         prefs = Preferences.userRoot().node(this.getClass().getName());
         recentFiles = new FifoHashMap<>(maxRecentFiles);
-        IntStream.range(0, maxRecentFiles).forEach(i -> {
-            String f = prefs.get("recent.file." + i, "");
-            String icon = prefs.get("recent.file.icon." + i, "");
-            if (!f.isBlank()) {
-                recentFiles.put(f, icon);
-            }
-        });
+        reloadRecentFiles();
         updateRecentMenu();
         recentMenu.disableProperty().bind(Bindings.isEmpty(recentMenu.getItems()));
 
@@ -319,6 +313,11 @@ public class MainFrameController implements Initializable {
             prefs.putInt("ncpu", Runtime.getRuntime().availableProcessors() - 1);
         }
         preferencesFrameController.setPreferences(prefs);
+        preferencesFrameController.getStage().setOnHidden(event -> {
+            updateNewMenu();
+            reloadRecentFiles();
+            updateRecentMenu();
+        });
 
         /**
          * DRAG GESTURES
@@ -362,23 +361,24 @@ public class MainFrameController implements Initializable {
         exportLogButton.disableProperty().bind(textAreaLog.textProperty().isEmpty());
     }
 
-    void updateNewMenuItem(TaskUI task) {
+    void updateNewMenu() {
 
-        MenuItem menuItem = newMenuItemMap.get(task.getClassName());
-        if (newMenu.getItems().contains(menuItem)) {
-            // remove item
-            newMenu.getItems().remove(menuItem);
-            newToolbarButton.getItems().remove(menuItem);
-        } else {
-            // add item
-            Comparator<MenuItem> menuItemComparator = (item1, item2) -> {
-                return item1.getText().compareTo(item2.getText());
-            };
-            newToolbarButton.getItems().add(menuItem);
-            newToolbarButton.getItems().sort(menuItemComparator);
-            newMenu.getItems().add(menuItem);
-            newMenu.getItems().sort(menuItemComparator);
-        }
+        // clear new menu items
+        newMenu.getItems().clear();
+        newToolbarButton.getItems().clear();
+        // add new items
+        uiTasks.values().stream()
+                .filter(uiTask -> uiTask.enabledProperty().get())
+                .forEach(uiTask -> {
+                    newMenu.getItems().add(newMenuItem(uiTask));
+                    newToolbarButton.getItems().add(newMenuItem(uiTask));
+                });
+        // sort new items
+        Comparator<MenuItem> menuItemComparator = (item1, item2) -> {
+            return item1.getText().compareTo(item2.getText());
+        };
+        newMenu.getItems().sort(menuItemComparator);
+        newToolbarButton.getItems().sort(menuItemComparator);
     }
 
     void addRecentFile(CfgFile file) {
@@ -391,6 +391,21 @@ public class MainFrameController implements Initializable {
             prefs.put("recent.file.icon." + i, recentFiles.get(f));
             i++;
         }
+    }
+    
+    /**
+     * Reload recent files from preferences.
+     */
+    void reloadRecentFiles() {
+        
+        recentFiles.clear();
+        IntStream.range(0, maxRecentFiles).forEach(i -> {
+            String f = prefs.get("recent.file." + i, "");
+            String icon = prefs.get("recent.file.icon." + i, "");
+            if (!f.isBlank()) {
+                recentFiles.put(f, icon);
+            }
+        });
     }
 
     void updateRecentMenu() {
@@ -411,13 +426,8 @@ public class MainFrameController implements Initializable {
     void addTaskUI(Class<? extends Configuration> clazz, String fxml, String icon, RepoStatus status) throws Exception {
 
         TaskUI task = new TaskUI(clazz, fxml, icon, status);
-        uiTasks.add(task);
-        newMenuItemMap.put(task.getClassName(), newMenuItem(task));
-        boolean enabled = prefs.getBoolean(task.getClassName(), status.equals(RepoStatus.ACTIVE));
-        if (enabled) {
-            updateNewMenuItem(task);
-        }
-        preferencesFrameController.addTasks(task, this);
+        uiTasks.put(task.getClassName(), task);
+        preferencesFrameController.addTasks(task);
     }
 
     private void contextMenuTaskList() {
@@ -601,40 +611,45 @@ public class MainFrameController implements Initializable {
         });
     }
 
-    private MenuItem newMenuItem(TaskUI task) throws Exception {
+    private MenuItem newMenuItem(TaskUI task) {
 
-        Configuration cfg = Configuration.newInstance(task.getClassName());
+        try {
+            Configuration cfg = Configuration.newInstance(task.getClassName());
 
-        Label menuLabel = new Label(cfg.getLongName());
-        menuLabel.setPrefWidth(300);
-        ImageView icon = new ImageView(new Image(MainFrameController.class.getResource(task.getIcon()).toExternalForm()));
-        menuLabel.setGraphic(icon);
+            Label menuLabel = new Label(cfg.getLongName());
+            menuLabel.setPrefWidth(300);
+            ImageView icon = new ImageView(new Image(MainFrameController.class.getResource(task.getIcon()).toExternalForm()));
+            menuLabel.setGraphic(icon);
 
-        Tooltip tooltip = new Tooltip();
-        tooltip.setText(cfg.getDescription());
-        Util.hackTooltipStartTiming(tooltip, 0L);
+            Tooltip tooltip = new Tooltip();
+            tooltip.setText(cfg.getDescription());
+            Util.hackTooltipStartTiming(tooltip, 0L);
 
-        CustomMenuItem item = new CustomMenuItem(menuLabel);
-        item.setMnemonicParsing(false);
-        Tooltip.install(item.getContent(), tooltip);
-        item.setText(cfg.getLongName()); // trick to be able to sort menuItem
-        item.setOnAction(event -> {
-            LOGGER.debug("[" + cfg.getLongName() + "] New configuration.");
-            // set file chooser to last opened configuration file
-            if (!prefs.get(lastOpenedFile, "").isBlank()) {
-                fileChooserSaveConfiguration.setInitialDirectory(new File(prefs.get(lastOpenedFile, "")).getParentFile());
-                fileChooserSaveConfiguration.setInitialFileName(new File(prefs.get(lastOpenedFile, "")).getName());
-            }
-            try {
-                CfgFile cfgFile = CfgFile.create(fileIndex.incrementAndGet());
-                cfg.write(cfgFile.getFile(), true);
-                LOGGER.info(cfg.getLongName() + " '" + cfgFile.getName() + "' created");
-                openTask(cfgFile, true);
-            } catch (IOException | JDOMException ex) {
-                Util.showErrorDialog(stage, ex, null);
-            }
-        });
-        return item;
+            CustomMenuItem item = new CustomMenuItem(menuLabel);
+            item.setMnemonicParsing(false);
+            Tooltip.install(item.getContent(), tooltip);
+            item.setText(cfg.getLongName()); // trick to be able to sort menuItem
+            item.setOnAction(event -> {
+                LOGGER.debug("[" + cfg.getLongName() + "] New configuration.");
+                // set file chooser to last opened configuration file
+                if (!prefs.get(lastOpenedFile, "").isBlank()) {
+                    fileChooserSaveConfiguration.setInitialDirectory(new File(prefs.get(lastOpenedFile, "")).getParentFile());
+                    fileChooserSaveConfiguration.setInitialFileName(new File(prefs.get(lastOpenedFile, "")).getName());
+                }
+                try {
+                    CfgFile cfgFile = CfgFile.create(fileIndex.incrementAndGet());
+                    cfg.write(cfgFile.getFile(), true);
+                    LOGGER.info(cfg.getLongName() + " '" + cfgFile.getName() + "' created");
+                    openTask(cfgFile, true);
+                } catch (IOException | JDOMException ex) {
+                    Util.showErrorDialog(stage, ex, null);
+                }
+            });
+            return item;
+        } catch (Exception ex) {
+            LOGGER.warn("Failed to instantiate configuration template " + task.getClassName());
+        }
+        return null;
     }
 
     @FXML
@@ -1337,14 +1352,8 @@ public class MainFrameController implements Initializable {
 
         CfgUI(Class clazz) {
             this.className = clazz.getCanonicalName();
-            this.fxml = findTaskUI(className).getFxml();
-            this.icon = findTaskUI(className).getIcon();
-        }
-
-        private TaskUI findTaskUI(String className) {
-            return uiTasks.stream()
-                    .filter(t -> t.getClassName().equals(className))
-                    .findFirst().get();
+            this.fxml = uiTasks.get(className).getFxml();
+            this.icon = uiTasks.get(className).getIcon();
         }
 
         private void updateLinkedFile(CfgFile file) {
@@ -1478,12 +1487,15 @@ public class MainFrameController implements Initializable {
         final private String fxml;
         final private String icon;
         final private RepoStatus status;
+        private BooleanProperty enabledProperty;
 
         TaskUI(Class<? extends Configuration> clazz, String fxml, String icon, RepoStatus status) {
             this.className = clazz.getCanonicalName();
             this.fxml = fxml;
             this.icon = icon;
             this.status = status;
+            this.enabledProperty = new SimpleBooleanProperty();
+            enabledProperty.set(prefs.getBoolean(className, status.equals(RepoStatus.ACTIVE)));
         }
 
         /**
@@ -1512,6 +1524,10 @@ public class MainFrameController implements Initializable {
          */
         RepoStatus getStatus() {
             return status;
+        }
+
+        public BooleanProperty enabledProperty() {
+            return enabledProperty;
         }
     }
 

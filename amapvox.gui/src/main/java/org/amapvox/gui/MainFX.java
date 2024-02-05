@@ -93,6 +93,7 @@ public class MainFX extends Application {
                 null,
                 "fxml/icons/merging.png",
                 RepoStatus.MOVED);
+        controller.updateNewMenu();
 
         stage.addEventFilter(WindowEvent.WINDOW_HIDDEN, (WindowEvent event) -> {
             System.exit(0);

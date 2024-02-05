@@ -7,6 +7,9 @@ package org.amapvox.gui;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +46,7 @@ public class PreferencesFrameController implements Initializable {
     private Parent root;
 
     private Preferences prefs;
+    private List<TaskUI> uiTasks;
 
     // FXML imports
     @FXML
@@ -57,6 +61,8 @@ public class PreferencesFrameController implements Initializable {
     private VBox vboxDeprecatedTools;
     @FXML
     private Button btnClear;
+    @FXML
+    private Button btnCancel;
 
     static PreferencesFrameController newInstance() {
 
@@ -89,7 +95,13 @@ public class PreferencesFrameController implements Initializable {
         sliderNCPU.setMin(1);
         sliderNCPU.setMax(availableCores);
         sliderNCPU.setValue(availableCores - 1);
+        sliderNCPU.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+            if (btnCancel.isDisabled()) {
+                    btnCancel.setDisable(Objects.equals(oldValue, newValue));
+                }
+        });
         labelNCPU.textProperty().bind(sliderNCPU.valueProperty().asString("%02.0f"));
+        uiTasks = new LinkedList();
     }
 
     public void setPreferences(Preferences prefs) {
@@ -107,7 +119,7 @@ public class PreferencesFrameController implements Initializable {
         sliderNCPU.setValue(prefs.getInt("ncpu", Runtime.getRuntime().availableProcessors() - 1));
     }
 
-    void addTasks(TaskUI task, MainFrameController mainController) {
+    void addTasks(TaskUI task) {
 
         try {
             Configuration cfg = Configuration.newInstance(task.getClassName());
@@ -118,11 +130,14 @@ public class PreferencesFrameController implements Initializable {
             checkbox.setGraphic(icon);
             checkbox.setSelected(prefs.getBoolean(task.getClassName(), task.getStatus().equals(RepoStatus.ACTIVE)));
             checkbox.setDisable(task.getStatus().equals(RepoStatus.MOVED));
-            checkbox.selectedProperty().addListener(
-                    (ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) -> {
-                        mainController.updateNewMenuItem(task);
-                        prefs.putBoolean(task.getClassName(), new_val);
-                    });
+            checkbox.selectedProperty().bindBidirectional(task.enabledProperty());
+            checkbox.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+                if (btnCancel.isDisabled()) {
+                    btnCancel.setDisable(Objects.equals(oldValue, newValue));
+                }
+
+            });
+            uiTasks.add(task);
             Tooltip tooltip = new Tooltip();
             tooltip.setText(cfg.getDescription());
             Util.hackTooltipStartTiming(tooltip, 0L);
@@ -143,21 +158,44 @@ public class PreferencesFrameController implements Initializable {
 
     @FXML
     private void onActionButtonClear(ActionEvent event) throws BackingStoreException {
+
+        // clear preferences 
         prefs.clear();
+        // default ncpu
+        sliderNCPU.setValue(Runtime.getRuntime().availableProcessors() - 1);
+        // defaut ui task status
+        uiTasks.stream().forEach(uiTask -> {
+            uiTask.enabledProperty().set(uiTask.getStatus().equals(RepoStatus.ACTIVE));
+        });
+        btnCancel.setDisable(true);
     }
 
     @FXML
     private void onActionButtonCancel(ActionEvent event) {
 
+        // ncpu
         sliderNCPU.setValue(prefs.getInt("ncpu", Runtime.getRuntime().availableProcessors() - 1));
+        // UI tasks
+        uiTasks.stream().forEach(uiTask -> {
+            uiTask.enabledProperty().set(prefs.getBoolean(uiTask.getClassName(), uiTask.getStatus().equals(RepoStatus.ACTIVE)));
+        });
+        // close preferences stage
         stage.close();
     }
 
     @FXML
     private void onActionButtonOK(ActionEvent event) {
 
+        // ncpu
         int ncpu = (int) sliderNCPU.getValue();
         prefs.putInt("ncpu", ncpu);
+        // ui task status
+        uiTasks.stream().forEach(
+                uiTask -> prefs.putBoolean(uiTask.getClassName(), uiTask.enabledProperty().get())
+        );
+        // enable cancel button
+        btnCancel.setDisable(false);
+        // close preferences stage
         stage.close();
     }
 

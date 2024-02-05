@@ -29,7 +29,7 @@
                                                                 <Button fx:id="buttonOpenVoxelFileTransmittance" mnemonicParsing="false" onAction="#onActionButtonOpenVoxelFileTransmittance" text="..." />
                                                             </children>
                                                         </HBox>
-                                                        <fx:include fx:id="checkMissingVoxelTransmittance" source="/org/amapvox/gui/fxml/CheckMissingVoxel.fxml"/>
+                                                        <fx:include fx:id="checkMissingVoxelTransmittance" source="../CheckMissingVoxel.fxml"/>
                                                     </children>
                                                 </VBox>
                                                 <VBox spacing="5.0">
@@ -80,7 +80,7 @@
                                                             <graphic>
                                                                 <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                                                     <image>
-                                                                        <Image url="@icons/remove.png" />
+                                                                        <Image url="@../icons/remove.png" />
                                                                     </image>
                                                                 </ImageView>
                                                             </graphic>
@@ -89,7 +89,7 @@
                                                             <graphic>
                                                                 <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                                                     <image>
-                                                                        <Image url="@icons/add.png" />
+                                                                        <Image url="@../icons/add.png" />
                                                                     </image>
                                                                 </ImageView>
                                                             </graphic>
@@ -126,7 +126,7 @@
                                                 <TextField fx:id="textfieldLatitudeRadians" prefHeight="26.0" prefWidth="66.0" />
                                             </children>
                                         </HBox>
-                                        <VBox>
+                                        <VBox spacing="10.0">
                                             <children>
                                                 <HBox alignment="CENTER_LEFT">
                                                     <children>
@@ -153,7 +153,7 @@
                                                                     <graphic>
                                                                         <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                                                             <image>
-                                                                                <Image url="@icons/remove.png" />
+                                                                                <Image url="@../icons/remove.png" />
                                                                             </image>
                                                                         </ImageView>
                                                                     </graphic>
@@ -162,7 +162,7 @@
                                                                     <graphic>
                                                                         <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                                                             <image>
-                                                                                <Image url="@icons/add.png" />
+                                                                                <Image url="@../icons/add.png" />
                                                                             </image>
                                                                         </ImageView>
                                                                     </graphic>

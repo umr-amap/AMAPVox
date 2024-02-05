@@ -23,6 +23,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -210,7 +211,7 @@ public class ObjExporterFrameController extends ConfigurationController {
 
         comboboxAttribute.getItems().setAll(columns);
         comboboxAttribute.getSelectionModel().selectFirst();
-        textfieldPADMax.setText(df.format("5.0"));
+        textfieldPADMax.setText(df.format(5.f));
     }
 
     @Override

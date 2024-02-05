@@ -47,15 +47,15 @@ public class CheckMissingVoxelController implements Initializable, ChangeListene
         hboxMissingVoxel.setManaged(false);
         hboxMissingVoxel.setVisible(false);
 
-        ImageView errorImageView = new ImageView(new Image("fxml/icons/error.png"));
+        ImageView errorImageView = new ImageView(new Image(getClass().getResource("/org/amapvox/gui/fxml/icons/error.png").toExternalForm()));
         errorImageView.setPreserveRatio(true);
         errorImageView.setFitHeight(16);
 
-        ImageView validImageView = new ImageView(new Image("fxml/icons/valid.png"));
+        ImageView validImageView = new ImageView(new Image(getClass().getResource("/org/amapvox/gui/fxml/icons/valid.png").toExternalForm()));
         validImageView.setPreserveRatio(true);
         validImageView.setFitHeight(16);
 
-        ImageView warningImageView = new ImageView(new Image("fxml/icons/warning.png"));
+        ImageView warningImageView = new ImageView(new Image(getClass().getResource("/org/amapvox/gui/fxml/icons/warning.png").toExternalForm()));
         warningImageView.setPreserveRatio(true);
         warningImageView.setFitHeight(16);
 

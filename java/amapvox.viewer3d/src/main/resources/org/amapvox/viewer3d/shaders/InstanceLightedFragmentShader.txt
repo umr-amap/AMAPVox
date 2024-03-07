@@ -1,0 +1,37 @@
+#version 140
+
+uniform mat4 viewMatrix;
+
+uniform vec3 lightPosition;
+uniform vec3 lambient;
+uniform vec3 ldiffuse;
+uniform vec3 lspecular;
+
+
+flat in vec3 fragPosition;
+flat in vec4 fragColor;
+
+out vec4 outColor;
+ 
+void main()
+{
+    vec3 mambient = vec3(0.2, 0.2, 0.2);
+    vec3 mdiffuse = fragColor.rgb;
+    vec3 mspecular = vec3(0.35, 0.35, 0.35);
+    float shininess = 32.0;
+
+    vec3 ambient = mambient*lambient;
+
+    vec3 surf2light = normalize(vec3(0, 0, lightPosition.z) -fragPosition);
+    vec3 norm = normalize(vec3(1.0, 1.0, 1.0));
+    float dcont = max(0.0, dot(norm, surf2light));
+    vec3 diffuse=dcont*mdiffuse*ldiffuse;
+    
+    vec3 surface2view = normalize(-fragPosition);
+    vec3 reflection = reflect(norm, -surf2light);
+
+    float scont = pow(max(0.0, dot(surface2view, reflection)), shininess);
+    vec3 specular = scont*lspecular*mspecular;
+    
+    outColor = vec4(ambient+diffuse+specular, 1.0);
+}

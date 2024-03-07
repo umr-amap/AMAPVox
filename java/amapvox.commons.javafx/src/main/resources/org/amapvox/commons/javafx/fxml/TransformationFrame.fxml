@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="429.0" prefWidth="449.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.commons.javafx.matrix.TransformationFrameController">
+   <children>
+      <VBox prefHeight="286.0" prefWidth="449.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <TabPane prefHeight="207.0" prefWidth="449.0" tabClosingPolicy="UNAVAILABLE">
+              <tabs>
+                <Tab text="Axis rotation">
+                     <content>
+                        <AnchorPane prefHeight="90.0" prefWidth="449.0">
+                           <children>
+                              <Label layoutX="14.0" layoutY="14.0" text="Rotation axis" />
+                              <GridPane hgap="5.0" layoutX="14.0" layoutY="46.0" prefHeight="45.0" prefWidth="439.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="30.0">
+                                 <children>
+                                    <Label text="X" />
+                                    <TextField fx:id="labelAxisRotationX" text="0" GridPane.columnIndex="1" />
+                                    <Label text="Y" GridPane.columnIndex="2" />
+                                    <TextField fx:id="labelAxisRotationY" text="0" GridPane.columnIndex="3" />
+                                    <Label text="Z" GridPane.columnIndex="4" />
+                                    <TextField fx:id="labelAxisRotationZ" text="0" GridPane.columnIndex="5" />
+                                 </children>
+                                 <columnConstraints>
+                                    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="94.0" minWidth="10.0" prefWidth="18.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="162.0" minWidth="10.0" percentWidth="20.0" prefWidth="107.0" />
+                                    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="157.0" minWidth="0.0" prefWidth="62.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="268.0" minWidth="10.0" percentWidth="20.0" prefWidth="100.0" />
+                                    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="268.0" minWidth="10.0" prefWidth="49.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="268.0" minWidth="10.0" percentWidth="20.0" prefWidth="92.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                              </GridPane>
+                              <Label layoutX="14.0" layoutY="81.0" text="Rotation angle (degrees)" />
+                              <TextField fx:id="labelAxisRotationAngle" layoutX="15.0" layoutY="103.0" prefHeight="25.0" prefWidth="131.0" text="0" />
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+                <Tab text="Euler rotation">
+                     <content>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                           <children>
+                              <GridPane hgap="5.0" prefHeight="45.0" prefWidth="439.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="30.0">
+                                 <children>
+                                    <Label text="Roll" />
+                                    <TextField fx:id="labelEulerRotationX" GridPane.columnIndex="1" />
+                                    <Label text="Pitch" GridPane.columnIndex="2" />
+                                    <TextField fx:id="labelEulerRotationY" GridPane.columnIndex="3" />
+                                    <Label text="Yaw" GridPane.columnIndex="4" />
+                                    <TextField fx:id="labelEulerRotationZ" GridPane.columnIndex="5" />
+                                 </children>
+                                 <columnConstraints>
+                                    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="94.0" minWidth="10.0" prefWidth="18.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="162.0" minWidth="10.0" percentWidth="20.0" prefWidth="107.0" />
+                                    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="157.0" minWidth="0.0" prefWidth="62.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="268.0" minWidth="10.0" percentWidth="20.0" prefWidth="100.0" />
+                                    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="268.0" minWidth="10.0" prefWidth="49.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="268.0" minWidth="10.0" percentWidth="20.0" prefWidth="92.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                              </GridPane>
+                              <Label layoutX="14.0" layoutY="14.0" text="Angles" />
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+                  <Tab text="Translation">
+                     <content>
+                        <AnchorPane prefHeight="97.0" prefWidth="414.0">
+                           <children>
+                              <GridPane hgap="5.0" layoutX="15.0" prefHeight="45.0" prefWidth="332.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="30.0">
+                                <columnConstraints>
+                                  <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="94.0" minWidth="10.0" prefWidth="18.0" />
+                                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="162.0" minWidth="10.0" percentWidth="30.0" prefWidth="107.0" />
+                                    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="157.0" minWidth="0.0" prefWidth="62.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="268.0" minWidth="10.0" percentWidth="30.0" prefWidth="100.0" />
+                                    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="268.0" minWidth="10.0" prefWidth="49.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="268.0" minWidth="10.0" percentWidth="29.0" prefWidth="92.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                 <children>
+                                    <Label text="X" />
+                                    <TextField fx:id="labelTranslationX" text="0.0" GridPane.columnIndex="1" />
+                                    <Label text="Y" GridPane.columnIndex="2" />
+                                    <TextField fx:id="labelTranslationY" text="0.0" GridPane.columnIndex="3" />
+                                    <Label text="Z" GridPane.columnIndex="4" />
+                                    <TextField fx:id="labelTranslationZ" text="0.0" GridPane.columnIndex="5" />
+                                 </children>
+                              </GridPane>
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+              </tabs>
+            </TabPane>
+            <VBox spacing="5.0">
+               <children>
+                  <TitledPane collapsible="false" layoutX="14.0" layoutY="220.0" text="Transformation matrix">
+                     <content>
+                        <GridPane layoutX="37.0" layoutY="211.0">
+                          <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <TextField fx:id="matrixM00" promptText="m00" />
+                              <TextField fx:id="matrixM01" promptText="m01" GridPane.columnIndex="1" />
+                              <TextField fx:id="matrixM02" promptText="m02" GridPane.columnIndex="2" />
+                              <TextField fx:id="matrixM03" promptText="m03" GridPane.columnIndex="3" />
+                              <TextField fx:id="matrixM10" promptText="m10" GridPane.rowIndex="1" />
+                              <TextField fx:id="matrixM11" promptText="m11" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <TextField fx:id="matrixM12" promptText="m12" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                              <TextField fx:id="matrixM13" promptText="m13" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                              <TextField fx:id="matrixM20" promptText="m20" GridPane.rowIndex="2" />
+                              <TextField fx:id="matrixM21" promptText="m21" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <TextField fx:id="matrixM22" promptText="m22" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                              <TextField fx:id="matrixM23" promptText="m23" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                              <TextField fx:id="matrixM30" promptText="m30" GridPane.rowIndex="3" />
+                              <TextField fx:id="matrixM31" promptText="m31" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <TextField fx:id="matrixM32" promptText="m32" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                              <TextField fx:id="matrixM33" promptText="m33" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                           </children>
+                        </GridPane>
+                     </content>
+                  </TitledPane>
+                  <HBox alignment="CENTER_LEFT" prefHeight="41.0" prefWidth="449.0" spacing="20.0">
+                     <children>
+                        <CheckBox fx:id="checkboxInverseTransformation" mnemonicParsing="false" text="Inverse" />
+                        <Button fx:id="buttonSetIdentity" mnemonicParsing="false" onAction="#onActionButtonSetIdentity" text="Set to identity" />
+                        <Button fx:id="buttonOpenMatrixFile" mnemonicParsing="false" onAction="#onActionButtonOpenMatrixFile" text="Open matrix file" />
+                     </children>
+                     <VBox.margin>
+                        <Insets left="10.0" top="10.0" />
+                     </VBox.margin>
+                  </HBox>
+                  <HBox alignment="CENTER_RIGHT" prefHeight="8.0" prefWidth="449.0" spacing="5.0">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#onActionButtonPasteFromClipboard" prefHeight="30.0">
+                           <graphic>
+                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@icons/paste.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <tooltip>
+                              <Tooltip text="Paste from clipboard" />
+                           </tooltip>
+                        </Button>
+                        <Button mnemonicParsing="false" onAction="#onActionButtonCopyToClipboard" prefHeight="30.0">
+                           <graphic>
+                              <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@icons/copy.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <tooltip>
+                              <Tooltip text="Copy to clipboard" />
+                           </tooltip>
+                        </Button>
+                        <Button fx:id="buttonConfirm" mnemonicParsing="false" onAction="#onActionButtonConfirm" prefHeight="30.0" text="Accept" />
+                     </children>
+                     <VBox.margin>
+                        <Insets right="10.0" />
+                     </VBox.margin>
+                  </HBox>
+                  <AnchorPane />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

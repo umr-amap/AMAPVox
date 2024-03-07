@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane id="AnchorPane" minHeight="0.0" minWidth="0.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.configuration.ChartFrameController">
+    <children>
+        <ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <content>
+                <VBox>
+                    <children>
+                        <TitledPane animated="false" collapsible="false" text="Chart">
+                            <content>
+                                <VBox spacing="10.0">
+                                    <children>
+                                        <Label text="Voxel files" />
+                                        <ListView fx:id="listViewVoxelsFilesChart" prefHeight="120.0" />
+                                        <HBox spacing="20.0">
+                                            <children>
+                                                <HBox spacing="5.0">
+                                                    <children>
+                                                        <Button fx:id="buttonRemoveVoxelFileFromListViewForChart" mnemonicParsing="false" onAction="#onActionButtonRemoveVoxelFileFromListViewForChart">
+                                                            <graphic>
+                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                    <image>
+                                                                        <Image url="@../icons/remove.png" />
+                                                                    </image>
+                                                                </ImageView>
+                                                            </graphic>
+                                                        </Button>
+                                                        <Button fx:id="buttonAddVoxelFileToListViewForChart" mnemonicParsing="false" onAction="#onActionButtonAddVoxelFileToListViewForChart">
+                                                            <graphic>
+                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                    <image>
+                                                                        <Image url="@../icons/add.png" />
+                                                                    </image>
+                                                                </ImageView>
+                                                            </graphic>
+                                                        </Button>
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </HBox>
+                                        <Separator prefHeight="0.0" />
+                                        <HBox fx:id="hboxVariableChart" spacing="5.0" alignment="CENTER_LEFT" >                                                                                                                        
+                                            <children>
+                                                <Label text="Select variable" />
+                                                <ComboBox fx:id="comboboxVariableChart" prefHeight="26.0" prefWidth="180" />
+                                            </children>
+                                        </HBox>
+                                        <Separator prefHeight="0.0" />
+                                        <GridPane fx:id="gridpaneSelectedScanChart" vgap="10.0">
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="ALWAYS" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints vgrow="SOMETIMES" />
+                                                <RowConstraints vgrow="SOMETIMES" />
+                                                <RowConstraints vgrow="SOMETIMES" />
+                                            </rowConstraints>
+                                            <children>
+                                                <Label text="Selected scan" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                                <Label fx:id="labelSelectedScanChart" text="select a scan in the list above" style="-fx-font-style: italic;" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                                                <Label text="Series color" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                                                <ColorPicker fx:id="colorPickerSeries" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                                                <Label text="Series label" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                                                <TextField fx:id="textfieldLabelVoxelFileChart" prefHeight="26.0" prefWidth="200.0" maxWidth="200.0" GridPane.rowIndex="2" GridPane.columnIndex="1"  />
+                                            </children>
+                                        </GridPane>
+                                        <Separator prefHeight="0.0" />
+                                        <HBox fx:id="hboxHeighForChart" spacing="10.0">
+                                            <children>
+                                                <Label text="Heigh from" />
+                                                <RadioButton fx:id="radiobuttonHeightFromAboveGround" mnemonicParsing="false" selected="true" text="Above ground" />
+                                                <RadioButton fx:id="radiobuttonHeightFromBelowCanopy" mnemonicParsing="false" text="Below canopy" />
+                                            </children>
+                                        </HBox>
+                                        <Separator prefHeight="0.0" />
+                                        <CheckBox fx:id="checkboxMakeQuadrats" mnemonicParsing="false" text="Plot splitting" />
+                                        <VBox fx:id="vboxQuadrats" spacing="10.0" >
+                                            <children>
+                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
+                                                    <children>
+                                                        <Label text="Along axis" />
+                                                        <ComboBox fx:id="comboboxSelectAxisForQuadrats" prefHeight="26.0" prefWidth="80.0" />    
+                                                    </children>
+                                                    <padding>
+                                                        <Insets left="20.0" />
+                                                    </padding>  
+                                                </HBox>
+                                                <HBox spacing="15.0" alignment="CENTER_LEFT" >
+                                                    <children>
+                                                        <HBox spacing="5.0" alignment="CENTER_LEFT" >
+                                                            <children>
+                                                                <RadioButton fx:id="radiobuttonSplitCountForQuadrats" mnemonicParsing="false" selected="true" text="Split count" />
+                                                                <TextField fx:id="textFieldSplitCountForQuadrats" prefHeight="26.0" prefWidth="71.0" text="1" />
+                                                            </children>
+                                                        </HBox>
+                                                        <HBox spacing="5.0" alignment="CENTER_LEFT" >
+                                                            <children>
+                                                                <RadioButton fx:id="radiobuttonLengthForQuadrats" mnemonicParsing="false" text="Length (m)" />
+                                                                <TextField fx:id="textFieldLengthForQuadrats" disable="true" prefHeight="26.0" prefWidth="71.0" />
+                                                            </children>
+                                                        </HBox>
+                                                    </children> 
+                                                    <padding>
+                                                        <Insets left="20.0" />
+                                                    </padding>  
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                        <Separator prefHeight="0.0" />
+                                        <HBox fx:id="hboxMaxChart" alignment="CENTER_LEFT" spacing="15.0">
+                                            <children>
+                                                <Label text="Max chart number in a row" />
+                                                <TextField fx:id="textfieldMaxChartNumberInARow" prefHeight="26.0" prefWidth="45.0" text="6" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </children>
+</AnchorPane>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane id="AnchorPane" prefHeight="447.0" prefWidth="289.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.40" fx:controller="org.amapvox.gui.AttributsImporterFrameController">
+   <children>
+      <VBox alignment="BOTTOM_RIGHT" prefWidth="289.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <ScrollPane>
+               <content>
+                  <VBox fx:id="vBoxAttributsLayout" prefHeight="400.0" prefWidth="231.0" />
+               </content>
+            </ScrollPane>
+            <Button alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#onActionButtonImport" text="Import" />
+         </children>
+         <padding>
+            <Insets bottom="2.0" right="2.0" />
+         </padding>
+      </VBox>
+   </children>
+</AnchorPane>

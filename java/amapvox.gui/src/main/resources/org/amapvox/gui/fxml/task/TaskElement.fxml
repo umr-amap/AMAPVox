@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+
+<fx:root xmlns:fx="http://javafx.com/fxml/1" type="AnchorPane" > 
+    <children>
+        <VBox spacing="5.0" >
+            <children>
+                <HBox spacing="10.0">
+                    <children>
+                        <Label fx:id="taskIcon" >
+                            <graphic>
+                                <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/configure.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>                            
+                        </Label>
+                        <HBox spacing="3.0" alignment="CENTER_LEFT" >
+                            <children>
+                                <Button fx:id="expandButton" text="+" style="-fx-background-color: transparent; -fx-padding: 1px; -fx-border-insets: 1px; -fx-background-insets: 1px;" />
+                                <Label fx:id="taskTitle" />
+                            </children>
+                        </HBox>
+                    </children>
+                </HBox>
+                <GridPane hgap="5.0" vgap="3.0">
+                    <children>
+                        <Button fx:id="controlButton" />
+                        <ProgressBar fx:id="taskProgress" progress="0" prefWidth="250" maxHeight="1.7976931348623157E308" GridPane.columnIndex="1" />
+                        <Label fx:id="taskMessage" style="-fx-font-size: 75%;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    </children>
+                    <padding>
+                        <Insets left="35.0"/>
+                    </padding> 
+                </GridPane>
+            </children>
+        </VBox>
+    </children>
+</fx:root>

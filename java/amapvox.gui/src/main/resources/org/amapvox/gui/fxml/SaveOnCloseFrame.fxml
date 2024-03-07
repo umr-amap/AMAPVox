@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.SaveOnCloseFrameController">
+    <HBox spacing="20.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
+        <children>
+            <ListView fx:id="listViewModifiedFiles" maxHeight="Infinity" prefHeight="150.0" />
+            <VBox spacing="10.0" >
+                <children>
+                    <Button fx:id="btnSave" maxWidth="Infinity" onAction="#onActionButtonSave" text="Save" />
+                    <Button fx:id="btnSaveAll" maxWidth="Infinity" onAction="#onActionButtonSaveAll" text="Save All" />
+                    <Button fx:id="btnDiscard" maxWidth="Infinity" onAction="#onActionButtonDiscard" text="Discard" />
+                    <Button fx:id="btnDiscardAll" maxWidth="Infinity" onAction="#onActionButtonDiscardAll" text="Discard All" />
+                    <Button fx:id="btnCancel" maxWidth="Infinity" onAction="#onActionButtonCancel" text="Cancel" />
+                </children>
+            </VBox>
+        </children>
+    </HBox>
+</AnchorPane>

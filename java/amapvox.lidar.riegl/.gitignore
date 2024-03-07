@@ -1,0 +1,11 @@
+/target/
+hs_err_pid*.log
+log.txt*
+/target/
+
+native/rivlib/*/*
+!native/rivlib/*/.gitkeep
+native/build/*/*
+!native/build/*/.gitkeep
+
+/nbproject/

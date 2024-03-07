@@ -1,0 +1,14 @@
+#version 140
+
+uniform mat4 viewMatrixOrtho, projMatrixOrtho;
+
+in vec4 position;
+
+in vec2 textureCoordinates;
+out vec2 texCoordinates;
+ 
+void main()
+{
+    texCoordinates = textureCoordinates;
+    gl_Position = projMatrixOrtho * viewMatrixOrtho * position ;
+}

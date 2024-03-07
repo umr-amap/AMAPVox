@@ -1,0 +1,2 @@
+Permettre à l'utilisateur de choisir la cible vers laquelle pointe la caméra
+Se caler selon un plan voulu (x,y) ou (x,z) par exemple

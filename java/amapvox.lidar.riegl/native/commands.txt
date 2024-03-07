@@ -1,0 +1,41 @@
+#
+# Working directory: AMAPVox root folder
+#
+
+#
+# MSVC
+#
+
+cd amapvox.lidar.riegl\native
+
+# x64
+# from "x64 Native Tools Command Prompt for VS 2019"
+# vcvars64.bat
+# delete previous builds
+rmdir /S /Q build\win64 && mkdir build\win64 && copy /y NUL build\win64\.gitkeep >NUL
+# create makefiles
+cmake -G "Visual Studio 16 2019" -A x64 -B build\win64
+# compile target
+cmake --build build\win64 --config Release
+# copy shared library to JRiegl resources folder
+XCOPY build\win64\Release\RiVLibJNI.dll ..\src\main\resources\lib\win64\s
+# clean target
+cmake --build build\win64 --target clean
+
+#
+# GNU/G++
+#
+
+cd amapvox.lidar.riegl/native
+
+# delete previous builds
+rm -rf build/linux64/*
+# create makefiles
+cmake -G "Unix Makefiles" -B build/linux64
+# compile target
+cmake --build build/linux64 --config Release
+# copy shared library to JRiegl resources folder
+cp build/linux64/libRiVLibJNI.so ../src/main/resources/lib/linux_x86_64/
+# clean target
+cmake --build build/linux64 --target clean
+

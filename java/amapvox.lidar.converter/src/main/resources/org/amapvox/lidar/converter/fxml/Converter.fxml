@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="800" prefWidth="640.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.lidar.converter.ConverterController">
+    <children>
+        <VBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+            <children>
+                <Label text="LiDAR scans:" />
+                <ListView fx:id="listViewScans" prefHeight="250.0" />
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <MenuButton mnemonicParsing="false" text="Selection">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuItemSelectAllScans" text="All" />
+                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuItemUnselectAllScans" text="None" />
+                            </items>
+                        </MenuButton>
+                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                            <children>
+                                <CheckBox fx:id="checkboxImportPOPMatrix" mnemonicParsing="false" text="Import POP matrix" />
+                                <HBox spacing="5.0">
+                                    <children>
+                                        <Button mnemonicParsing="false" onAction="#onActionButtonRemoveScanFromListView" text="Remove" />
+                                        <Button mnemonicParsing="false" onAction="#onActionButtonOpenRspProject" text="Import scans" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </HBox>
+                    </children>
+                </HBox>
+                <TabPane tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                        <Tab text="Riegl (rxp)">
+                            <content>
+                                <AnchorPane>
+                                    <children>
+                                        <VBox alignment="CENTER_LEFT" spacing="10" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="10.0" >
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                    <children>
+                                                        <Label text="Export : " />
+                                                        <CheckBox fx:id="checkboxExportReflectance" mnemonicParsing="false" selected="true" text="Reflectance" />
+                                                        <CheckBox fx:id="checkboxExportAmplitude" mnemonicParsing="false" selected="true" text="Amplitude" />
+                                                        <CheckBox fx:id="checkboxExportDeviation" mnemonicParsing="false" selected="true" text="Deviation" />
+                                                        <CheckBox fx:id="checkboxExportTime" mnemonicParsing="false" selected="true" text="Time" />
+                                                        <CheckBox fx:id="checkboxExportXYZ" mnemonicParsing="false" selected="true" text="XYZ" />
+                                                    </children>
+                                                </HBox>
+                                                <Label text="Reflectance to intensity (for LAS/LAZ export) :" />
+                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                    <children>
+                                                        <Label text="Min reflectance (dB)" />
+                                                        <TextField fx:id="textFieldMinReflectance" prefWidth="50.0" text="-50" />
+                                                        <Label text="Max reflectance (dB)" />
+                                                        <TextField fx:id="textFieldMaxReflectance" prefWidth="50.0" text="50" />
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                        <Tab text="Leica/Faro">
+                            <content>
+                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                    <children>
+                                        <Label text="Export : " />
+                                        <CheckBox fx:id="checkboxExportRGB" mnemonicParsing="false" selected="true" text="RGB" />
+                                        <CheckBox fx:id="checkboxExportIntensity" mnemonicParsing="false" selected="true" text="Intensity" />
+                                    </children>
+                                </HBox>
+                            </content>
+                        </Tab>
+                    </tabs>
+                </TabPane>
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <Label text="Convert to" />
+                        <ComboBox fx:id="outputFormat" prefWidth="128.0" />
+                    </children>
+                </HBox>
+                <HBox fx:id="hboxLasPrecision" alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <Label text="Precision (-set_scale) X" />
+                        <TextField fx:id="textFieldXPrecision" text="0.001" prefWidth="128.0" />
+                        <Label text="Y" />
+                        <TextField fx:id="textFieldYPrecision" text="0.001" prefWidth="128.0" />
+                        <Label text="Z" />
+                        <TextField fx:id="textFieldZPrecision" text="0.001" prefWidth="128.0" />
+                    </children>
+                </HBox>
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label text="Output directory" />
+                        <HBox>
+                            <children>
+                                <TextField fx:id="textFieldOutputDirectory" prefWidth="382.0" HBox.hgrow="ALWAYS" />
+                                <Button mnemonicParsing="false" onAction="#onActionButtonChooseOutputDirectory" text="..." />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+                <HBox alignment="CENTER">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#onActionButtonLaunchConversion" text="Convert" />
+                    </children>
+                </HBox>
+                <!--      
+<HBox alignment="CENTER">
+    <children>
+        <Label>
+            <graphic>
+                <ImageView fitHeight="250" pickOnBounds="true" preserveRatio="true">
+                    <image >
+                        <Image url="@/icons/lidar-converter_256x256.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </Label>
+    </children>
+</HBox>
+                -->
+            </children>
+            <padding>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </padding>
+        </VBox>
+    </children>
+</AnchorPane>

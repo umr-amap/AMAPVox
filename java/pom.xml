@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.amapvox</groupId>
+    <artifactId>amapvox</artifactId>
+    <version>2.2.0</version>
+    <packaging>pom</packaging>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+        <javafx.version>21</javafx.version>
+    </properties>
+    
+    <name>AMAPVox</name>
+    
+    <modules>
+        <module>amapvox.gui</module>
+        <module>amapvox.core</module>
+        <module>amapvox.main</module>
+        <module>amapvox.canopy</module>
+        <module>amapvox.viewer3d</module>
+        <module>amapvox.lidar.commons</module>
+        <module>amapvox.lidar.riegl</module>
+        <!-- <module>amapvox.lidar.jlas</module> -->
+        <module>amapvox.lidar.gridded</module>
+        <module>amapvox.lidar.gui</module>
+        <module>amapvox.lidar.laszip</module>
+        <module>amapvox.lidar.converter</module>
+        <module>amapvox.commons.util</module>
+        <module>amapvox.commons.math</module>
+        <module>amapvox.commons.javafx</module>
+        <module>amapvox.commons.raster</module>
+        <module>amapvox.commons.spds</module>
+        <module>amapvox.commons.format</module>
+        <module>amapvox.commons.raytracing</module>
+    </modules>  
+    
+    <scm>
+        <connection>scm:git:http://amap-dev.cirad.fr/git/amapvox.git</connection>
+        <developerConnection>scm:git:http://amap-dev.cirad.fr/git/amapvox.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>http://amap-dev.cirad.fr/projects/amapvox</url>
+    </scm>
+    
+    
+    
+    <build>
+        
+        <finalName>${project.name}-${project.version}</finalName>
+        
+        <plugins>
+            <!-- Define minimal version of Maven to use -->
+            <!-- (not working if moved in pluginManagement section) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.6.3</version>
+                                </requireMavenVersion>
+                            </rules>    
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        
+        <pluginManagement>
+            <plugins>
+           
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+                
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <compilerArgs>
+                            <!-- <arg>-Xlint:unchecked</arg> -->
+                            <!-- <arg>-Xlint:deprecation</arg> -->
+                            <!-- <arg>-Xlint:removal</arg> -->
+                        </compilerArgs>
+                    </configuration> 
+                </plugin>
+            
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.3.0</version>
+                </plugin>
+            
+                <plugin>
+                    <groupId>com.google.code.maven-replacer-plugin</groupId>
+                    <artifactId>replacer</artifactId>
+                    <version>1.5.3</version>
+                    <executions>
+                        <execution>
+                            <id>replace-version-resource</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>replace</goal>
+                            </goals>
+                            <configuration>
+                                <token>$VERSION</token>
+                                <value>${project.version}</value>
+                            </configuration>        
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <includes>
+                            <include>${basedir}/target/classes/version.properties</include>
+                        </includes>
+                        <regex>false</regex>
+                        <outputDir>/</outputDir>
+                    </configuration>
+                </plugin>
+            
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.6.1</version>
+                    <executions>
+                        <execution>
+                            <id>copy-dependencies</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>copy-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <overWriteReleases>false</overWriteReleases>
+                                <overWriteSnapshots>false</overWriteSnapshots>
+                                <overWriteIfNewer>true</overWriteIfNewer>
+                                <excludeScope>system</excludeScope>
+                                <!-- The JavaFX libraries are bundled into the custom JVM, so we don't want to duplicate
+                                them in the bundled app and installer. This command skips all of the JavaFX by groupId. -->                      
+                                <excludeGroupIds>org.openjfx,junit,org.mockito,org.hamcrest</excludeGroupIds>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                
+                <plugin>
+                    <inherited>false</inherited>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
+                
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.6.0</version>
+                </plugin>
+                
+                <plugin>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-maven-plugin</artifactId>
+                    <version>0.0.8</version>
+                </plugin>
+                
+                <plugin>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <version>3.1.1</version>
+                </plugin>
+            
+            </plugins>
+        </pluginManagement>
+        
+    </build>
+    
+    <repositories>
+        <repository>
+            <id>default</id>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+        
+        <repository>
+            <id>unidata-all</id>
+            <name>Unidata All</name>
+            <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
+        </repository>
+        
+        <repository>
+            <id>loca-maven-repository</id>
+            <url>file:./maven-repository</url>
+        </repository>
+        <repository>
+            <id>jogamp-repository</id>
+            <url>https://jogamp.org/deployment/maven</url>
+        </repository>
+    </repositories>
+    
+    <!-- Shared dependencies between each child projects -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.17</version>
+            </dependency>
+          
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.13.2</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>javax.vecmath</groupId>
+                <artifactId>vecmath</artifactId>
+                <version>1.5.2</version>
+            </dependency>
+            
+        </dependencies>
+    </dependencyManagement>
+    
+</project>

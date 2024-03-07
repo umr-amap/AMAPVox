@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.input.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import org.amapvox.commons.javafx.SelectableMenuButton?>
+
+<AnchorPane fx:id="anchorpaneRoot" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="708.0" prefWidth="1198.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.MainFrameController">
+    <children>
+        <VBox AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" >
+            <children>
+                <MenuBar prefHeight="25.0" prefWidth="800.0" >
+                    <menus>
+                        <Menu mnemonicParsing="false" text="File">
+                            <items>
+                                <Menu fx:id="newMenu" mnemonicParsing="false" text="New" />
+                                <SeparatorMenuItem />
+                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuAddTask" text="Open (Ctrl+O)">
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                    </accelerator>
+                                </MenuItem>
+                                <Menu fx:id="recentMenu" mnemonicParsing="false" text="Recent Files" />
+                                <MenuItem fx:id="editMenuItem" mnemonicParsing="false" onAction="#onActionMenuEditTask" text="Edit" />
+                                <MenuItem fx:id="closeMenuItem" mnemonicParsing="false" onAction="#onActionMenuRemoveTask" text="Close" />
+                                <SeparatorMenuItem />
+                                <MenuItem fx:id="saveMenuItem" mnemonicParsing="false" onAction="#onActionMenuSaveTask" text="Save (Ctrl+S)">
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                    </accelerator>
+                                </MenuItem>
+                                <MenuItem fx:id="saveAsMenuItem" mnemonicParsing="false" onAction="#onActionMenuSaveAsTask" text="Save As..." />
+                                <SeparatorMenuItem />
+                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuExit" text="Exit (Ctrl+Q)">
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="Q" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                    </accelerator>
+                                </MenuItem>
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Edit">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuClearWindow" text="Clear window" />
+                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuPreferences" text="Preferences" />
+                            
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Help">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuAbout" text="About" />
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+                <ToolBar>
+                    <items>
+                        <MenuButton fx:id="newToolbarButton" mnemonicParsing="false">
+                            <graphic>
+                                <ImageView pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/toolbar/menu-new.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                            </padding>
+                            <tooltip>
+                                <Tooltip text="New configuration" />
+                            </tooltip>
+                        </MenuButton>
+                        <Button fx:id="openToolbarButton" mnemonicParsing="false" onAction="#onActionMenuAddTask">
+                            <graphic>
+                                <ImageView pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/toolbar/menu-open.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                            </padding>
+                            <tooltip>
+                                <Tooltip text="Open configuration (Ctrl+O)" />
+                            </tooltip>
+                        </Button>
+                        <Button fx:id="editToolbarButton" mnemonicParsing="false" onAction="#onActionMenuEditTask">
+                            <graphic>
+                                <ImageView pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/toolbar/menu-edit.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                            </padding>
+                            <tooltip>
+                                <Tooltip text="Edit configuration" />
+                            </tooltip>
+                        </Button>
+                        <Button fx:id="closeToolbarButton" mnemonicParsing="false" onAction="#onActionMenuRemoveTask">
+                            <graphic>
+                                <ImageView pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/toolbar/menu-close.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                            </padding>
+                            <tooltip>
+                                <Tooltip text="Close configuration" />
+                            </tooltip>
+                        </Button>
+                        <Separator />
+                        <Button fx:id="saveToolbarButton" disable="true" mnemonicParsing="false" onAction="#onActionMenuSaveTask">
+                            <graphic>
+                                <ImageView pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/toolbar/save.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                            </padding>
+                            <tooltip>
+                                <Tooltip text="Save configuration (Ctrl+S)" />
+                            </tooltip>
+                        </Button>
+                        <Button fx:id="saveAsToolbarButton" disable="true" mnemonicParsing="false" onAction="#onActionMenuSaveAsTask">
+                            <graphic>
+                                <ImageView pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/toolbar/save-as.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                            </padding>
+                            <tooltip>
+                                <Tooltip text="Save configuration as ..." />
+                            </tooltip>
+                        </Button>
+                        <Separator />
+                        <Button fx:id="runToolbarButton" mnemonicParsing="false" onAction="#onActionMenuRunTask">
+                            <graphic>
+                                <ImageView pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@icons/toolbar/run-play.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                            <padding>
+                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                            </padding>
+                            <tooltip>
+                                <Tooltip text="Run configuration(s)" />
+                            </tooltip>
+                        </Button>
+                    </items>
+                </ToolBar>
+                <SplitPane fx:id="splitPaneVoxelization" orientation="HORIZONTAL" dividerPositions="0.3" VBox.vgrow="ALWAYS" >
+                    <items>
+                        <AnchorPane>
+                            <children>
+                                <SplitPane dividerPositions="0.5" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <items>
+                                        <AnchorPane>
+                                            <children>
+                                                <TabPane fx:id="tabPaneIO" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" >
+                                                    <padding>
+                                                        <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+                                                    </padding>
+                                                    <tabs>
+                                                        <Tab fx:id="cfgTab" text="Configuration files">
+                                                            <content>
+                                                                <VBox spacing="5.0" >
+                                                                    <children>
+                                                                        <ListView fx:id="listViewTaskList" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                            <tooltip>
+                                                                                <Tooltip text="Double-click or Right-click Edit to edit configuration file(s)" />
+                                                                            </tooltip>
+                                                                        </ListView>
+                                                                        <HBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                                                            <children>
+                                                                                <SelectableMenuButton fx:id="selectorTaskList" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </content>
+                                                        </Tab>
+                                                        <Tab text="Output files">
+                                                            <content>
+                                                                <VBox spacing="5.0">
+                                                                    <children>
+                                                                        <TreeView fx:id="treeViewOutput" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                            <tooltip>
+                                                                                <Tooltip text="List of output files." />
+                                                                            </tooltip>
+                                                                        </TreeView>
+                                                                        <HBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                                                            <children>
+                                                                                <HBox spacing="5.0">
+                                                                                    <children>
+                                                                                        <Button fx:id="clearOutputButton" mnemonicParsing="false" text="Clear" onAction="#onActionButtonClearOutput">
+                                                                                            <graphic>
+                                                                                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                                                                                    <image>
+                                                                                                        <Image url="@icons/clear.png" />
+                                                                                                    </image>
+                                                                                                </ImageView>
+                                                                                            </graphic>
+                                                                                            <tooltip>
+                                                                                                <Tooltip text="Clear ouput file(s)" />
+                                                                                            </tooltip>
+                                                                                        </Button>
+                                                                                    </children>
+                                                                                </HBox>
+                                                                            </children>
+                                                                        </HBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </content>
+                                                        </Tab>
+                                                    </tabs>
+                                                </TabPane>
+                                            </children>
+                                        </AnchorPane>
+                                        <AnchorPane>
+                                            <children>
+                                                <TitledPane animated="false" collapsible="false" text="Logs" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                    <content>
+                                                        <VBox spacing="5.0">
+                                                            <children>
+                                                                <TextArea fx:id="textAreaLog" editable="false" VBox.vgrow="ALWAYS" />
+                                                                <HBox spacing="5.0" alignment="CENTER_LEFT">
+                                                                    <children>
+                                                                        <Button fx:id="clearLogButton" mnemonicParsing="false" onAction="#onActionButtonClearLog" text="Clear" >
+                                                                            <graphic>
+                                                                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                                                                    <image>
+                                                                                        <Image url="@icons/clear.png" />
+                                                                                    </image>
+                                                                                </ImageView>
+                                                                            </graphic>
+                                                                        </Button>
+                                                                        <Button fx:id="exportLogButton" mnemonicParsing="false" onAction="#onActionButtonExportLog" text="Export" >
+                                                                            <graphic>
+                                                                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                                                                    <image>
+                                                                                        <Image url="@icons/toolbar/save-as.png" />
+                                                                                    </image>
+                                                                                </ImageView>
+                                                                            </graphic>
+                                                                        </Button>
+                                                                    </children>
+                                                                </HBox>
+                                                            </children>
+                                                        </VBox>
+                                                    </content>
+                                                </TitledPane>
+                                            </children>
+                                        </AnchorPane>
+                                    </items>
+                                </SplitPane>
+                            </children>
+                        </AnchorPane>
+                        <AnchorPane>
+                            <children>
+                                <TabPane fx:id="tabPaneEditor" tabClosingPolicy="ALL_TABS" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0" />
+                            </children>
+                        </AnchorPane>
+                    </items>
+                </SplitPane>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

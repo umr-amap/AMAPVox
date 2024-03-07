@@ -1,0 +1,73 @@
+LidarConverter-2.0.0.jar -> lib/commons-math-2.0.0.jar
+LidarConverter-2.0.0.jar -> lib/commons-util-2.0.0.jar
+LidarConverter-2.0.0.jar -> lib/controlsfx-11.1.0.jar
+LidarConverter-2.0.0.jar -> java.base
+LidarConverter-2.0.0.jar -> java.logging
+LidarConverter-2.0.0.jar -> javafx.base
+LidarConverter-2.0.0.jar -> javafx.controls
+LidarConverter-2.0.0.jar -> javafx.fxml
+LidarConverter-2.0.0.jar -> javafx.graphics
+LidarConverter-2.0.0.jar -> lib/jna-5.12.1.jar
+LidarConverter-2.0.0.jar -> lib/lidar-commons-2.0.0.jar
+LidarConverter-2.0.0.jar -> lib/lidar-gridded-2.0.0.jar
+LidarConverter-2.0.0.jar -> lib/lidar-gui-2.0.0.jar
+LidarConverter-2.0.0.jar -> lib/lidar-riegl-2.0.0.jar
+LidarConverter-2.0.0.jar -> lib/vecmath-1.5.2.jar
+commons-javafx-2.0.0.jar -> java.base
+commons-javafx-2.0.0.jar -> javafx.base
+commons-javafx-2.0.0.jar -> javafx.controls
+commons-javafx-2.0.0.jar -> javafx.graphics
+commons-math-2.0.0.jar -> java.base
+commons-math-2.0.0.jar -> lib/vecmath-1.5.2.jar
+commons-math3-3.6.1.jar -> java.base
+commons-util-2.0.0.jar -> java.base
+commons-util-2.0.0.jar -> java.desktop
+controlsfx-11.1.0.jar -> java.base
+controlsfx-11.1.0.jar -> javafx.base
+controlsfx-11.1.0.jar -> javafx.controls
+controlsfx-11.1.0.jar -> javafx.graphics
+jdom2-2.0.6.1.jar -> java.base
+jdom2-2.0.6.1.jar -> java.xml
+jna-5.12.1.jar -> java.base
+jna-5.12.1.jar -> java.desktop
+jna-5.12.1.jar -> java.logging
+lidar-commons-2.0.0.jar -> lib/commons-util-2.0.0.jar
+lidar-commons-2.0.0.jar -> java.base
+lidar-commons-2.0.0.jar -> lib/vecmath-1.5.2.jar
+lidar-gridded-2.0.0.jar -> lib/commons-math3-3.6.1.jar
+lidar-gridded-2.0.0.jar -> lib/commons-util-2.0.0.jar
+lidar-gridded-2.0.0.jar -> java.base
+lidar-gridded-2.0.0.jar -> java.logging
+lidar-gridded-2.0.0.jar -> lib/lidar-commons-2.0.0.jar
+lidar-gridded-2.0.0.jar -> lib/vecmath-1.5.2.jar
+lidar-gui-2.0.0.jar -> lib/commons-javafx-2.0.0.jar
+lidar-gui-2.0.0.jar -> lib/commons-util-2.0.0.jar
+lidar-gui-2.0.0.jar -> java.base
+lidar-gui-2.0.0.jar -> java.logging
+lidar-gui-2.0.0.jar -> javafx.base
+lidar-gui-2.0.0.jar -> javafx.controls
+lidar-gui-2.0.0.jar -> javafx.fxml
+lidar-gui-2.0.0.jar -> javafx.graphics
+lidar-gui-2.0.0.jar -> lib/lidar-commons-2.0.0.jar
+lidar-gui-2.0.0.jar -> lib/lidar-gridded-2.0.0.jar
+lidar-gui-2.0.0.jar -> lib/lidar-riegl-2.0.0.jar
+lidar-gui-2.0.0.jar -> lib/vecmath-1.5.2.jar
+lidar-riegl-2.0.0.jar -> lib/commons-util-2.0.0.jar
+lidar-riegl-2.0.0.jar -> java.base
+lidar-riegl-2.0.0.jar -> java.logging
+lidar-riegl-2.0.0.jar -> lib/jdom2-2.0.6.1.jar
+lidar-riegl-2.0.0.jar -> lib/jna-5.12.1.jar
+lidar-riegl-2.0.0.jar -> lib/lidar-commons-2.0.0.jar
+lidar-riegl-2.0.0.jar -> lib/vecmath-1.5.2.jar
+vecmath-1.5.2.jar -> java.base
+
+jdeps -q --multi-release 17 --recursive --ignore-missing-deps --print-module-deps --module-path "target/release/lib"  target/release/LidarConverter-2.0.0.jar
+
+com.sun.jna,java.base,java.logging,javafx.fxml,org.controlsfx.controls,umramap.commons.math,umramap.commons.util,umramap.lidar.commons,umramap.lidar.gridded,umramap.lidar.gui,umramap.lidar.riegl,vecmath
+
+
+
+jlink --no-header-files --no-man-pages --compress=2 --add-modules java.base,java.desktop,java.xml,java.logging,javafx.base,javafx.controls,javafx.graphics,javafx.fxml --output target/jre
+
+jlink --no-header-files --no-man-pages --compress=2 --module-path "target/release/lib" --add-modules java.logging,javafx.fxml,org.controlsfx.controls,umramap.commons.math,umramap.commons.util,umramap.lidar.commons,umramap.lidar.gridded,umramap.lidar.gui,umramap.lidar.riegl --output target/jre
+

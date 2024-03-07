@@ -1,0 +1,22 @@
+* {
+    -fx-font-family: "Liberation Sans";
+    -fx-font-size: 11pt;
+}
+
+#logLabel {
+    -fx-font-family: "Liberation Mono";
+    -fx-font-size: 9pt;
+}
+
+.button {
+    -fx-font-weight: bold;
+}
+.list-cell:loaded{
+    -fx-background-color: #CCFF66;
+    -fx-text-fill: white;
+}
+
+.list-cell:loaded:cell-selection{
+    -fx-background-color: #A3CC52;
+    -fx-text-fill: white;
+}

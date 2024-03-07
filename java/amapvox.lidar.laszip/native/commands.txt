@@ -1,0 +1,58 @@
+#
+# Working directory: LASzipJNA root folder
+# Content: 
+#   build/ CMAKE build folder (empty)
+#   CMakeLists.txt CMAKE configuration file
+#   commands.txt 
+#   src/ JLAS_API source folder
+#
+
+# Retrieve LAStools sources
+
+git clone https://github.com/LAStools/LAStools.git native/LAStools
+
+#
+# GNU/G++
+#
+
+cd ./native
+
+# delete previous builds
+rm -rf build/linux64/*
+
+# create makefiles
+cmake -G "Unix Makefiles" -B build/linux64
+
+# build target
+cmake --build build/linux64 --config Release
+
+# copy target to Java ressource folder
+cp build/linux64/libJLasApi.so ../src/main/resources/libJLasApi64.so
+
+# clean target
+cmake --build build/linux64 --target clean
+
+#
+# MSVC
+#
+
+# x64
+# from "x64 Native Tools Command Prompt for VS 2019"
+# vcvars64.bat
+
+cd native
+
+# create makefiles
+cmake -G "Visual Studio 16 2019" -A x64 -B build\win64
+
+# build target
+cmake --build build\win64 --config Release
+
+# copy DLL to Java ressource folder
+Copy build\win64\Release\JLasApi.dll to ..\src\main\resources\JLasApi64.dll
+
+# clean target
+cmake --build build\win64 --target clean
+
+dumpbin.exe /EXPORTS native\build\win64\Release\JLasApi.dll
+

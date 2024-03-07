@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>org.amapvox</groupId>
+        <artifactId>amapvox</artifactId>
+        <version>2.2.0</version>
+    </parent>
+    
+    <artifactId>amapvox-core</artifactId>
+    <packaging>jar</packaging>
+  
+    <build>
+        
+        <plugins>
+            
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+            </plugin>
+        
+        </plugins>
+        
+    </build>
+ 
+    <dependencies>
+        
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+            
+        <dependency>
+            <groupId>org.amapvox</groupId>
+            <artifactId>lidar-riegl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.mreutegg</groupId>
+            <artifactId>laszip4j</artifactId>
+            <version>0.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.amapvox</groupId>
+            <artifactId>lidar-gridded</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- commons-util and commons-math could be removed since they are
+        loaded by commons-spds and commons-raster. They are declared though
+        as they are directly needed by amapvox-core -->
+        <dependency>
+            <groupId>org.amapvox</groupId>
+            <artifactId>commons-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.amapvox</groupId>
+            <artifactId>commons-math</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.amapvox</groupId>
+            <artifactId>commons-spds</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.amapvox</groupId>
+            <artifactId>commons-raster</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.amapvox</groupId>
+            <artifactId>commons-raytracing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.systemsx</groupId>
+            <artifactId>sis-jhdf5</artifactId>
+            <version>19.04.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
+    </dependencies>
+</project>

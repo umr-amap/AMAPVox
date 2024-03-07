@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import org.amapvox.commons.javafx.SelectableMenuButton?>
+
+<AnchorPane id="AnchorPane" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.configuration.TransmittanceMapFrameController">
+    <children>
+        <ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <content>
+                <VBox>
+                    <children>
+                        <TitledPane animated="false" text="Input/Output files">
+                            <content>
+                                <AnchorPane>
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
+                                            <children>
+                                                <VBox spacing="5.0" >
+                                                    <children>
+                                                        <Label text="Input file (.vox)" />
+                                                        <HBox>
+                                                            <children>
+                                                                <TextField fx:id="textfieldVoxelFilePathTransmittance" prefHeight="26.0" HBox.hgrow="ALWAYS" />
+                                                                <Button fx:id="buttonOpenVoxelFileTransmittance" mnemonicParsing="false" onAction="#onActionButtonOpenVoxelFileTransmittance" text="..." />
+                                                            </children>
+                                                        </HBox>
+                                                        <fx:include fx:id="checkMissingVoxelTransmittance" source="../CheckMissingVoxel.fxml"/>
+                                                    </children>
+                                                </VBox>
+                                                <VBox spacing="5.0">
+                                                    <children>
+                                                        <Label text="Output" />
+                                                        <HBox spacing="10.0">
+                                                            <children>
+                                                                <CheckBox fx:id="checkboxGenerateTextFile" mnemonicParsing="false" text="Generate text file" />
+                                                            </children>
+                                                        </HBox>
+                                                        <Label text="Output file" />
+                                                        <HBox fx:id="hboxGenerateTextFile" disable="true">
+                                                            <children>
+                                                                
+                                                                <TextField fx:id="textfieldOutputTextFilePath" prefHeight="26.0" HBox.hgrow="ALWAYS" />
+                                                                <Button maxWidth="-Infinity" mnemonicParsing="false" onAction="#onActionButtonOpenOutputTextFile" text="..." />
+                                                            </children>
+                                                        </HBox>
+                                                        <CheckBox fx:id="checkboxGenerateBitmapFile" mnemonicParsing="false" selected="true" text="Generate bitmap files" />
+                                                        <Label text="Output folder" />
+                                                        <HBox fx:id="hboxGenerateBitmapFiles">
+                                                            <children>
+                                                                
+                                                                <TextField fx:id="textfieldOutputBitmapFilePath" prefHeight="26.0" HBox.hgrow="ALWAYS" />
+                                                                <Button maxWidth="-Infinity" mnemonicParsing="false" onAction="#onActionButtonOpenOutputBitmapFile" text="..." />
+                                                            </children>
+                                                        </HBox>
+                                                    </children>
+                                                </VBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </TitledPane>
+                        <TitledPane animated="false" expanded="false" text="Sensor(s)">
+                            <content>
+                                <VBox spacing="10.0" >
+                                    <children>
+                                        <Label text="Sensor(s) positions" />
+                                        <ListView fx:id="listViewTransmittanceMapSensorPositions" prefHeight="200.0" />
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <SelectableMenuButton fx:id="selectorTransmittanceSensor" />
+                                                <HBox spacing="5.0">
+                                                    <children>
+                                                        <Button mnemonicParsing="false" onAction="#onActionButtonRemovePositionTransmittanceMap">
+                                                            <graphic>
+                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                    <image>
+                                                                        <Image url="@../icons/remove.png" />
+                                                                    </image>
+                                                                </ImageView>
+                                                            </graphic>
+                                                        </Button>
+                                                        <Button mnemonicParsing="false" onAction="#onActionButtonAddPositionTransmittanceMap">
+                                                            <graphic>
+                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                    <image>
+                                                                        <Image url="@../icons/add.png" />
+                                                                    </image>
+                                                                </ImageView>
+                                                            </graphic>
+                                                        </Button>
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <Label fx:id="labelDirectionsNumber" text="Directions number" />
+                                                <ComboBox fx:id="comboboxChooseDirectionsNumber" prefHeight="26.0" prefWidth="100.0" />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="4.0">
+                                            <children>
+                                                <Label text="Plot rotation" />
+                                                <TextField fx:id="textfieldDirectionRotationTransmittanceMap" prefHeight="26.0" prefWidth="66.0" text="0" />
+                                                <Label text="degrees (anticlockwise)" />
+                                            </children>
+                                        </HBox>
+                                        <CheckBox fx:id="checkboxTransmittanceMapToricity" mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Repetitive scene" />
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
+                        <TitledPane animated="false" expanded="false" text="Radiative conditions">
+                            <content>
+                                <VBox spacing="10.0">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                            <children>
+                                                <Label text="Latitude (degrees)" />
+                                                <TextField fx:id="textfieldLatitudeRadians" prefHeight="26.0" prefWidth="66.0" />
+                                            </children>
+                                        </HBox>
+                                        <VBox spacing="10.0">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT">
+                                                    <children>
+                                                        <Label text="Simulation periods" />
+                                                    </children>
+                                                </HBox>
+                                                <TableView fx:id="tableViewSimulationPeriods" editable="true" prefHeight="200.0">
+                                                    <columns>
+                                                        <TableColumn fx:id="tableColumnPeriod" prefWidth="248.0" text="Period" />
+                                                        <TableColumn fx:id="tableColumnClearness" minWidth="0.0" prefWidth="113.0" text="Clearness" />
+                                                    </columns>
+                                                </TableView>
+                                                <HBox spacing="10.0">
+                                                    <children>
+                                                        <MenuButton fx:id="menuButtonSelectionPeriodsList" mnemonicParsing="false" text="Selection">
+                                                            <items>
+                                                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuItemSelectAllPeriods" text="All" />
+                                                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuItemUnselectAllPeriods" text="None" />
+                                                            </items>
+                                                        </MenuButton>
+                                                        <HBox spacing="5.0">
+                                                            <children>
+                                                                <Button mnemonicParsing="false" onAction="#onActionButtonRemovePeriodFromPeriodList">
+                                                                    <graphic>
+                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                            <image>
+                                                                                <Image url="@../icons/remove.png" />
+                                                                            </image>
+                                                                        </ImageView>
+                                                                    </graphic>
+                                                                </Button>
+                                                                <Button mnemonicParsing="false" onAction="#onActionButtonAddPeriodToPeriodList">
+                                                                    <graphic>
+                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                            <image>
+                                                                                <Image url="@../icons/add.png" />
+                                                                            </image>
+                                                                        </ImageView>
+                                                                    </graphic>
+                                                                </Button>
+                                                            </children>
+                                                        </HBox>
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </children>
+</AnchorPane>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane id="AnchorPane" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.TransformationMatrixController">
+    <HBox spacing="5.0">
+        <children>
+            <VBox spacing="5.0">
+                <children>
+                    <Label fx:id="labelM00" prefWidth="120" alignment="CENTER" style="-fx-background-color: white" />
+                    <Label fx:id="labelM10" prefWidth="120" alignment="CENTER" style="-fx-background-color: white" />
+                    <Label fx:id="labelM20" prefWidth="120" alignment="CENTER" style="-fx-background-color: white" />
+                    <Label fx:id="labelM30" prefWidth="120" alignment="CENTER" style="-fx-background-color: white" />
+                </children>
+            </VBox>
+            <VBox spacing="5.0">
+                <children>
+                    <Label fx:id="labelM01" prefWidth="120" alignment="CENTER" style="-fx-background-color: white" />
+                    <Label fx:id="labelM11" prefWidth="120" alignment="CENTER" style="-fx-background-color: white" />
+                    <Label fx:id="labelM21" prefWidth="120" alignment="CENTER" style="-fx-background-color: white" />
+                    <Label fx:id="labelM31" prefWidth="120" alignment="CENTER" style="-fx-background-color: white" />
+                </children>
+            </VBox>
+            <VBox spacing="5.0">
+                <children>
+                    <Label fx:id="labelM02" prefWidth="120" alignment="CENTER" style="-fx-background-color: white"/>
+                    <Label fx:id="labelM12" prefWidth="120" alignment="CENTER" style="-fx-background-color: white"/>
+                    <Label fx:id="labelM22" prefWidth="120" alignment="CENTER" style="-fx-background-color: white"/>
+                    <Label fx:id="labelM32" prefWidth="120" alignment="CENTER" style="-fx-background-color: white"/>
+                </children>
+            </VBox>
+            <VBox spacing="5.0">
+                <children>
+                    <Label fx:id="labelM03" prefWidth="120" alignment="CENTER" style="-fx-background-color: white"/>
+                    <Label fx:id="labelM13" prefWidth="120" alignment="CENTER" style="-fx-background-color: white"/>
+                    <Label fx:id="labelM23" prefWidth="120" alignment="CENTER" style="-fx-background-color: white"/>
+                    <Label fx:id="labelM33" prefWidth="120" alignment="CENTER" style="-fx-background-color: white"/>
+                </children>
+            </VBox>
+        </children>
+    </HBox>
+</AnchorPane>

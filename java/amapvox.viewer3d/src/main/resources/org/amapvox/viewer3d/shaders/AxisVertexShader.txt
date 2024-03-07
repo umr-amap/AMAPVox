@@ -1,0 +1,32 @@
+#version 140
+
+uniform mat4 viewMatrix, projMatrix;
+
+in vec4 position;
+in vec3 color;
+
+out vec3 Color;
+ 
+void main()
+{
+    Color = color;
+
+    mat4 newViewMatrix = viewMatrix;
+
+    vec3 right = vec3(newViewMatrix[0].x, newViewMatrix[1].x, newViewMatrix[2].x);
+    vec3 up = vec3(newViewMatrix[0].y, newViewMatrix[1].y, newViewMatrix[2].y);
+    vec3 forward = vec3(newViewMatrix[0].z, newViewMatrix[1].z, newViewMatrix[2].z);
+
+    //newViewMatrix[0].z = 1;
+    //newViewMatrix[1].z = 1;
+    //newViewMatrix[2].z = 1;
+    
+    vec3 eye = vec3(0.5, 0.5, 0.5);
+
+    newViewMatrix[3].x = -dot(right, eye);
+    newViewMatrix[3].y = -dot(up, eye);
+    newViewMatrix[3].z = -dot(forward, eye);
+
+    gl_Position = projMatrix * newViewMatrix * position ;
+    
+}

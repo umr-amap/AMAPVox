@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>org.amapvox</groupId>
+        <artifactId>amapvox</artifactId>
+        <version>2.2.0</version>
+    </parent>
+    
+    <artifactId>amapvox-main</artifactId>
+    <packaging>jar</packaging>
+    
+    <properties>
+        <mainClass>org.amapvox.Main</mainClass>
+    </properties>
+    
+    <build>
+        
+        <finalName>AMAPVox-${project.version}</finalName>
+        
+        <plugins>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>dependency/</classpathPrefix>
+                            <mainClass>${mainClass}</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <Add-Opens>javafx.graphics/javafx.scene</Add-Opens>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            
+            <plugin>
+                <inherited>false</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/assembly/src.xml</descriptor>
+                    </descriptors>
+                    <finalName>AMAPVox-${project.version}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <outputDirectory>target</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <!-- <phase>package</phase> -->
+                        <phase />
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <!-- This is an app, so we don't want to install it in the local Maven repository -->
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            
+        </plugins>
+        
+    </build>
+    
+    <profiles>
+
+        <profile>
+            <id>build-linux</id>
+
+            <activation>
+                <os>
+                    <family>linux</family>
+                </os>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <executions>
+                            <execution>
+                                <id>Build Native Linux App</id>
+                                <phase />
+                                <!-- <phase>install</phase> -->
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>./build_app_linux.sh</executable>
+                            <environmentVariables>
+                                <JAVA_VERSION>${maven.compiler.release}</JAVA_VERSION>
+                                <PROJECT_VERSION>${project.version}</PROJECT_VERSION>
+                                <FINAL_NAME>AMAPVox-${project.version}</FINAL_NAME>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>build-windows</id>
+
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <executions>
+                            <execution>
+                                <id>Build Native Windows App</id>
+                                <phase />
+                                <!-- <phase>install</phase> -->
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>build_app_windows.bat</executable>
+                            <!--
+Does not seem to work with DOS...
+<environmentVariables>
+    <environmentVariables>
+        <JAVA_VERSION>${maven.compiler.release}</JAVA_VERSION>
+        <PROJECT_VERSION>${project.version}</PROJECT_VERSION>
+        <FINAL_NAME>AMAPVox-${project.version}</FINAL_NAME>
+    </environmentVariables>
+</environmentVariables>
+                            -->
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+    
+    <dependencies>
+        
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>  
+              
+        <dependency>
+            <groupId>org.amapvox</groupId>
+            <artifactId>amapvox-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.amapvox</groupId>
+            <artifactId>amapvox-canopy</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.amapvox</groupId>
+            <artifactId>amapvox-gui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+    </dependencies>
+</project>

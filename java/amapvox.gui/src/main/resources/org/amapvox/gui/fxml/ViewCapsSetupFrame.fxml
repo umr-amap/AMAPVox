@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="280.0" prefWidth="321.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.ViewCapsSetupFrameController">
+    <children>
+      <Circle fx:id="circleViewCapEmpty" layoutX="161.0" layoutY="140.0" onMouseClicked="#onMouseClickedOnArcViewCapListener" radius="100.0" stroke="BLACK" strokeType="INSIDE" />
+      <Arc fx:id="arcViewCap" fill="DODGERBLUE" layoutX="161.0" layoutY="140.0" length="270.0" onMouseClicked="#onMouseClickedOnArcViewCapListener" radiusX="100.0" radiusY="100.0" startAngle="315.0" stroke="BLACK" strokeType="INSIDE" type="ROUND" />
+      <Circle fx:id="circleViewCapFull" fill="DODGERBLUE" layoutX="161.0" layoutY="140.0" onMouseClicked="#onMouseClickedOnArcViewCapListener" radius="100.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
+      <Label layoutX="14.0" layoutY="14.0" text="Angle (°)" />
+      <Label fx:id="labelAngleValue" layoutX="80.0" layoutY="14.0" text="360" />
+      <Button fx:id="buttonConfirmViewCap" layoutX="237.0" layoutY="240.0" mnemonicParsing="false" onAction="#onActionButtonConfirmViewCap" text="Confirm" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
+   </children>
+</AnchorPane>

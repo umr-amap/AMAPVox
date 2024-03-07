@@ -1,0 +1,19 @@
+#version 140
+
+uniform mat4 viewMatrix, projMatrix;
+
+in vec4 position;
+in vec3 instance_position;
+in vec4 instance_color;
+in vec4 ambient_occlusion;
+
+out float ao;
+out vec4 Color;
+ 
+void main()
+{
+    Color = instance_color;
+    ao = ambient_occlusion.x;
+
+    gl_Position = projMatrix * viewMatrix  * (position+vec4(instance_position,0.0));
+}

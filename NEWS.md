@@ -1,3 +1,8 @@
+# AMAPVox 2.2.1
+
+*yyyy-MM-dd*
+Aligned R package onto Java core version.
+
 # AMAPVox 1.0.1
 
 *2023-06-19*

@@ -152,7 +152,7 @@
                                                         <Button mnemonicParsing="false" onAction="#onActionButtonOpenOutputFile" text="..." />
                                                     </children>
                                                 </HBox>
-                                                <CheckBox fx:id="checkboxVoxelOutput" disable="false" text="Generate voxel file(s)" />                                                                                                             
+                                                <CheckBox fx:id="checkboxVoxelOutput" disable="false" selected="true" text="Generate voxel file(s)" />                                                                                                             
                                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
                                                     <children>
                                                         <CheckBox fx:id="checkboxSkipEmptyVoxel" text="Skip empty voxel" />

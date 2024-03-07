@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+
+<AnchorPane prefHeight="189.0" prefWidth="421.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.EditableListViewController">
+   <children>
+      <ListView fx:id="listViewItems" layoutX="32.4" layoutY="30.4" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0" />
+      <HBox fx:id="hboxButtons" layoutX="10.399999618530273" layoutY="107.5999984741211" spacing="20.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="4.0">
+         <children>
+            <MenuButton mnemonicParsing="false" text="Selection">
+               <items>
+                  <MenuItem fx:id="buttonSelectAll" mnemonicParsing="false" onAction="#onActionMenuItemSelectAll" text="All" />
+                  <MenuItem fx:id="buttonSelectNone" mnemonicParsing="false" onAction="#onActionMenuItemSelectNone" text="None" />
+               </items>
+            </MenuButton>
+            <HBox spacing="5.0">
+               <children>
+                  <Button fx:id="buttonRemoveItemFromListView" mnemonicParsing="false" onAction="#onActionButtonRemoveItemFromListView">
+                     <graphic>
+                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@icons/remove.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="buttonAddItemToListView" mnemonicParsing="false">
+                     <graphic>
+                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@icons/add.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+   </children>
+</AnchorPane>

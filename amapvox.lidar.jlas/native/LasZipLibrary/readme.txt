@@ -1,0 +1,5 @@
+Ce projet a été généré avec QtCreator et permet la génération d'une librairie dynamique (.so pour linux et .dll pour Windows) pour lire les fichiers .laz, format de fichier offrant la compression des fichiers .las.
+
+Cette librairie dynamique est faites pour être utilisée avec Java (JNI).
+
+

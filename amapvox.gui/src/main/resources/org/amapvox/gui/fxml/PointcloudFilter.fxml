@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.CheckBox?>
+
+
+<fx:root fx:id="hBoxRoot" alignment="CENTER_LEFT" spacing="15.0" type="HBox" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" >
+    <children>
+        <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+            <style>
+                -fx-padding: 10;
+                -fx-border-style: solid inside;
+                -fx-border-radius: 5;
+                -fx-border-width: 2;
+                -fx-border-insets: 5;
+                -fx-border-color: darkgray;
+            </style>
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                    <children>
+                        <Label fx:id="labelPointCloudPath" disable="true" text="Point cloud path (.txt)" />
+                        <TextField fx:id="textfieldPointCloudPath" disable="true" prefHeight="25.0" prefWidth="280.0" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="buttonOpenPointCloudFile" disable="true" mnemonicParsing="false" text="..." />
+                    </children>
+                </HBox>
+                <HBox spacing="15.0">
+                    <children>
+                        <ComboBox fx:id="comboboxPointCloudFilteringType" disable="true" prefHeight="25.0" prefWidth="116.0" />
+                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                            <children>
+                                <Label fx:id="labelPointCloudErrorMarginValue" disable="true" text="Margin of error" />
+                                <TextField fx:id="textfieldPointCloudErrorMargin" disable="true" prefHeight="25.0" prefWidth="67.0" text="0.0025" />
+                            </children>
+                        </HBox>
+                        <CheckBox fx:id="checkboxApplyVopMatrix" mnemonicParsing="false" selected="true" text="Apply VOP matrix" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+        <Button fx:id="buttonRemovePointCloudFilter" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="22.0" prefWidth="22.0" >
+            <graphic>
+                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@icons/remove.png" />
+                    </image>
+                </ImageView>
+            </graphic>
+        </Button>
+    </children>
+</fx:root>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+
+
+
+<AnchorPane id="AnchorPane" minHeight="0.0" minWidth="0.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.65" fx:controller="org.amapvox.gui.configuration.ObjExporterFrameController">
+    <children>
+        <VBox spacing="20.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" AnchorPane.bottomAnchor="10.0" fillWidth="true" >
+            <children>
+                <VBox spacing="10.0">
+                    <children>
+                        <Label text="Voxel file" />
+                        <HBox spacing="10.0">
+                            <children>
+                                <TextField fx:id="textfieldInputVoxelFile" editable="false" prefHeight="26.0" prefWidth="400.0" HBox.hgrow="ALWAYS" />
+                                <Button mnemonicParsing="false" onAction="#onActionButtonOpenVoxelFile" text="..."  />
+                            </children>
+                        </HBox>
+                        <Label text="Obj file" />
+                        <HBox fx:id="hboxOutputFile" spacing="10.0">
+                            <children>
+                                <TextField fx:id="textfieldOutputFile" editable="false" prefHeight="26.0" prefWidth="400.0" HBox.hgrow="ALWAYS" />
+                                <Button mnemonicParsing="false" onAction="#onActionButtonOpenOutputFile" text="..."  />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+                <VBox fx:id="vboxSizeFunctionofPAD" alignment="CENTER_LEFT" spacing="15.0">
+                    <children>
+                        <CheckBox fx:id="checkboxSizeFunctionOfPAD" mnemonicParsing="false" text="Size function of PAD (PAD/PADMax)^alpha" />
+                        <HBox fx:id="hboxSizeFunctionofPAD" alignment="CENTER_LEFT" spacing="10.0">
+                            <children>
+                                <Label text="PAD max" />
+                                <TextField fx:id="textfieldPADMax" prefHeight="26.0" prefWidth="54.0" text="5" />
+                                <Label text="alpha" />
+                                <TextField fx:id="textfieldAlpha" prefHeight="26.0" prefWidth="108.0" text="0.33333333" />
+                            </children>
+                            <padding>
+                                <Insets left="25.0" />
+                            </padding>
+                        </HBox>
+                    </children>
+                </VBox>
+                <HBox fx:id="hboxMaterial" alignment="CENTER_LEFT" spacing="20.0">
+                    <children>
+                        <CheckBox fx:id="checkboxMaterial" mnemonicParsing="false" selected="true" text="Write material" />
+                        <VBox fx:id="vboxMaterialParameters" spacing="5.0">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                    <children>
+                                        <Label text="Attribute" />
+                                        <ComboBox fx:id="comboboxAttribute" prefHeight="26.0" prefWidth="165.0" />
+                                    </children>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                    <children>
+                                        <Label text="Gradient" />
+                                        <ComboBox fx:id="comboboxGradient" prefHeight="26.0" prefWidth="165.0" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

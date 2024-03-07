@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.TextFlow?>
+
+<AnchorPane id="AnchorPane" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.AboutDialogController" >
+    <children>
+        <VBox alignment="TOP_CENTER" spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
+            <children>
+                <Label alignment="CENTER" prefWidth="500" maxWidth="1.7976931348623157E308" style="-fx-background-color: white;" >
+                    <graphic>
+                        <ImageView fitHeight="250" pickOnBounds="true" preserveRatio="true">
+                            <image >
+                                <Image url="@icons/amapvox-logo.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                </Label>
+                <TextFlow  prefWidth="500" prefHeight="150" fx:id="description" style="-fx-background-color: white" />
+                <TextFlow prefWidth="500" prefHeight="100" fx:id="properties" style="-fx-background-color: white" />
+                <Button text="close" onAction="#onActionButtonClose" />
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

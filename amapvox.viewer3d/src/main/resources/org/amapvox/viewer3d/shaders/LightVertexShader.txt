@@ -1,0 +1,20 @@
+#version 140
+
+uniform mat4 viewMatrix, projMatrix, transformation;
+
+in vec3 position;
+in vec3 normal;
+in vec3 color;
+
+out vec3 fragPosition;
+out vec3 fragNormal;
+out vec3 fragColor;
+ 
+void main()
+{
+    fragNormal = normal.xyz;
+    fragPosition = position.xyz;
+    fragColor = color;
+
+    gl_Position = projMatrix * viewMatrix  * transformation * vec4(position, 1);
+}

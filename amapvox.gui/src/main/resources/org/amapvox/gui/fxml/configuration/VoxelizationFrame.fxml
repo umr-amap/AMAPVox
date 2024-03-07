@@ -1,0 +1,743 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.Font?>
+<?import org.amapvox.commons.javafx.SelectableMenuButton?>
+
+<AnchorPane id="AnchorPane" minHeight="0.0" minWidth="0.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.configuration.VoxelizationFrameController">
+    <children>
+        <ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <content>
+                <VBox>
+                    <children>
+                        <TitledPane animated="false" expanded="true" text="Input">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0">
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
+                                            <children>
+                                                <TitledPane fx:id="inputScanTitledPane" animated="false" expanded="false" text="Scans">
+                                                    <content>
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0">
+                                                            <children>
+                                                                <VBox spacing="15.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                    <children>
+                                                                        <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                                                            <children>
+                                                                                <Button contentDisplay="CENTER" mnemonicParsing="false" onAction="#onActionButtonSetScans" text="Set scan(s)" />
+                                                                                <fx:include fx:id="buttonHelpScans" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <ListView fx:id="listviewLidarScans" prefHeight="150.0" prefWidth="300.0" />
+                                                                        <HBox spacing="5.0">
+                                                                            <children>
+                                                                                <Label text="Lidar type:" />
+                                                                                <Label fx:id="labelLidarType" text="NULL" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <TitledPane fx:id="lasTitledPane" animated="false" expanded="false" text="LAS/LAZ">
+                                                                            <content>
+                                                                                <AnchorPane minHeight="0.0" minWidth="0.0">
+                                                                                    <children>
+                                                                                        <VBox spacing="15.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                                            <children>
+                                                                                                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                                                                                    <children>
+                                                                                                        <Label text="Scanner position" />
+                                                                                                        <fx:include fx:id="buttonHelpScannerPosition" source="../HelpButton.fxml" />
+                                                                                                    </children>
+                                                                                                </HBox>
+                                                                                                <VBox spacing="15.0" >
+                                                                                                    <children>
+                                                                                                        <HBox spacing="5.0" fx:id="hboxLasTrajectory" alignment="CENTER_LEFT">
+                                                                                                            <children>
+                                                                                                                <RadioButton fx:id="rdbtnLasTrajectory" mnemonicParsing="false" selected="true" text="Trajectory"/>
+                                                                                                                <TextField fx:id="textFieldLasTrajectoryFile" prefHeight="25.0" HBox.hgrow="ALWAYS" />
+                                                                                                                <Button mnemonicParsing="false" onAction="#onActionButtonOpenTrajectoryFileALS" text="..." />
+                                                                                                            </children>
+                                                                                                        </HBox>
+                                                                                                        <HBox spacing="5.0" fx:id="hboxLasPosition" alignment="CENTER_LEFT">
+                                                                                                            <children>
+                                                                                                                <RadioButton fx:id="rdbtnLasPosition" mnemonicParsing="false" selected="false" text="Scanner position"/>
+                                                                                                                <Label text="x" />
+                                                                                                                <TextField fx:id="textFieldLasPositionX" prefWidth="90.0" text="0.0" />
+                                                                                                                <Label text="y" />
+                                                                                                                <TextField fx:id="textFieldLasPositionY" prefWidth="90.0" text="0.0" />
+                                                                                                                <Label text="z" />
+                                                                                                                <TextField fx:id="textFieldLasPositionZ" prefWidth="90.0" text="0.0" />
+                                                                                                            </children>
+                                                                                                        </HBox>
+                                                                                                    </children>
+                                                                                                    <padding>
+                                                                                                        <Insets left="25.0" />
+                                                                                                    </padding>
+                                                                                                </VBox>
+                                                                                                <HBox fx:id="hboxLasConsistency" spacing="10.0" alignment="CENTER_LEFT">
+                                                                                                    <children>
+                                                                                                        <CheckBox fx:id="checkboxLasConsistency" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Discard shots with inconsistent number of echoes or ranks." />
+                                                                                                        <fx:include fx:id="buttonHelpLasConsistency" source="../HelpButton.fxml" />
+                                                                                                        <RadioButton fx:id="rdbtnLasConsistencyWarn" mnemonicParsing="false" selected="true" text="Warn" />
+                                                                                                        <RadioButton fx:id="rdbtnLasConsistencySilent" mnemonicParsing="false" text="Silent" />
+                                                                                                    </children>
+                                                                                                </HBox>
+                                                                                                <HBox fx:id="hboxLasCollinearity" spacing="10.0" alignment="CENTER_LEFT">
+                                                                                                    <children>
+                                                                                                        <CheckBox fx:id="checkboxLasCollinearity" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Discard shots whose echoes are not collinear." />
+                                                                                                        <fx:include fx:id="buttonHelpLasCollinearity" source="../HelpButton.fxml" />
+                                                                                                        <Label text="Maximal deviation (degree)" />
+                                                                                                        <TextField fx:id="textfieldMaxDeviation" prefHeight="26.0" prefWidth="60.0" text="5" />
+                                                                                                        <RadioButton fx:id="rdbtnLasCollinearityWarn" mnemonicParsing="false" selected="true" text="Warn" />
+                                                                                                        <RadioButton fx:id="rdbtnLasCollinearitySilent" mnemonicParsing="false" text="Silent" />
+                                                                                                    </children>
+                                                                                                </HBox>
+                                                                                            </children>
+                                                                                        </VBox>
+                                                                                    </children>
+                                                                                </AnchorPane>
+                                                                            </content>
+                                                                        </TitledPane>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </TitledPane>
+                                                <TitledPane fx:id="titledPaneDTM" animated="false" expanded="false" text="DTM">
+                                                    <content>
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0">
+                                                            <children>
+                                                                <VBox spacing="15.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                    <children>
+                                                                        <HBox spacing="10.0">
+                                                                            <children>
+                                                                                <Label fx:id="labelDTMPath" text="Digital Terrain Model file" />
+                                                                                <fx:include fx:id="buttonHelpDTM" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox>
+                                                                            <children>
+                                                                                <TextField fx:id="textfieldDTMPath" editable="true" HBox.hgrow="ALWAYS" />
+                                                                                <Button fx:id="buttonOpenDTMFile" mnemonicParsing="false" onAction="#onActionButtonOpenDTMFile" text="..." />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <CheckBox fx:id="checkboxDTMVOPMatrix" disable="false" mnemonicParsing="false" selected="true" text="Apply VOP matrix" />
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </TitledPane>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </TitledPane>
+                        <TitledPane animated="false" expanded="false" text="Output">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0">
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
+                                            <children>
+                                                <Label text="Output file" />
+                                                <HBox spacing="5.0">
+                                                    <children>
+                                                        <TextField fx:id="textFieldOutputFile" prefHeight="25.0" prefWidth="280.0" HBox.hgrow="ALWAYS" />
+                                                        <Button mnemonicParsing="false" onAction="#onActionButtonOpenOutputFile" text="..." />
+                                                    </children>
+                                                </HBox>
+                                                <CheckBox fx:id="checkboxVoxelOutput" disable="false" text="Generate voxel file(s)" />                                                                                                             
+                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                    <children>
+                                                        <CheckBox fx:id="checkboxSkipEmptyVoxel" text="Skip empty voxel" />
+                                                        <fx:include fx:id="helpButtonSkipEmptyVoxel" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <HBox alignment="CENTER_LEFT" spacing="10.0" >
+                                                    <children>
+                                                        <Label text="Fraction digits:" />
+                                                        <Spinner fx:id="spinnerFractionDigits" prefWidth="72.0" BorderPane.alignment="CENTER" />
+                                                        <fx:include fx:id="helpButtonFractionDigits" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <HBox fx:id="hboxOutputFormat" alignment="CENTER_LEFT" spacing="10.0" >
+                                                    <children>
+                                                        <Label text="Voxel file format" wrapText="true" />
+                                                        <ComboBox fx:id="comboboxVoxOutputFormat" promptText="Choose format" />
+                                                        <fx:include fx:id="helpButtonOutputFormat" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <TitledPane animated="false" expanded="false" text="Output variables">
+                                                    <content>
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0">
+                                                            <children>
+                                                                <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                    <children>
+                                                                        <HBox spacing="10.0">
+                                                                            <children>
+                                                                                <SelectableMenuButton fx:id="selectorOutputVariables" />
+                                                                                <Label prefHeight="23.0" text="Select output variables" wrapText="true" alignment="BASELINE_LEFT" />
+                                                                                <fx:include fx:id="helpButtonOutputVariables" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <VBox fx:id="vboxOutputVariables" spacing="10.0">
+                                                                            <children>
+                                                                                <HBox fx:id="hboxSubVoxel" spacing="10" alignment="CENTER_LEFT" >
+                                                                                    <children>
+                                                                                        <Label text="Sub voxel division"></Label>
+                                                                                        <TextField fx:id="textFieldSubVoxel" prefWidth="50.0" text="2" />
+                                                                                        <fx:include fx:id="helpButtonSubVoxel" source="../HelpButton.fxml" />
+                                                                                    </children>
+                                                                                </HBox>
+                                                                                <VBox fx:id="vboxTrNumEstim" spacing="10.0" >
+                                                                                    <children>
+                                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                                            <children>
+                                                                                                <Label text="Estimated transmittance parameters" />
+                                                                                                <fx:include fx:id="helpButtonTrNumEstim" source="../HelpButton.fxml" />
+                                                                                            </children>
+                                                                                        </HBox>
+                                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                                            <children>
+                                                                                                <Label text="Error (10^-n)" />
+                                                                                                <Spinner fx:id="spinnerTrNumError" prefWidth="72.0" BorderPane.alignment="CENTER" />
+                                                                                                <fx:include fx:id="helpButtonTrNumError" source="../HelpButton.fxml" />
+                                                                                            </children>
+                                                                                        </HBox>
+                                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                                            <children>
+                                                                                                <Label text="Fallback error (10^-n)" />
+                                                                                                <Spinner fx:id="spinnerTrNumFallbackError" prefWidth="72.0" BorderPane.alignment="CENTER" />
+                                                                                                <fx:include fx:id="helpButtonTrNumFallbackError" source="../HelpButton.fxml" />
+                                                                                            </children>
+                                                                                        </HBox>
+                                                                                        <HBox  alignment="CENTER_LEFT" spacing="10.0">
+                                                                                            <children>
+                                                                                                <Label text="Fallback mode trigger" />
+                                                                                                <TextField fx:id="textFieldTrNumNRecordMax" disable="true" prefHeight="25.0" prefWidth="72.0" text="0" />
+                                                                                                <fx:include fx:id="helpButtonTrNumNRecordMax" source="../HelpButton.fxml" />
+                                                                                            </children>
+                                                                                        </HBox>
+                                                                                    </children>
+                                                                                </VBox>
+                                                                                <VBox fx:id="vboxAttenuation" spacing="10.0" >
+                                                                                    <children>
+                                                                                        <HBox spacing="10" alignment="CENTER_LEFT" >
+                                                                                            <children>
+                                                                                                <Label text="Maximal attenuation"></Label>
+                                                                                                <TextField fx:id="textFieldMaxAttenuation" prefWidth="50.0" />
+                                                                                                <fx:include fx:id="helpButtonMaxAttenuation" source="../HelpButton.fxml" />
+                                                                                            </children>
+                                                                                        </HBox>
+                                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                                            <children>
+                                                                                                <Label text="Error (10^-n)" />
+                                                                                                <Spinner fx:id="spinnerAttenuationError" prefWidth="72.0" BorderPane.alignment="CENTER" />
+                                                                                                <fx:include fx:id="helpButtonAttenuationError" source="../HelpButton.fxml" />
+                                                                                            </children>
+                                                                                        </HBox>
+                                                                                    </children>
+                                                                                </VBox>
+                                                                            </children>
+                                                                            <padding>
+                                                                                <Insets left="25.0" />
+                                                                            </padding>
+                                                                        </VBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </TitledPane>  
+                                            </children>
+                                        </VBox>                                                       
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </TitledPane>
+                        <TitledPane animated="false" expanded="false" text="Transformation">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0">
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
+                                            <children>
+                                                <Label text="Transformation matrix = (VOP.POP).SOP" />
+                                                <fx:include fx:id="transformationMatrix" source="../TransformationMatrix.fxml" />
+                                                <Button mnemonicParsing="false" onAction="#onActionButtonResetToIdentity" text="Reset" />
+                                                <TitledPane animated="false" expanded="false" text="POP matrix">
+                                                    <content>
+                                                        <VBox spacing="10.0">
+                                                            <children>
+                                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
+                                                                    <children>
+                                                                        <CheckBox fx:id="checkboxUsePopMatrix" disable="true" mnemonicParsing="false" onAction="#onActionUpdateTransformationMatrix" text="Use POP matrix">
+                                                                            <tooltip>
+                                                                                <Tooltip text="Project Orientation and Position matrix" />
+                                                                            </tooltip>
+                                                                        </CheckBox>
+                                                                        <CheckBox fx:id="checkBoxUseDefaultPopMatrix" disable="true" mnemonicParsing="false" text="Use default" />
+                                                                        <Label alignment="BOTTOM_CENTER" text="or" GridPane.columnIndex="2" />
+                                                                        <Button fx:id="buttonOpenPopMatrixFile" disable="true" mnemonicParsing="false" onAction="#onActionButtonOpenPopMatrixFile" text="Open file" >
+                                                                            <tooltip>
+                                                                                <Tooltip text="Matrix file or Rsp file allowed" />
+                                                                            </tooltip>
+                                                                        </Button>
+                                                                    </children>
+                                                                </HBox>
+                                                                <fx:include fx:id="popMatrix" source="../TransformationMatrix.fxml" />
+                                                            </children>
+                                                        </VBox>
+                                                    </content>
+                                                </TitledPane>
+                                                <TitledPane animated="false" expanded="false" text="SOP matrix">
+                                                    <content>
+                                                        <VBox spacing="10.0">
+                                                            <children>
+                                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
+                                                                    <children>
+                                                                        <CheckBox fx:id="checkboxUseSopMatrix" disable="true" mnemonicParsing="false" onAction="#onActionUpdateTransformationMatrix" text="Use SOP matrix" GridPane.rowIndex="1">
+                                                                            <tooltip>
+                                                                                <Tooltip text="System Orientation and Position matrix" />
+                                                                            </tooltip>
+                                                                        </CheckBox>
+                                                                        <CheckBox fx:id="checkBoxUseDefaultSopMatrix" disable="true" mnemonicParsing="false" text="Use default" />
+                                                                        <Label alignment="BOTTOM_CENTER" text="or" GridPane.columnIndex="2" />
+                                                                        <Button fx:id="buttonOpenSopMatrixFile" disable="true" mnemonicParsing="false" onAction="#onActionButtonOpenSopMatrixFile" text="Open file" >
+                                                                            <tooltip>
+                                                                                <Tooltip text="Matrix file or Rsp file allowed" />
+                                                                            </tooltip>
+                                                                        </Button>
+                                                                    </children>
+                                                                </HBox>
+                                                                <ComboBox fx:id="comboboxSingleScan" disable="true" promptText="Select scan" prefWidth="350.0" />
+                                                                <fx:include fx:id="sopMatrix" source="../TransformationMatrix.fxml" />
+                                                            </children>
+                                                        </VBox>
+                                                    </content>
+                                                </TitledPane>
+                                                <TitledPane animated="false" expanded="false" text="VOP matrix">
+                                                    <content>
+                                                        <VBox spacing="10.0">
+                                                            <children>
+                                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
+                                                                    <children>
+                                                                        <CheckBox fx:id="checkboxUseVopMatrix" mnemonicParsing="false" onAction="#onActionUpdateTransformationMatrix" text="Use VOP matrix" >
+                                                                            <tooltip>
+                                                                                <Tooltip text="Voxel Orientation and Position matrix" />
+                                                                            </tooltip>
+                                                                        </CheckBox>
+                                                                        <Button fx:id="buttonSetVOPMatrix" disable="true" mnemonicParsing="false" onAction="#onActionButtonSetVOPMatrix">
+                                                                            <graphic>
+                                                                                <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                                                                    <image>
+                                                                                        <Image url="@../icons/Interaction_Transformation.png" />
+                                                                                    </image>
+                                                                                </ImageView>
+                                                                            </graphic>
+                                                                        </Button>
+                                                                    </children>
+                                                                </HBox>
+                                                                <fx:include fx:id="vopMatrix" source="../TransformationMatrix.fxml" />
+                                                            </children>
+                                                        </VBox>
+                                                    </content>
+                                                </TitledPane>
+                                            </children>                                                                              
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </TitledPane>
+                        <TitledPane animated="false" expanded="false" text="Voxel Space">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0">
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
+                                            <children>
+                                                <TitledPane animated="false" expanded="false" text="Voxel size">
+                                                    <content>
+                                                        <VBox spacing="10.0">
+                                                            <children>
+                                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                    <children>
+                                                                        <Label text="Voxel size " />
+                                                                        <CheckBox fx:id="checkBoxCubicVoxel" text="Cubic" selected="false" onAction="#onActionCheckBoxCubicVoxel" mnemonicParsing="false" />
+                                                                        <fx:include fx:id="helpButtonCubicVoxel" source="../HelpButton.fxml" />
+                                                                    </children>
+                                                                </HBox>
+                                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                    <children>
+                                                                        <Label fx:id="labelVoxelSizeX" text="vx (m)" />
+                                                                        <TextField fx:id="textFieldVoxelSizeX" prefHeight="25.0" prefWidth="70.0" text="1" />
+                                                                        <Label fx:id="labelVoxelSizeY" text="vy (m)" />
+                                                                        <TextField fx:id="textFieldVoxelSizeY" prefHeight="25.0" prefWidth="70.0" text="1" />
+                                                                        <Label fx:id="labelVoxelSizeZ" text="vz (m)" />
+                                                                        <TextField fx:id="textFieldVoxelSizeZ" prefHeight="25.0" prefWidth="70.0" text="1" />
+                                                                    </children>
+                                                                    <padding>
+                                                                        <Insets left="25.0" />
+                                                                    </padding>
+                                                                </HBox>
+                                                            </children>
+                                                            <padding>
+                                                                <Insets left="10.0" top="10.0" bottom="10.0" />
+                                                            </padding>
+                                                        </VBox>
+                                                    </content>
+                                                </TitledPane>
+                                                <TitledPane animated="false" expanded="false" text="Bounding box">
+                                                    <content>
+                                                        <VBox spacing="10.0" >
+                                                            <children>
+                                                                <HBox fx:id="hboxAutomaticBBox" alignment="CENTER_LEFT" spacing="5.0">
+                                                                    <children>
+                                                                        <MenuButton mnemonicParsing="false" text="Automatic">
+                                                                            <items>
+                                                                                <MenuItem mnemonicParsing="false" onAction="#onActionButtonAutomatic" text="Fast" />
+                                                                                <MenuItem mnemonicParsing="false" onAction="#onActionButtonAutomaticDeepSearch" text="Deep search" />
+                                                                            </items>
+                                                                        </MenuButton>
+                                                                        <fx:include fx:id="helpButtonAutoBBox" source="../HelpButton.fxml" />
+                                                                    </children>
+                                                                </HBox>
+                                                                <AnchorPane fx:id="anchorpaneBoundingBoxParameters">
+                                                                    <children>
+                                                                        <fx:include fx:id="voxelSpace" source="../VoxelSpacePanel.fxml" />
+                                                                    </children>
+                                                                </AnchorPane>
+                                                            </children>
+                                                            <padding>
+                                                                <Insets left="10.0" top="10.0" bottom="10.0" />
+                                                            </padding>
+                                                        </VBox> 
+                                                    </content>
+                                                </TitledPane>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </TitledPane>
+                        <TitledPane animated="false" expanded="false" text="Filtering">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0">
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
+                                            <children>
+                                                <TitledPane animated="false" expanded="false" text="Digital Terrain Model Filter">
+                                                    <content>
+                                                        <AnchorPane>
+                                                            <children>
+                                                                <VBox spacing="15.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                                                                    <children>
+                                                                        <HBox spacing="10.0">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxUseDTMFilter" mnemonicParsing="false" text="Discard points close to ground" />
+                                                                                <fx:include fx:id="buttonHelpDTMFilter" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <Label fx:id="labelDTMValue" disable="true" text="Offset (distance above ground in meter)" />
+                                                                                <TextField fx:id="textfieldDTMValue" disable="true" prefHeight="25.0" prefWidth="55.0" text="1" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </TitledPane>
+                                                <TitledPane animated="false" expanded="false" text="Shots">
+                                                    <content>
+                                                        <AnchorPane>
+                                                            <children>
+                                                                <VBox spacing="15.0" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="10">
+                                                                    <children>
+                                                                        <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxShotDecimation" contentDisplay="RIGHT" mnemonicParsing="false" text="Shot decimation" />
+                                                                                <fx:include fx:id="buttonHelpShotDecimation" source="../HelpButton.fxml" />
+                                                                                <Label text="Decimation factor" />
+                                                                                <TextField fx:id="textfieldDecimationFactor" prefHeight="26.0" prefWidth="60.0" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <VBox spacing="10.0">
+                                                                            <children>
+                                                                                <HBox spacing="10.0">
+                                                                                    <children>
+                                                                                        <Label text="Inconsistent shots" />
+                                                                                        <fx:include fx:id="buttonHelpShotConsistency" source="../HelpButton.fxml" />
+                                                                                        <RadioButton fx:id="rdbtnShotConsistencyWarn" mnemonicParsing="false" selected="true" text="Warn" />
+                                                                                        <RadioButton fx:id="rdbtnShotConsistencySilent" mnemonicParsing="false" text="Silent" />
+                                                                                    </children>
+                                                                                </HBox>
+                                                                                <VBox spacing="10.0">
+                                                                                    <children>
+                                                                                        <CheckBox contentDisplay="RIGHT" disable="true" mnemonicParsing="false" selected="true" text="Discard shots with any interlaid blank echo" />
+                                                                                        <CheckBox contentDisplay="RIGHT" disable="true" mnemonicParsing="false" selected="true" text="Discard shots with echo distances not monotically increasing" />
+                                                                                        <CheckBox fx:id="checkboxBlankEchoDiscarded" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Discard shots with any blank echo" />
+                                                                                    </children>
+                                                                                    <padding>
+                                                                                        <Insets left="25.0" />
+                                                                                    </padding>
+                                                                                </VBox>
+                                                                            </children>
+                                                                        </VBox>
+                                                                        <HBox spacing="10.0">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxShotAttributeFilter" contentDisplay="RIGHT" mnemonicParsing="false" text="Shot angle" />
+                                                                                <fx:include fx:id="buttonHelpShotAttributeFilter" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <VBox fx:id="vBoxShotAttributeFilter" spacing="10.0">
+                                                                            <children>
+                                                                                <ListView fx:id="listviewShotFilters" prefHeight="125.0" prefWidth="325.0" />
+                                                                                <HBox spacing="5.0">
+                                                                                    <children>
+                                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonAddShotFilter" text="Add filter">
+                                                                                            <graphic>
+                                                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                                                    <image>
+                                                                                                        <Image url="@icons/add.png" />
+                                                                                                    </image>
+                                                                                                </ImageView>
+                                                                                            </graphic>
+                                                                                        </Button>
+                                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonRemoveShotFilter" text="Remove filter">
+                                                                                            <graphic>
+                                                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                                                    <image>
+                                                                                                        <Image url="@icons/remove.png" />
+                                                                                                    </image>
+                                                                                                </ImageView>
+                                                                                            </graphic>
+                                                                                        </Button>
+                                                                                    </children>
+                                                                                </HBox>
+                                                                            </children>
+                                                                            <padding>
+                                                                                <Insets left="25.0" />
+                                                                            </padding>   
+                                                                        </VBox>
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxEmptyShotsFilter" contentDisplay="RIGHT" disable="true" mnemonicParsing="false" text="False empty shots removal (RXP only)" />
+                                                                                <fx:include fx:id="buttonHelpEmptyShotsFilter" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </TitledPane>
+                                                <TitledPane animated="false" expanded="false" text="Point cloud">
+                                                    <content>
+                                                        <AnchorPane>
+                                                            <children>
+                                                                <VBox spacing="15.0" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="10">
+                                                                    <children>
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxUsePointcloudFilter" mnemonicParsing="false" text="Point cloud filter" />
+                                                                                <HBox fx:id="hBoxPointCloudFiltering" spacing="10.0">
+                                                                                    <children>
+                                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonAddPointcloudFilter" text="Add">
+                                                                                            <graphic>
+                                                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                                                    <image>
+                                                                                                        <Image url="@icons/add.png" />
+                                                                                                    </image>
+                                                                                                </ImageView>
+                                                                                            </graphic>
+                                                                                        </Button>
+                                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonGetBoundingBox" text="Get bounding-box" />
+                                                                                    </children>
+                                                                                </HBox>
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <VBox fx:id="vBoxPointCloudFiltering" spacing="15.0">
+                                                                            <padding>
+                                                                                <Insets left="25.0" />
+                                                                            </padding>
+                                                                        </VBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </TitledPane>
+                                                <TitledPane animated="false" expanded="false" text="Echo">
+                                                    <content>
+                                                        <AnchorPane>
+                                                            <children>
+                                                                <VBox spacing="15.0" AnchorPane.bottomAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.topAnchor="10">
+                                                                    <children>
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxEchoFilterByAttributes" mnemonicParsing="false" text="By echo attributes (RXP only)" />
+                                                                                <fx:include fx:id="buttonHelpEchoFilterByAttributes" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <VBox fx:id="vboxEchoFilterByAttribute">
+                                                                            <children>
+                                                                                <ListView fx:id="listviewEchoFilters" prefHeight="221.0" prefWidth="409.0" />
+                                                                                <HBox spacing="10.0">
+                                                                                    <children>
+                                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonAddEchoFilter" text="Add filter">
+                                                                                            <graphic>
+                                                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                                                    <image>
+                                                                                                        <Image url="@icons/add.png" />
+                                                                                                    </image>
+                                                                                                </ImageView>
+                                                                                            </graphic>
+                                                                                        </Button>
+                                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonRemoveEchoFilter" text="Remove filter">
+                                                                                            <graphic>
+                                                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                                                    <image>
+                                                                                                        <Image url="@icons/remove.png" />
+                                                                                                    </image>
+                                                                                                </ImageView>
+                                                                                            </graphic>
+                                                                                        </Button>
+                                                                                    </children>
+                                                                                </HBox>
+                                                                            </children>
+                                                                            <padding>
+                                                                                <Insets left="25.0" />
+                                                                            </padding>
+                                                                        </VBox>
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxEchoFilterByClass" mnemonicParsing="false" text="By echo class (LAS/LAZ only)" />
+                                                                                <fx:include fx:id="buttonHelpByClassEchoFilter" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>                                                  
+                                                                        <VBox fx:id="vboxEchoFilterByClass">
+                                                                            <children>
+                                                                                <ListView fx:id="listviewClassifications" prefHeight="125.0" prefWidth="325.0" />
+                                                                            </children>
+                                                                            <padding>
+                                                                                <Insets left="25.0" />
+                                                                            </padding>
+                                                                        </VBox>
+                                                                    </children>                                                                          
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </TitledPane>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </TitledPane>
+                        <TitledPane animated="false" expanded="false" text="Weighting">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0">
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
+                                            <children>
+                                                <HBox spacing="10.0">
+                                                    <children>
+                                                        <CheckBox fx:id="checkboxWeightingByRank" mnemonicParsing="false" text="Echo weighting by rank" />
+                                                        <fx:include fx:id="helpButtonWeightingByRank" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <VBox fx:id="vboxWeightingByRank" spacing="10.0">
+                                                    <children>
+                                                        <Label text="Echo range (1...n)" />
+                                                        <HBox alignment="CENTER_LEFT">
+                                                            <children>
+                                                                <Label style="-fx-rotate: -90;" text="Echoes number (1...n)">
+                                                                    <HBox.margin>
+                                                                        <Insets left="-55.0" right="-55.0" />
+                                                                    </HBox.margin>
+                                                                </Label>
+                                                                <TextArea fx:id="textAreaWeighting" HBox.hgrow="ALWAYS" />
+                                                            </children>
+                                                        </HBox>
+                                                        <Button mnemonicParsing="false" text="Reset to default values" onAction="#onActionButtonFillDefaultWeight" />
+                                                    </children>
+                                                </VBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </TitledPane>
+                        <TitledPane animated="false" expanded="false" text="Scanner">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0">
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
+                                            <children>
+                                                <Label text="Predefined specifications:" />
+                                                <ComboBox fx:id="comboboxLaserSpecification" prefHeight="26.0" prefWidth="400.0" />
+                                                <CheckBox fx:id="checkboxCustomLaserSpecification" mnemonicParsing="false" text="Custom specifications:" />
+                                                <VBox>
+                                                    <children>
+                                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                            <children>
+                                                                <Label text="Beam diameter at exit (m)" />
+                                                                <TextField fx:id="textFieldBeamDiameterAtExit" disable="true" prefHeight="26.0" prefWidth="80.0" text="0.0003" />
+                                                            </children>
+                                                        </HBox>
+                                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                            <children>
+                                                                <Label text="Beam divergence (radians)" />
+                                                                <TextField fx:id="textFieldBeamDivergence" disable="true" prefHeight="26.0" prefWidth="80.0" text="0.005" />
+                                                            </children>
+                                                        </HBox>
+                                                        <CheckBox fx:id="checkboxMonoEcho" disable="true" prefHeight="26.0" text="Mono-echo">
+                                                            <tooltip>
+                                                                <Tooltip text="Selected = mono-echo, unselected = multi-echo" />
+                                                            </tooltip>
+                                                        </CheckBox>
+                                                    </children>
+                                                    <padding>
+                                                        <Insets left="15.0" />
+                                                    </padding> 
+                                                </VBox>
+                                            </children>
+                                        </VBox>    
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </TitledPane>
+                        <TitledPane animated="false" expanded="false" text="Leaf">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0">
+                                    <children>
+                                        
+                                        <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
+                                            <children>
+                                                <HBox spacing="10" alignment="CENTER_LEFT" >
+                                                    <children>
+                                                        <Label text="Mean single leaf area (square meter)" />
+                                                        <TextField fx:id="textFieldLeafArea" disable="true" prefHeight="25.0" prefWidth="72.0" text="0.01" />
+                                                        <fx:include fx:id="helpButtonLeafArea" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </TitledPane>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </children>
+</AnchorPane>

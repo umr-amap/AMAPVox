@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<fx:root prefHeight="191.0" prefWidth="460.0" text="Tasks" type="TitledPane" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+   <content>
+      <VBox prefHeight="91.0" prefWidth="500.0">
+         <children>
+            <HBox>
+               <children>
+                  <ListView fx:id="listViewTaskList" prefHeight="307.0" prefWidth="541.0" />
+                  <VBox>
+                     <children>
+                        <Button fx:id="buttonMoveItemUp" mnemonicParsing="false">
+                           <graphic>
+                              <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@icons/arrow-up.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="buttonMoveItemDown" mnemonicParsing="false">
+                           <graphic>
+                              <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@icons/arrow_down.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <BorderPane prefHeight="200.0" prefWidth="200.0">
+               <right>
+                  <HBox spacing="5.0" BorderPane.alignment="CENTER" />
+               </right>
+               <left>
+                  <HBox spacing="5.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <MenuButton mnemonicParsing="false" text="Selection">
+                           <items>
+                              <MenuItem fx:id="menuitemSelectAll" mnemonicParsing="false" text="All" />
+                              <MenuItem fx:id="menuitemSelectNone" mnemonicParsing="false" text="None" />
+                           </items>
+                        </MenuButton>
+                        <HBox spacing="5.0">
+                           <children>
+                              <Button fx:id="buttonRemoveItemFromList" mnemonicParsing="false">
+                                 <graphic>
+                                    <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@icons/gnome_list_remove.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                              </Button>
+                              <Button fx:id="buttonAddItemToList" mnemonicParsing="false">
+                                 <graphic>
+                                    <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@icons/gnome_list_add.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </HBox>
+                     </children>
+                  </HBox>
+               </left>
+            </BorderPane>
+         </children>
+      </VBox>
+   </content>
+</fx:root>

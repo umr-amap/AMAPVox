@@ -1,0 +1,14 @@
+#version 140
+
+uniform mat4 viewMatrix, projMatrix, transformation;
+uniform vec3 color;
+
+in vec4 position;
+
+flat out vec3 Color;
+
+void main()
+{
+    Color = color;
+    gl_Position = projMatrix * viewMatrix  * transformation * position;
+}

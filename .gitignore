@@ -1,0 +1,8 @@
+/AMAPVox/Sphinxdoc/_build/
+git.log
+**/target/
+**/.classpath
+**/.project
+**/.settings
+**/nb-configuration.xml
+**/nbactions.xml

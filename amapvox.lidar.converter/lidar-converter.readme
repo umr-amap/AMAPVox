@@ -1,0 +1,25 @@
+===============================
+Lidar Converter changes history
+===============================
+
+# 1.2.1, 2022-03-07
+  * Updated dependency version (lidar-gui 0.3).
+
+# 1.2.0, 2022-02-14
+  * Added x, y, z precision as a GUI option for LAS/LAZ conversion.
+  * Deleted intermediate text file when las/laz conversion succeeded.
+  
+# 1.1.1, 2022-01-14
+  * Updated dependency version (lidar-gui 0.2).
+  
+# 1.1.0, 2022-01-07
+  * Updated LAStools binaries (version 210720).
+  * Deviation and amplitude can now be exported from RXP to LAS format (as extra-bytes).
+
+# 1.0.2, 2018-05-04
+  * Updated dependency versions.
+
+# 1.0.1, 2016
+First public release. Not dated.
+
+#EOF

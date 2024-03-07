@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="587.0" prefWidth="718.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.commons.javafx.io.TextFileParserFrameController">
+   <children>
+      <VBox layoutX="14.0" layoutY="14.0" spacing="20.0" AnchorPane.bottomAnchor="38.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+         <children>
+            <ScrollPane fitToHeight="true" fitToWidth="true">
+               <content>
+                  <AnchorPane>
+                     <children>
+                        <VBox fx:id="vboxTableViewAndColumnsTypeWrapper" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <TableView fx:id="tableViewFileContent" prefHeight="403.0" prefWidth="690.0">
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+               </content>
+            </ScrollPane>
+            <HBox>
+               <children>
+                  <VBox spacing="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Separator" />
+                              <TextField fx:id="textfieldSeparator" prefHeight="25.0" prefWidth="52.0" text=" " />
+                              <Button mnemonicParsing="false" onAction="#onActionButtonSpaceSeparator" text="Space" />
+                              <Button mnemonicParsing="false" onAction="#onActionButtonTabSeparator" text="Tab" />
+                              <Button mnemonicParsing="false" onAction="#onActionButtonCommaSeparator" text="," />
+                              <Button mnemonicParsing="false" onAction="#onActionButtonSemiColonSeparator" text=";" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Skip lines" />
+                              <Spinner fx:id="spinnerSkipLines" editable="true" prefHeight="25.0" prefWidth="71.0" />
+                              <CheckBox fx:id="checkboxExtractScalarFieldNames" mnemonicParsing="false" selected="true" text="Extract scalar field names" />
+                              <HBox fx:id="hboxExtractHeaderOptions" alignment="CENTER" spacing="2.0">
+                                 <children>
+                                    <RadioButton fx:id="radioButtonExtractHeaderFromFirstLine" mnemonicParsing="false" selected="true" text="From first line">
+                                       <toggleGroup>
+                                          <ToggleGroup fx:id="toggleGroupExtractHeaderOptions" />
+                                       </toggleGroup>
+                                    </RadioButton>
+                                    <RadioButton fx:id="radioButtonExtractHeaderFromStartingLine" mnemonicParsing="false" text="From starting line" toggleGroup="$toggleGroupExtractHeaderOptions" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Number of lines" />
+                              <CheckBox fx:id="checkboxKeepAllLines" mnemonicParsing="false" selected="true" text="All" />
+                              <Spinner fx:id="spinnerNumberOfLines" disable="true" editable="true" prefHeight="25.0" prefWidth="91.0" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+      <Button layoutX="657.0" layoutY="548.0" mnemonicParsing="false" onAction="#onActionButtonApply" text="Apply" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="14.0" />
+   </children>
+</AnchorPane>

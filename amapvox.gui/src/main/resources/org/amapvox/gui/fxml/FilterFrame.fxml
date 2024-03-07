@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="128.0" prefWidth="462.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="org.amapvox.gui.FilterFrameController">
+<!--
+    <stylesheets>
+        <URL value="@../styles/filterframe.css" />
+    </stylesheets>
+-->
+    <children>
+      <ComboBox fx:id="comboboxVariable" layoutX="11.0" layoutY="43.0" prefWidth="150.0" />
+      <ComboBox fx:id="comboboxInequality" layoutX="177.0" layoutY="43.0" prefHeight="25.0" prefWidth="97.0" />
+      <TextField fx:id="textfieldValue" layoutX="292.0" layoutY="43.0" prefHeight="25.0" prefWidth="140.0" />
+      <Label layoutX="11.0" layoutY="28.0" text="Variable" />
+      <Label layoutX="177.0" layoutY="28.0" text="Inequality" />
+      <Label layoutX="292.0" layoutY="28.0" text="Value" />
+      <Button fx:id="buttonAdd" layoutX="404.0" layoutY="89.0" mnemonicParsing="false" onAction="#onActionButtonAdd" text="Add" />
+   </children>
+</AnchorPane>

@@ -1,0 +1,619 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.amapvox.voxelisation.las;
+
+import org.amapvox.commons.util.io.file.FileManager;
+import org.amapvox.commons.util.Process;
+import org.amapvox.commons.util.io.file.CSVFile;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.amapvox.commons.util.Cancellable;
+import org.amapvox.commons.util.IterableWithException;
+import org.amapvox.commons.util.IteratorWithException;
+import org.amapvox.shot.Shot;
+import org.amapvox.lidar.laszip.LASHeader;
+import org.amapvox.lidar.laszip.LASPoint;
+import org.amapvox.lidar.laszip.LASReader;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import javax.vecmath.Matrix4d;
+import javax.vecmath.Point3d;
+import javax.vecmath.Vector3d;
+import org.apache.log4j.Logger;
+
+/**
+ * This class merge trajectory file with point file (LAS, LAZ)
+ *
+ * @author Julien Heurtebize (julienhtbe@gmail.com)
+ * @author Philippe Verley
+ */
+public class PointsToShot extends Process implements IterableWithException<Shot>, Cancellable {
+
+    // LAS points
+    private final File inputFile;
+    private List<LasPoint> lasPoints;
+
+    // trajectory
+    private final CSVFile trajectoryFile;
+    private List<TrajectoryPoint> trajectory;
+
+    // scanner position
+    private final Point3d scannerPosition;
+
+    // VOP matrix
+    private final Matrix4d vopMatrix;
+
+    private final double collinearityError;
+    private final static float RATIO_REFLECTANCE_VEGETATION_SOL = 0.4f;
+    private final static int SHOT_BUFFER = 100;
+
+    // whether the task is cancelled
+    private boolean cancelled;
+
+    private final boolean echoConsistencyCheckEnabled;
+    private final boolean echoConsistencyWarningEnabled;
+    private final boolean collinearityCheckEnabled;
+    private final boolean collinearityWarningEnabled;
+
+    private int nshot;
+
+    // logger
+    private final static Logger LOGGER = Logger.getLogger(PointsToShot.class);
+
+    public PointsToShot(CSVFile trajectoryFile, Point3d scannerPosition,
+            File inputFile, Matrix4d vopMatrix,
+            boolean echoConsistencyCheckEnabled, boolean echoConsistencyWarningEnabled,
+            boolean collinearityCheckEnabled, boolean collinearityWarningEnabled,
+            double maxDeviation) {
+
+        this.trajectoryFile = trajectoryFile;
+        this.scannerPosition = scannerPosition;
+        this.vopMatrix = vopMatrix;
+        this.inputFile = inputFile;
+
+        this.echoConsistencyCheckEnabled = echoConsistencyCheckEnabled;
+        this.echoConsistencyWarningEnabled = echoConsistencyWarningEnabled;
+        this.collinearityCheckEnabled = collinearityCheckEnabled;
+        this.collinearityWarningEnabled = collinearityWarningEnabled;
+        this.collinearityError = Math.abs(1.d - Math.abs(Math.cos(Math.toRadians(maxDeviation))));
+
+    }
+
+    public int getNShot() {
+        return nshot;
+    }
+
+    public void init() throws Exception {
+
+        // read LAS / LAZ points
+        List<LasPoint> rawLasPoints = readLasPoints(inputFile);
+
+        // perform checks
+        int nflawed = 0;
+        List<LasPoint> points;
+        int count = 0;
+        int npoint = rawLasPoints.size();
+        nshot = 0;
+        int nshotFlawed = 0;
+        LOGGER.info((echoConsistencyCheckEnabled | collinearityCheckEnabled)
+                ? "Checking LAS points consistency"
+                : "Counting number of shots");
+        while (null != (points = nextLasPoints(count, rawLasPoints))) {
+            if (echoConsistencyCheckEnabled | collinearityCheckEnabled) {
+                fireProgress("Checking LAS points consistency", count, npoint);
+            } else {
+                fireProgress("Counting number of shots", count, npoint);
+            }
+            if (cancelled) {
+                break;
+            }
+            if ((echoConsistencyCheckEnabled && !checkEchoConsistency(points, echoConsistencyWarningEnabled))
+                    || (collinearityCheckEnabled && !checkCollinearity(points, collinearityError))) {
+                // flawed LAS points
+                points.forEach(point -> point.flawed = true);
+                nflawed += points.size();
+                nshotFlawed++;
+            }
+            nshot++;
+            count += points.size();
+        }
+
+        if (nflawed > 0) {
+            float percent = 100.f * nflawed / npoint;
+            LOGGER.warn("Discarded " + nflawed + " flawed LAS points out of " + npoint + " (" + String.format("%.2f", percent) + "%)");
+            LOGGER.info("Removing flawed LAS points...");
+            lasPoints = new ArrayList<>(count - nflawed);
+            lasPoints = rawLasPoints.parallelStream().filter(point -> !point.flawed).collect(Collectors.toList());
+            nshot -= nshotFlawed;
+        } else {
+            lasPoints = new ArrayList<>(rawLasPoints);
+        }
+
+        if (null != trajectoryFile) {
+            // read trajectory file
+            trajectory = readTrajectory(trajectoryFile);
+
+            // reduce trajectory points to LAS points time range
+            int imin = nearestTrajectoryPoint(lasPoints.get(0).t, Search.MIN);
+            int imax = nearestTrajectoryPoint(lasPoints.get(lasPoints.size() - 1).t, Search.MAX);
+            if (imin < 0 || imax < 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("LAS points time span wider than trajectory file time span:\n");
+                sb.append("LAS points time span [").append(lasPoints.get(0).t);
+                sb.append(" ").append(lasPoints.get(lasPoints.size() - 1).t).append("]\n");
+                sb.append("Trajectory time span [").append(trajectory.get(0).time);
+                sb.append(" ").append(trajectory.get(trajectory.size() - 1).time).append("]");
+                throw new IndexOutOfBoundsException(sb.toString());
+            }
+            trajectory = trajectory.subList(imin, imax + 1);
+        }
+    }
+
+    private List<LasPoint> readLasPoints(final File file) throws Exception {
+
+        // read LAS points
+        List<LasPoint> points = new ArrayList<>();
+        LASHeader header;
+
+        int count = 0;
+        long nPoint;
+
+        LOGGER.info("Reading LAS file " + file.getName());
+        // open LAS reader
+        try ( LASReader lasReader = new LASReader(file)) {
+            // read LAS header
+            header = lasReader.getHeader();
+            // number of LAS points
+            nPoint = header.getNPoint();
+            // loop over LAS points
+            IteratorWithException<LASPoint> it = lasReader.iterator();
+            while (it.hasNext()) {
+                fireProgress("Reading LAS file " + file.getName(), count++, nPoint);
+                if (isCancelled()) {
+                    return null;
+                }
+                LASPoint p = it.next();
+                Vector3d location = new Vector3d(
+                        (p.x * header.x_scale_factor) + header.x_offset,
+                        (p.y * header.y_scale_factor) + header.y_offset,
+                        (p.z * header.z_scale_factor) + header.z_offset);
+                LasPoint point = new LasPoint(location.x, location.y, location.z, p.return_number, p.number_of_returns, p.intensity, p.classification, p.gps_time);
+                points.add(point);
+            }
+
+            // sort LAS point by time stamp
+            LOGGER.info("Sorting LAS points");
+            fireProgress("Sorting LAS points", 50, 100);
+            Collections.sort(points, (LasPoint lp1, LasPoint lp2) -> {
+                int tcomp = Double.compare(lp1.t, lp2.t);
+                return tcomp == 0 ? Integer.compare(lp1.r, lp2.r) : tcomp;
+            });
+            fireProgress("Sorting LAS points", 100, 100);
+
+            double minTime = points.get(0).t;
+            double maxTime = points.get(points.size() - 1).t;
+
+            if (minTime >= maxTime) {
+                throw new IOException("LAS/LAZ file contains inconsistent time information, minimum time " + minTime + " >= maximum time " + maxTime);
+            }
+
+            return points;
+        }
+    }
+
+    private List<TrajectoryPoint> readTrajectory(final CSVFile file) throws Exception {
+
+        LOGGER.info("Reading trajectory file " + file.getName());
+        List<TrajectoryPoint> points = new ArrayList<>();
+
+        // number of trajectory points
+        int nPoint = FileManager.getLineNumber(file.getAbsolutePath());
+        int count = 0;
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        // skip header
+        if (file.containsHeader()) {
+            reader.readLine();
+            count++;
+        }
+
+        // skip additional lines
+        for (long l = 0; l < file.getNbOfLinesToSkip(); l++) {
+            reader.readLine();
+            count++;
+        }
+
+        // assign column index
+        Map<String, Integer> columnAssignment = file.getColumnAssignment();
+        // time column
+        Integer timeIndex = columnAssignment.get("Time");
+        if (timeIndex == null) {
+            timeIndex = 3;
+        }
+        // easting column
+        Integer eastingIndex = columnAssignment.get("Easting");
+        if (eastingIndex == null) {
+            eastingIndex = 0;
+        }
+        // northing column
+        Integer northingIndex = columnAssignment.get("Northing");
+        if (northingIndex == null) {
+            northingIndex = 1;
+        }
+        // elevation column
+        Integer elevationIndex = columnAssignment.get("Elevation");
+        if (elevationIndex == null) {
+            elevationIndex = 2;
+        }
+
+        String line;
+        // parse lines
+        while ((line = reader.readLine()) != null) {
+            fireProgress("Reading trajectory file " + file.getName(), count++, nPoint);
+            String[] lineSplit = line.split(file.getColumnSeparator());
+            if (lineSplit.length < 4) {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Line ").append(count).append(" from trajectory file has less than four columns. The point is discarded.");
+                msg.append('\n').append(line);
+                LOGGER.warn(msg);
+                continue;
+            }
+            try {
+                double easting = Double.valueOf(lineSplit[eastingIndex]);
+                double northing = Double.valueOf(lineSplit[northingIndex]);
+                double elevation = Double.valueOf(lineSplit[elevationIndex]);
+                double time = Double.valueOf(lineSplit[timeIndex]);
+                points.add(new TrajectoryPoint(easting, northing, elevation, time));
+            } catch (NumberFormatException ex) {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Failed to parse line ").append(count).append(" from trajectory file (number format error). The point is discarded.");
+                msg.append('\n').append(line);
+                LOGGER.warn(msg);
+            }
+        }
+
+        LOGGER.info("Sorting and trimming trajectory points");
+        fireProgress("Sorting trajectory points", 50, 100);
+        // sort points by time stamp
+        Collections.sort(points, (TrajectoryPoint p1, TrajectoryPoint p2) -> Double.compare(p1.time, p2.time));
+        fireProgress("Sorting trajectory points", 100, 100);
+
+        return points;
+    }
+
+    private synchronized LasShot pointsToShot(final List<LasPoint> points, final int shotIndex) {
+
+        if (points != null) {
+
+            // take any point from the shot, apply transformation
+            LasPoint lasPoint = points.get(0);
+            Point3d point = new Point3d(lasPoint.x, lasPoint.y, lasPoint.z);
+            vopMatrix.transform(point);
+            // shot origin, apply transformation
+            Point3d origin = (null != trajectory) ? findOrigin(lasPoint) : new Point3d(scannerPosition);
+            vopMatrix.transform(origin);
+
+            // shot direction
+            Vector3d direction = new Vector3d(point);
+            direction.sub(origin);
+            direction.normalize();
+            // number of echoes
+            int nEcho = lasPoint.n;
+            // echoes attributes
+            double[] ranges = new double[nEcho];
+            int[] classifications = new int[nEcho];
+            float[] intensities = new float[nEcho];
+            points.forEach(pt -> {
+                // range (distance from source)
+                Point3d pt3d = new Point3d(pt.x, pt.y, pt.z);
+                vopMatrix.transform(pt3d);
+                ranges[pt.r - 1] = origin.distance(pt3d);
+                // classification
+                classifications[pt.r - 1] = pt.classification;
+                intensities[pt.r - 1] = (pt.classification == LasPoint.CLASSIFICATION_GROUND)
+                        ? (int) (pt.i * RATIO_REFLECTANCE_VEGETATION_SOL)
+                        : pt.i;
+            });
+
+            // create new LAS shot
+            LasShot lasShot = new LasShot(
+                    shotIndex,
+                    origin, direction,
+                    ranges, classifications, intensities);
+            lasShot.time = lasPoint.t;
+
+            return lasShot;
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns a subset of LAS points with the same GPS time from the set of LAS
+     * points, starting from given index.
+     *
+     * @param fromIndex, the index of the first Las point of the subset.
+     * @return the subset of LAS points that have the same GPS time than LAS
+     * point at index {@code fromIndex}.
+     */
+    private List<LasPoint> nextLasPoints(final int fromIndex, final List<LasPoint> points) {
+
+        if (fromIndex > points.size() - 1) {
+            return null;
+        }
+
+        List<LasPoint> pointsWithSameTime = new ArrayList<>();
+        pointsWithSameTime.add(points.get(fromIndex));
+        double time = pointsWithSameTime.get(0).t;
+        for (int iPoint = fromIndex + 1; iPoint < points.size(); iPoint++) {
+            if (points.get(iPoint).t == time) {
+                pointsWithSameTime.add(points.get(iPoint));
+            } else {
+                break;
+            }
+        }
+        return pointsWithSameTime;
+    }
+
+    /**
+     * Check whether the subset of LAS points is consistent in terms of echo
+     * rank and number of echoes. Every LAS point should have a unique echo rank
+     * and the same number of echoes.
+     *
+     * @param points, a subset of LAS points supposedly belonging to same shot,
+     * already sorted by rank.
+     * @return true if the LAS points have unique echo rank and same total echo
+     * number.
+     */
+    private boolean checkEchoConsistency(final List<LasPoint> points, boolean warnEnabled) {
+
+        boolean flawed = false;
+
+        // checks on ranks
+        Supplier<IntStream> rstream = () -> points.stream().mapToInt(point -> point.r);
+        // ranks must be greater or equal to one
+        flawed |= rstream.get().anyMatch(r -> r <= 0);
+        // ranks must be unique
+        flawed |= rstream.get().count() != rstream.get().distinct().count();
+        // ranks increment between points must be equal to one (e.g [1, 2, 3] or [2, 3])
+        int[] ranks = rstream.get().distinct().toArray();
+        flawed |= (ranks.length > 1
+                && IntStream.range(0, ranks.length - 1)
+                        .map(i -> (int) Math.abs(ranks[i + 1] - ranks[i]))
+                        .anyMatch(dr -> dr > 1));
+
+        // checks on number of ranks
+        Supplier<IntStream> nstream = () -> points.stream().mapToInt(point -> point.n);
+        // nrank must be greater or equal to one
+        flawed |= nstream.get().anyMatch(n -> n <= 0);
+        // nrank must be the same for every point
+        flawed |= nstream.get().distinct().count() > 1;
+
+        if (warnEnabled && flawed) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("LAS points with same GPS time (i.e. belonging to same shot) seem to have inconsistent echo ranks or echo numbers:");
+            points.forEach(point -> {
+                sb.append('\n').append("  ").append(point);
+            });
+            LOGGER.warn(sb.toString());
+        }
+
+        return !flawed;
+    }
+
+    /**
+     * Checks collinearity of the collection of LAS points by ensuring that
+     * every combination of three points is collinear, with margin of error.
+     *
+     * @param points, a list of LAS points.
+     * @param epsilon, deviation from one, one meaning strict collinearity.
+     * @return true if all the points are (approximately) collinear.
+     */
+    private boolean checkCollinearity(final List<LasPoint> points, final double epsilon) {
+
+        boolean collinear = true;
+        StringBuilder sb = new StringBuilder();
+        if (points.size() >= 3) {
+            int pmax = points.size();
+            for (int p1 = 0; p1 < pmax - 2; p1++) {
+                for (int p2 = p1 + 1; p2 < pmax - 1; p2++) {
+                    for (int p3 = p2 + 1; p3 < pmax; p3++) {
+                        if (!collinearity(points.get(p1), points.get(p2), points.get(p3), epsilon)) {
+                            collinear = false;
+                            // append error and carry on with collinearity test
+                            // in case some others points are not lined up
+                            if (sb.length() > 0) {
+                                sb.append('\n');
+                            }
+                            sb.append("LAS points with same GPS time are not in line:\n");
+                            sb.append("  ").append(points.get(p1)).append('\n');
+                            sb.append("  ").append(points.get(p2)).append('\n');
+                            sb.append("  ").append(points.get(p3));
+                        }
+                    }
+                }
+            }
+        }
+        if (collinearityWarningEnabled && !collinear) {
+            sb.append('\n').append("LAS points discarded.");
+            LOGGER.warn(sb.toString());
+        }
+
+        return collinear;
+    }
+
+    /**
+     * Check collinearity of the three points, with margin of error.
+     * |AB.AC|/|AB||AC|~1
+     *
+     * @param lpA, first LAS point
+     * @param lpB, second LAS point
+     * @param lpC, third LAS point
+     * @param epsilon, deviation from one, one meaning strict collinearity.
+     * @return true if the three LAS points are approximately on same line.
+     */
+    private boolean collinearity(final LasPoint lpA, final LasPoint lpB, final LasPoint lpC, final double epsilon) {
+
+        Point3d A = toPoint3d(lpA);
+        // AB vector
+        Vector3d AB = new Vector3d();
+        AB.sub(toPoint3d(lpB), A);
+        AB.normalize();
+        // AC vector
+        Vector3d AC = new Vector3d();
+        AC.sub(toPoint3d(lpC), A);
+        AC.normalize();
+        // check collinearity
+        return Math.abs(1.d - Math.abs(AB.dot(AC))) < epsilon;
+    }
+
+    private Point3d toPoint3d(LasPoint point) {
+        return new Point3d(point.x, point.y, point.z);
+    }
+
+    /**
+     * Given the LAS device trajectory, find out the coordinate of the origin of
+     * the current LAS point.
+     *
+     * @param point, the current LAS point
+     * @return the coordinate of the origin of the current LAS point
+     */
+    private Point3d findOrigin(final LasPoint point) {
+
+        // index of the trajectory point behind current LAS point
+        int behindTrjPointIndex = nearestTrajectoryPoint(point.t, Search.MIN);
+        // index of the trajectory point ahead of current LAS point
+        int aheadTrjPointIndex = behindTrjPointIndex + 1;
+
+        // handle invalid trajectory file
+        // should never happen since the trimming of the trajecotry is already
+        // handled in PointsToShot.java
+        if (behindTrjPointIndex < 0) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("LAS point GPS time outside trajectory time span.").append('\n');
+            sb.append("  ").append(point).append('\n');
+            sb.append("  Trajectory time span ")
+                    .append(trajectory.get(0).time).append(" ")
+                    .append(trajectory.get(trajectory.size() - 1).time);
+            throw new IndexOutOfBoundsException(sb.toString());
+        }
+
+        // GPS time of the trajectory point behind current LAS point
+        double beforeTrjPointTime = trajectory.get(behindTrjPointIndex).time;
+        // GPS time of the trajectory point ahead of current LAS point
+        double afterTrjPointTime = trajectory.get(aheadTrjPointIndex).time;
+
+        // coordinate of the origin at the time of current LAS point,
+        // computed as a linear interpolation between trajectory points
+        // before and after current LAS point time.
+        Point3d origin = new Point3d();
+        double ratio = (afterTrjPointTime != beforeTrjPointTime)
+                ? (point.t - beforeTrjPointTime) / (afterTrjPointTime - beforeTrjPointTime)
+                : 0.5d;
+        // linear interpolation
+        origin.interpolate(trajectory.get(behindTrjPointIndex), trajectory.get(aheadTrjPointIndex), ratio);
+
+        return origin;
+    }
+
+    @Override
+    public IteratorWithException<Shot> iterator() {
+        LasShotIterator it = new LasShotIterator();
+        new Thread(it).start();
+        return it;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    private int nearestTrajectoryPoint(double value, Search search) {
+
+        int low = 0;
+        int high = trajectory.size() - 1;
+
+        // special case value smaller than first element of the list
+        if (value < trajectory.get(low).time) {
+            return (search == Search.MIN) ? -1 : low;
+        }
+
+        // special case value bigger than last element of the list
+        if (value > trajectory.get(high).time) {
+            return (search == Search.MAX) ? -1 : high;
+        }
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1; // (low + high) / 2
+            double midVal = trajectory.get(mid).time;
+
+            if (midVal < value) {
+                low = mid + 1;
+            } else if (midVal > value) {
+                high = mid - 1;
+            } else {
+                return mid; // key found
+            }
+        }
+
+        // at this stage we have high < low
+        // list[high] < value < list[low]
+        return (search == Search.MIN) ? high : low;
+    }
+
+    private enum Search {
+        MIN, MAX;
+    }
+
+    private class LasShotIterator implements Runnable, IteratorWithException<Shot> {
+
+        private int shotIndex;
+        private int pointIndex;
+        private final BlockingQueue<LasShot> queue = new ArrayBlockingQueue<>(SHOT_BUFFER);
+        private Exception error;
+
+        @Override
+        public boolean hasNext() throws Exception {
+            return (shotIndex - queue.size()) < nshot;
+        }
+
+        @Override
+        public LasShot next() throws Exception {
+            if (null != error) {
+                throw error;
+            }
+            return queue.take();
+        }
+
+        @Override
+        public void run() {
+            try {
+                List<LasPoint> points;
+                while (null != (points = nextLasPoints(pointIndex, lasPoints))) {
+                    queue.put(pointsToShot(points, shotIndex));
+                    shotIndex++;
+                    pointIndex += points.size();
+                }
+            } catch (InterruptedException ex) {
+                error = ex;
+            }
+        }
+    }
+}

@@ -289,16 +289,19 @@ resolveLocalVersion <- function(version, silent = FALSE) {
 #' @param version, a valid and existing AMAPVox remote version number
 #'   (major.minor.build)
 #' @param overwrite, whether existing local installation should be re-installed.
+#' @param timeout maximum time in seconds before interrupting download.
 #' @return the path of the AMAPVox installation directory.
 #' @seealso [getLocalVersions()], [getRemoteVersions()], [removeVersion()]
 #' @seealso [rappdirs::user_data_dir()]
+#' @seealso [utils::download.file()], [utils::unzip()]
 #' @examples
 #' \dontrun{
 #' # install latest version
 #' installVersion(tail(getRemoteVersions()$version, 1))
 #' }
 #' @export
-installVersion <- function(version, overwrite = FALSE) {
+installVersion <- function(version, overwrite = FALSE,
+                           timeout = 300) {
 
   # make sure version number is valid and available
   stopifnot(is.validVersion(version))
@@ -345,8 +348,12 @@ installVersion <- function(version, overwrite = FALSE) {
   # create local bin folder if does not exist
   if (!dir.exists(binPath)) dir.create(binPath, recursive = TRUE,
                                        showWarnings = FALSE)
-  # download zip
-  utils::download.file(url, zipfile, method = "auto", mode="wb", timeout=300)
+  # increase timeout and download zip
+  timeout.user = getOption("timeout")
+  options(timeout = timeout)
+  utils::download.file(url, zipfile, method = "auto", mode="wb")
+  # revert timeout to user default
+  options(timeout = timeout.user)
   # unzip
   utils::unzip(zipfile,
                # for linux-like system uses system unzip that should preserve file permissions

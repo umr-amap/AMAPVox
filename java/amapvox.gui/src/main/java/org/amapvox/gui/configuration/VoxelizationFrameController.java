@@ -677,8 +677,6 @@ public class VoxelizationFrameController extends ConfigurationController {
             buttonHelpShotAttributeFilterController.showHelpDialog(resourceBundle.getString("help_shot_angle_filter"));
         });
 
-        addPointcloudFilter(null);
-
         BooleanBinding binding = labelLidarType.textProperty().isEqualTo("LAS").or(labelLidarType.textProperty().isEqualTo("LAZ"));
 
         checkboxEchoFilterByClass.disableProperty().bind(binding.not());

@@ -2,14 +2,14 @@
 % Please edit documentation in R/AMAPVox.R
 \docType{package}
 \name{AMAPVox}
-\alias{AMAPVox}
 \alias{AMAPVox-package}
+\alias{AMAPVox}
 \title{AMAPVox package}
 \description{
 The package provides a a set of R functions for working with voxel spaces
 (read, write, plot, etc.).
 Voxel spaces are read from text-based output files of the
-\href{https://amap-dev.cirad.fr/projects/amapvox}{AMAPVox software}.
+\href{https://amapvox.org}{AMAPVox software}.
 }
 \section{References}{
  \itemize{ \item{ Research paper first describing
@@ -31,7 +31,7 @@ AMAPVox 1.7", \doi{10.23708/1AJNMP}, DataSuds, V1 } }
 Useful links:
 \itemize{
   \item \url{https://amapvox.org}
-  \item Report bugs at \url{https://github.com/umr-amap/AMAPVox/issues}
+  \item Report bugs at \url{https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues}
 }
 
 }

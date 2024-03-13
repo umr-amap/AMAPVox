@@ -18,7 +18,6 @@ import static org.amapvox.canopy.transmittance.TransmittanceParameters.Mode.LAI2
 import static org.amapvox.canopy.transmittance.TransmittanceParameters.Mode.LAI2200;
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,6 +37,7 @@ import org.jdom2.Element;
 public class TransmittanceCfg extends Configuration {
 
     private TransmittanceParameters parameters;
+    final public static SimpleDateFormat PERIOD_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     public TransmittanceCfg(String type, String longName, String description, String[] deprecatedNames) {
         super(type, longName, description, deprecatedNames);
@@ -73,7 +73,7 @@ public class TransmittanceCfg extends Configuration {
         Element outputTextFileElement = outputFilesElement.getChild("output_text_file");
 
         if (outputTextFileElement != null) {
-            boolean generateOutputTextFile = Boolean.valueOf(outputTextFileElement.getAttributeValue("generate"));
+            boolean generateOutputTextFile = Boolean.parseBoolean(outputTextFileElement.getAttributeValue("generate"));
             parameters.setGenerateTextFile(generateOutputTextFile);
 
             if (generateOutputTextFile) {
@@ -85,7 +85,7 @@ public class TransmittanceCfg extends Configuration {
                     if (parameters.getMode() == LAI2000 || parameters.getMode() == LAI2200) {
 
                         try {
-                            parameters.setGenerateLAI2xxxTypeFormat(Boolean.valueOf(outputTextFileElement.getAttributeValue("lai2xxx-type")));
+                            parameters.setGenerateLAI2xxxTypeFormat(Boolean.parseBoolean(outputTextFileElement.getAttributeValue("lai2xxx-type")));
                         } catch (Exception e) {
                         }
                     }
@@ -97,7 +97,7 @@ public class TransmittanceCfg extends Configuration {
         Element outputBitmapFileElement = outputFilesElement.getChild("output_bitmap_file");
 
         if (outputBitmapFileElement != null) {
-            boolean generateOutputBitmapFile = Boolean.valueOf(outputBitmapFileElement.getAttributeValue("generate"));
+            boolean generateOutputBitmapFile = Boolean.parseBoolean(outputBitmapFileElement.getAttributeValue("generate"));
             parameters.setGenerateBitmapFile(generateOutputBitmapFile);
 
             if (generateOutputBitmapFile) {
@@ -114,7 +114,7 @@ public class TransmittanceCfg extends Configuration {
         if (directionsNumberElement != null) {
             String directionsNumberValue = directionsNumberElement.getAttributeValue("value");
             if (directionsNumberValue != null) {
-                parameters.setDirectionsNumber(Integer.valueOf(directionsNumberValue));
+                parameters.setDirectionsNumber(Integer.parseInt(directionsNumberValue));
             }
         }
 
@@ -122,7 +122,7 @@ public class TransmittanceCfg extends Configuration {
         if (directionsRotationElement != null) {
             String directionsRotationValue = directionsRotationElement.getAttributeValue("value");
             if (directionsRotationValue != null) {
-                parameters.setDirectionsRotation(Float.valueOf(directionsRotationValue));
+                parameters.setDirectionsRotation(Float.parseFloat(directionsRotationValue));
             }
         }
 
@@ -130,7 +130,7 @@ public class TransmittanceCfg extends Configuration {
         if (toricityElement != null) {
             String toricityValue = toricityElement.getAttributeValue("enable");
             if (toricityValue != null) {
-                parameters.setToricity(Boolean.valueOf(toricityValue));
+                parameters.setToricity(Boolean.parseBoolean(toricityValue));
             }
         }
 
@@ -143,9 +143,9 @@ public class TransmittanceCfg extends Configuration {
                 List<Point3d> positions = new ArrayList<>();
 
                 for (Element children : childrens) {
-                    positions.add(new Point3d(Double.valueOf(children.getAttributeValue("x")),
-                            Double.valueOf(children.getAttributeValue("y")),
-                            Double.valueOf(children.getAttributeValue("z"))));
+                    positions.add(new Point3d(Double.parseDouble(children.getAttributeValue("x")),
+                            Double.parseDouble(children.getAttributeValue("y")),
+                            Double.parseDouble(children.getAttributeValue("z"))));
                 }
 
                 parameters.setPositions(positions);
@@ -157,28 +157,27 @@ public class TransmittanceCfg extends Configuration {
 
         String latitude = processElement.getChild("latitude").getAttributeValue("value");
         if (latitude != null) {
-            parameters.setLatitudeInDegrees(Float.valueOf(latitude));
+            parameters.setLatitudeInDegrees(Float.parseFloat(latitude));
         }
 
         Element simulationPeriodsElement = processElement.getChild("simulation-periods");
         if (simulationPeriodsElement != null) {
-            List<Element> childrens = simulationPeriodsElement.getChildren("period");
+            List<Element> periodElements = simulationPeriodsElement.getChildren("period");
 
-            if (childrens != null) {
+            if (periodElements != null) {
 
                 List<SimulationPeriod> simulationPeriods = new ArrayList<>();
 
-                for (Element element : childrens) {
+                for (Element periodElement : periodElements) {
 
-                    String startingDateStr = element.getAttributeValue("from");
-                    String endingDateStr = element.getAttributeValue("to");
-                    String clearness = element.getAttributeValue("clearness");
+                    String startingDateStr = periodElement.getAttributeValue("from");
+                    String endingDateStr = periodElement.getAttributeValue("to");
+                    String clearness = periodElement.getAttributeValue("clearness");
 
                     Period period = new Period();
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
                     try {
-                        Date startingDate = simpleDateFormat.parse(startingDateStr);
-                        Date endingDate = simpleDateFormat.parse(endingDateStr);
+                        Date startingDate = PERIOD_DATE_FORMAT.parse(startingDateStr);
+                        Date endingDate = PERIOD_DATE_FORMAT.parse(endingDateStr);
 
                         Calendar c1 = Calendar.getInstance();
                         c1.setTime(startingDate);
@@ -189,10 +188,16 @@ public class TransmittanceCfg extends Configuration {
                         period.startDate = c1;
                         period.endDate = c2;
 
-                        SimulationPeriod simulationPeriod = new SimulationPeriod(period, Float.valueOf(clearness));
+                        SimulationPeriod simulationPeriod = new SimulationPeriod(period, Float.parseFloat(clearness));
                         simulationPeriods.add(simulationPeriod);
 
                     } catch (ParseException ex) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Failed to parse either start date (");
+                        sb.append(startingDateStr).append(") or end date (");
+                        sb.append(endingDateStr).append(") from simulation period. ");
+                        sb.append("Should be ").append(PERIOD_DATE_FORMAT.getDateFormatSymbols().toString());
+                        throw new IOException(sb.toString(), ex);
                     }
 
                 }
@@ -205,11 +210,11 @@ public class TransmittanceCfg extends Configuration {
 
         Element ringMasksElement = processElement.getChild("ring-masks");
         if (ringMasksElement != null) {
-            ringMasks[0] = Boolean.valueOf(ringMasksElement.getAttributeValue("mask-ring-1"));
-            ringMasks[1] = Boolean.valueOf(ringMasksElement.getAttributeValue("mask-ring-2"));
-            ringMasks[2] = Boolean.valueOf(ringMasksElement.getAttributeValue("mask-ring-3"));
-            ringMasks[3] = Boolean.valueOf(ringMasksElement.getAttributeValue("mask-ring-4"));
-            ringMasks[4] = Boolean.valueOf(ringMasksElement.getAttributeValue("mask-ring-5"));
+            ringMasks[0] = Boolean.parseBoolean(ringMasksElement.getAttributeValue("mask-ring-1"));
+            ringMasks[1] = Boolean.parseBoolean(ringMasksElement.getAttributeValue("mask-ring-2"));
+            ringMasks[2] = Boolean.parseBoolean(ringMasksElement.getAttributeValue("mask-ring-3"));
+            ringMasks[3] = Boolean.parseBoolean(ringMasksElement.getAttributeValue("mask-ring-4"));
+            ringMasks[4] = Boolean.parseBoolean(ringMasksElement.getAttributeValue("mask-ring-5"));
         }
 
         parameters.setMasks(ringMasks);
@@ -281,12 +286,11 @@ public class TransmittanceCfg extends Configuration {
         Element simulationPeriodsElement = new Element("simulation-periods");
 
         List<SimulationPeriod> simulationPeriods = parameters.getSimulationPeriods();
-        DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
 
         for (SimulationPeriod period : simulationPeriods) {
             Element periodElement = new Element("period");
-            periodElement.setAttribute("from", dateFormat.format(period.getPeriod().startDate.getTime()));
-            periodElement.setAttribute("to", dateFormat.format(period.getPeriod().endDate.getTime()));
+            periodElement.setAttribute("from", PERIOD_DATE_FORMAT.format(period.getPeriod().startDate.getTime()));
+            periodElement.setAttribute("to", PERIOD_DATE_FORMAT.format(period.getPeriod().endDate.getTime()));
             periodElement.setAttribute("clearness", String.valueOf(period.getClearnessCoefficient()));
             simulationPeriodsElement.addContent(periodElement);
         }

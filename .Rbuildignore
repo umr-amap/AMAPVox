@@ -13,3 +13,4 @@ git.log
 ^Meta$
 ^CRAN-SUBMISSION$
 ^pkgdown$
+^java$

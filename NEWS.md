@@ -1,3 +1,12 @@
+# AMAPVox 2.2.1
+
+*2024-03-15*
+Aligned R package version onto Java core version
+Updated binary packages URL (#31, #32)
+Bugfix in transmittance map tool (#37)
+Bugfix in XYB point cloud reader (#30)
+Released on CRAN
+
 # AMAPVox 1.0.1
 
 *2023-06-19*

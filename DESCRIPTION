@@ -1,7 +1,7 @@
 Type: Package
 Package: AMAPVox
 Title: LiDAR Data Voxelisation
-Version: 1.0.1
+Version: 2.2.1
 Authors@R: c(
     person("Grégoire", "Vincent", , "gregoire.vincent@ird.fr", role = "aut"),
     person("Julien", "Heurtebize", , "julienhtbe@gmail.com", role = "aut"),
@@ -15,7 +15,7 @@ Description: Read, manipulate and write voxel spaces. Voxel spaces are
     technical note Vincent et al. (2021) <doi:10.23708/1AJNMP>.
 License: CeCILL (>=2)
 URL: https://amapvox.org
-BugReports: https://github.com/umr-amap/AMAPVox/issues
+BugReports: https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues
 Depends:
     R (>= 4.0.0)
 Imports: 
@@ -44,7 +44,7 @@ VignetteBuilder:
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3.9000
+RoxygenNote: 7.3.1
 Collate: 
     'AMAPVox.R'
     'Butterfly.R'

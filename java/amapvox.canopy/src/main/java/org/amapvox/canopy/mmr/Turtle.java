@@ -28,10 +28,10 @@ public class Turtle {
 
     public Turtle(int nbDirections, float rotation) throws IOException {
         
-        InputStream resource = Turtle.class.getClassLoader().getResourceAsStream("misc/directions");
+        InputStream resource = Turtle.class.getResource("directions").openStream();
         
         if(resource == null){
-            throw new IOException("Cannot load resource file misc/directions");
+            throw new IOException("Cannot load resource file directions");
         }
         
         InputStreamReader pointsStream = new InputStreamReader(resource);

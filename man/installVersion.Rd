@@ -5,13 +5,15 @@
 \alias{installVersion}
 \title{Install specific AMAPVox version on local computer.}
 \usage{
-installVersion(version, overwrite = FALSE)
+installVersion(version, overwrite = FALSE, timeout = 300)
 }
 \arguments{
 \item{version, }{a valid and existing AMAPVox remote version number
 (major.minor.build)}
 
 \item{overwrite, }{whether existing local installation should be re-installed.}
+
+\item{timeout}{maximum time in seconds before interrupting download.}
 }
 \value{
 the path of the AMAPVox installation directory.
@@ -34,4 +36,6 @@ installVersion(tail(getRemoteVersions()$version, 1))
 \code{\link[=getLocalVersions]{getLocalVersions()}}, \code{\link[=getRemoteVersions]{getRemoteVersions()}}, \code{\link[=removeVersion]{removeVersion()}}
 
 \code{\link[rappdirs:user_data_dir]{rappdirs::user_data_dir()}}
+
+\code{\link[utils:download.file]{utils::download.file()}}, \code{\link[utils:unzip]{utils::unzip()}}
 }

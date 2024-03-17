@@ -11,7 +11,6 @@ Authors:
 
 For further information, please contact Gregoire Vincent.
  */
-
 package org.amapvox.canopy.transmittance;
 
 import java.text.DateFormat;
@@ -21,23 +20,18 @@ import java.util.Calendar;
  *
  * @author calcul
  */
-
-
 public class Period {
-    
+
     public Calendar startDate;
     public Calendar endDate;
-    
+
     @Override
-    public String toString(){
-        
-        return getDate(startDate)+"_"+getDate(endDate);
+    public String toString() {
+        return getDate(startDate) + " => " + getDate(endDate);
     }
-    
-    public static String getDate(Calendar c){
-        DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-        return dateFormat.format(c.getTime());/*
-        return c.get(Calendar.DAY_OF_MONTH) + "/"+c.get(Calendar.MONTH)+"/"+c.get(Calendar.YEAR)+
-                " "+c.get(Calendar.HOUR_OF_DAY)+":"+c.get(Calendar.MINUTE);*/
+
+    public static String getDate(Calendar c) {
+        DateFormat dateFormat = TransmittanceCfg.PERIOD_DATE_FORMAT;
+        return dateFormat.format(c.getTime());
     }
 }

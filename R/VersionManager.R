@@ -102,7 +102,7 @@ versionManager <- function(version="latest") {
 getRemoteVersions <- function() {
 
   # get list of packages
-  url <- "https://forge.ird.fr/api/v4/projects/421/packages?package_type=generic"
+  url <- "https://forge.ird.fr/api/v4/groups/1604/packages?package_type=generic"
   req <- curl::curl_fetch_memory(url)
   pkgs <- jsonlite::fromJSON(jsonlite::prettify(rawToChar(req$content)))
 
@@ -110,19 +110,22 @@ getRemoteVersions <- function() {
   pkgs <- pkgs[pkgs$name == "amapvox", ]
 
   # add url to list package files
-  url <- "https://forge.ird.fr/api/v4/projects/421/packages"
+  url <- "https://forge.ird.fr/api/v4/projects"
   pkgs <- cbind(pkgs,
-                files_path=paste(url, pkgs$id, "package_files", sep="/"))
+                files_path=paste(url, pkgs$project_id, "packages", pkgs$id, "package_files", sep="/"))
 
   # list package files
   zips <- data.table::rbindlist(apply(pkgs, 1, function(pkg) {
     req <- curl::curl_fetch_memory(pkg$files_path)
     pkg.files <- jsonlite::fromJSON(jsonlite::prettify(rawToChar(req$content)))
-    return( data.table::data.table(version=pkg$version, file_name=pkg.files$file_name) )
+    pkg.url <- paste("https://forge.ird.fr/api/v4/projects",
+                     pkg$project_id,
+                     "packages", "generic", "amapvox",
+                     pkg$version,
+                     pkg.files$file_name,
+                     sep="/")
+    return( data.table::data.table(version=pkg$version, url=pkg.url))
   }))
-  url <- "https://forge.ird.fr/api/v4/projects/421/packages/generic/amapvox"
-  version <- file_name <- NULL # trick to avoid "no visible binding" note
-  zips[, url:=paste(url, version, file_name, sep="/")][, file_name:=NULL]
 
   # sort versions
   zips <- zips[orderVersions(zips$version),]
@@ -286,16 +289,19 @@ resolveLocalVersion <- function(version, silent = FALSE) {
 #' @param version, a valid and existing AMAPVox remote version number
 #'   (major.minor.build)
 #' @param overwrite, whether existing local installation should be re-installed.
+#' @param timeout maximum time in seconds before interrupting download.
 #' @return the path of the AMAPVox installation directory.
 #' @seealso [getLocalVersions()], [getRemoteVersions()], [removeVersion()]
 #' @seealso [rappdirs::user_data_dir()]
+#' @seealso [utils::download.file()], [utils::unzip()]
 #' @examples
 #' \dontrun{
 #' # install latest version
 #' installVersion(tail(getRemoteVersions()$version, 1))
 #' }
 #' @export
-installVersion <- function(version, overwrite = FALSE) {
+installVersion <- function(version, overwrite = FALSE,
+                           timeout = 300) {
 
   # make sure version number is valid and available
   stopifnot(is.validVersion(version))
@@ -342,8 +348,12 @@ installVersion <- function(version, overwrite = FALSE) {
   # create local bin folder if does not exist
   if (!dir.exists(binPath)) dir.create(binPath, recursive = TRUE,
                                        showWarnings = FALSE)
-  # download zip
-  utils::download.file(url, zipfile, method = "auto", mode="wb", timeout=300)
+  # increase timeout and download zip
+  timeout.user = getOption("timeout")
+  options(timeout = timeout)
+  utils::download.file(url, zipfile, method = "auto", mode="wb")
+  # revert timeout to user default
+  options(timeout = timeout.user)
   # unzip
   utils::unzip(zipfile,
                # for linux-like system uses system unzip that should preserve file permissions

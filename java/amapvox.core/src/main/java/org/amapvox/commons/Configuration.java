@@ -202,13 +202,14 @@ public abstract class Configuration {
      */
     private void updateConfiguration(VersionNumber jarVersion, VersionNumber cfgVersion) {
 
-        // sort available releases by version number
-        Arrays.sort(getReleases(), (r1, r2) -> {
-            return r1.getVersionNumber().compareTo(r2.getVersionNumber());
-        });
-
-        // Update the configuration file
         if (null != getReleases()) {
+            
+            // sort available releases by version number
+            Arrays.sort(getReleases(), (r1, r2) -> {
+                return r1.getVersionNumber().compareTo(r2.getVersionNumber());
+            });
+
+            // Update the configuration file
             for (Release release : getReleases()) {
                 VersionNumber version = release.getVersionNumber();
                 if ((version.compareTo(jarVersion) <= 0) && (cfgVersion.compareTo(version) < 0)) {
@@ -245,7 +246,7 @@ public abstract class Configuration {
     private void copyFile(File src, File dest) throws IOException {
 
         FileOutputStream fos;
-        try ( FileInputStream fis = new FileInputStream(src)) {
+        try (FileInputStream fis = new FileInputStream(src)) {
             fos = new FileOutputStream(dest);
             java.nio.channels.FileChannel channelSrc = fis.getChannel();
             java.nio.channels.FileChannel channelDest = fos.getChannel();

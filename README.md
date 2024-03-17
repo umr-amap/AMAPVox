@@ -7,7 +7,8 @@ AMAPVox
 
 ## Description
 
-AMAPVox is an R package that provides a a set of functions for working with voxel spaces (read, write, plot, merge, etc.). Voxel spaces are read from text-based output files of the [AMAPVox software](https://amapvox.org).
+AMAPvox tracks every laser pulse through 3D grid (voxelized space) and computes the local transmittance or local attenuation per voxel.
+R package provides visualization, utility and validation tools for the voxelized space.
 
 ## Citation
 
@@ -21,9 +22,20 @@ Install from CRAN:
 install.packages("AMAPVox")
 ```
 
-Install the latest version from Github:
+Install from source:
+
+- either with [pak](https://pak.r-lib.org/)
 
 ``` r
+# from main repository
+install.packages("pak")
+pak::pkg_install("git::https://forge.ird.fr/amap/amapvox/AMAPVox.git")
+```
+
+- or with [remotes](https://remotes.r-lib.org/)
+
+```
+# from github mirror
 install.packages("remotes")
 remotes::install_github('umr-amap/AMAPVox')
 ```
@@ -31,5 +43,6 @@ remotes::install_github('umr-amap/AMAPVox')
 To use it :
 
 ``` r
-library("AMAPVox")
+# launch AMAPVox GUI
+AMAPVox::run()
 ```

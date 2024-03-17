@@ -24,6 +24,11 @@ public class XYBScan extends GriddedPointScan {
     }
     
     @Override
+    public void open() throws IOException {
+        readHeader();
+    }
+    
+    @Override
     public void readHeader() throws FileNotFoundException, IOException {
         
         XYBIterator xybIterator = new XYBIterator(getFile());

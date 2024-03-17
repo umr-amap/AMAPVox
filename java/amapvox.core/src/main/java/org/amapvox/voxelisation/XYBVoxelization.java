@@ -13,12 +13,15 @@ import org.amapvox.lidar.gridded.LDoublePoint;
 import org.amapvox.lidar.gridded.LPoint;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+import org.apache.log4j.Logger;
 
 /**
  *
  * @author pverley
  */
 public class XYBVoxelization extends AbstractVoxelization {
+    
+    private final static Logger LOGGER = Logger.getLogger(XYBVoxelization.class);
 
     public XYBVoxelization(VoxelizationTask task, VoxelizationCfg cfg, int iscan) {
         super(task, cfg, iscan);
@@ -35,6 +38,8 @@ public class XYBVoxelization extends AbstractVoxelization {
         // XYB scan
         XYBScan xybScan = new XYBScan(getLidarScan().getFile());
         xybScan.open();
+        
+        LOGGER.warn(logHeader() + " XYB reader does not handle empty shot reconstruction. Your XYB file should be preprocessed so as to include empty shots with \"fake points\" beyond voxel space.");
         
         // XYB iterator
         XYBIterator xybIterator = (XYBIterator) xybScan.iterator();

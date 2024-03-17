@@ -19,6 +19,7 @@ import org.amapvox.canopy.transmittance.TransmittanceParameters;
 import java.io.File;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -48,15 +49,17 @@ import org.controlsfx.validation.ValidationSupport;
  */
 public class TransmittanceMapFrameController extends ConfigurationController {
 
-    final Logger logger = Logger.getLogger(TransmittanceMapFrameController.class);
+    final Logger LOGGER = Logger.getLogger(TransmittanceMapFrameController.class);
 
     // validation support
     private ValidationSupport transLightMapValidationSupport;
     //
     private PositionImporterFrameController positionImporterFrameController;
+    private final SimpleBooleanProperty sensorPositionsProperty = new SimpleBooleanProperty();
     //
     private DateChooserFrameController dateChooserFrameController;
-    private ObservableList<SimulationPeriod> data;
+    private ObservableList<SimulationPeriod> simulationPeriods;
+    private final SimpleBooleanProperty simulationPeriodsProperty = new SimpleBooleanProperty();
     // file choosers
     private File lastFCOpenVoxelFile;
     private File lastFCSaveTransmittanceTextFile;
@@ -114,9 +117,9 @@ public class TransmittanceMapFrameController extends ConfigurationController {
         positionImporterFrameController = PositionImporterFrameController.newInstance();
 
         textfieldLatitudeRadians.setTextFormatter(TextFieldUtil.createFloatTextFormatter(0.f));
-        data = FXCollections.observableArrayList();
+        simulationPeriods = FXCollections.observableArrayList();
 
-        tableViewSimulationPeriods.setItems(data);
+        tableViewSimulationPeriods.setItems(simulationPeriods);
         tableViewSimulationPeriods.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         tableViewSimulationPeriods.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
@@ -182,18 +185,21 @@ public class TransmittanceMapFrameController extends ConfigurationController {
 
     @Override
     ObservableValue[] getListenedProperties() {
+        
+        
+        
         return new ObservableValue[]{
             textfieldVoxelFilePathTransmittance.textProperty(),
             checkboxGenerateTextFile.selectedProperty(),
             textfieldOutputTextFilePath.textProperty(),
             checkboxGenerateBitmapFile.selectedProperty(),
             textfieldOutputBitmapFilePath.textProperty(),
-            listViewTransmittanceMapSensorPositions.itemsProperty(),
+            sensorPositionsProperty,
             comboboxChooseDirectionsNumber.getSelectionModel().selectedItemProperty(),
             textfieldDirectionRotationTransmittanceMap.textProperty(),
             checkboxTransmittanceMapToricity.selectedProperty(),
-            textfieldLatitudeRadians.selectedTextProperty(),
-            tableViewSimulationPeriods.itemsProperty()
+            textfieldLatitudeRadians.textProperty(),
+            simulationPeriodsProperty
         };
     }
 
@@ -216,9 +222,9 @@ public class TransmittanceMapFrameController extends ConfigurationController {
         }
 
         transmParameters.setDirectionsNumber(comboboxChooseDirectionsNumber.getSelectionModel().getSelectedItem());
-        transmParameters.setDirectionsRotation(Float.valueOf(textfieldDirectionRotationTransmittanceMap.getText()));
+        transmParameters.setDirectionsRotation(Float.parseFloat(textfieldDirectionRotationTransmittanceMap.getText()));
 
-        transmParameters.setLatitudeInDegrees(Float.valueOf(textfieldLatitudeRadians.getText()));
+        transmParameters.setLatitudeInDegrees(Float.parseFloat(textfieldLatitudeRadians.getText()));
 
         transmParameters.setSimulationPeriods(tableViewSimulationPeriods.getItems());
 
@@ -260,12 +266,10 @@ public class TransmittanceMapFrameController extends ConfigurationController {
 
         textfieldLatitudeRadians.setText(df.format(trParams.getLatitudeInDegrees()));
 
-        data.clear();
-
-        List<SimulationPeriod> simulationPeriods = trParams.getSimulationPeriods();
-
-        if (simulationPeriods != null) {
-            data.addAll(simulationPeriods);
+        simulationPeriods.clear();
+        List<SimulationPeriod> periods = trParams.getSimulationPeriods();
+        if (periods != null) {
+            simulationPeriods.addAll(periods);
         }
     }
 
@@ -282,7 +286,7 @@ public class TransmittanceMapFrameController extends ConfigurationController {
 
             lastFCOpenVoxelFile = selectedFile;
             textfieldVoxelFilePathTransmittance.setText(selectedFile.getAbsolutePath());
-            logger.info("Transmittance voxel file opened.");
+            LOGGER.info("Transmittance voxel file opened.");
         }
 
     }
@@ -301,7 +305,7 @@ public class TransmittanceMapFrameController extends ConfigurationController {
 
             lastFCSaveTransmittanceTextFile = selectedFile;
             textfieldOutputTextFilePath.setText(selectedFile.getAbsolutePath());
-            logger.info("Output text file opened.");
+            LOGGER.info("Output text file opened.");
         }
     }
 
@@ -318,7 +322,7 @@ public class TransmittanceMapFrameController extends ConfigurationController {
 
             lastDCSaveTransmittanceBitmapFile = selectedFile;
             textfieldOutputBitmapFilePath.setText(selectedFile.getAbsolutePath());
-            logger.info("Output bitman file opened.");
+            LOGGER.info("Output bitman file opened.");
         }
     }
 
@@ -329,10 +333,12 @@ public class TransmittanceMapFrameController extends ConfigurationController {
 
         if (selectedItems.size() == listViewTransmittanceMapSensorPositions.getItems().size()) {
             listViewTransmittanceMapSensorPositions.getItems().clear();
-            logger.info("Transmittance position(s) removed.");
+            sensorPositionsProperty.set(!sensorPositionsProperty.get());
+            LOGGER.info("Transmittance position(s) removed.");
         } else {
             listViewTransmittanceMapSensorPositions.getItems().removeAll(selectedItems);
-            logger.info("Transmittance position(s) removed.");
+            sensorPositionsProperty.set(!sensorPositionsProperty.get());
+            LOGGER.info("Transmittance position(s) removed.");
         }
     }
 
@@ -351,27 +357,28 @@ public class TransmittanceMapFrameController extends ConfigurationController {
         positionImporterFrame.setOnHidden((WindowEvent event1)
                 -> {
             listViewTransmittanceMapSensorPositions.getItems().addAll(positionImporterFrameController.getPositions());
-            logger.info("Transmittance position(s) added.");
+            sensorPositionsProperty.set(!sensorPositionsProperty.get());
+            LOGGER.info("Transmittance position(s) added.");
         });
     }
 
     @FXML
     private void onActionMenuItemSelectAllPeriods(ActionEvent event) {
         tableViewSimulationPeriods.getSelectionModel().selectAll();
-        logger.info("All periods seleted.");
+        LOGGER.info("All periods seleted.");
     }
 
     @FXML
     private void onActionMenuItemUnselectAllPeriods(ActionEvent event) {
         tableViewSimulationPeriods.getSelectionModel().clearSelection();
-        logger.info("All periods unselected.");
+        LOGGER.info("All periods unselected.");
     }
 
     @FXML
     private void onActionButtonRemovePeriodFromPeriodList(ActionEvent event) {
 
         tableViewSimulationPeriods.getItems().removeAll(tableViewSimulationPeriods.getSelectionModel().getSelectedItems());
-        logger.info("Period(s) removed.");
+        simulationPeriodsProperty.set(!simulationPeriodsProperty.get());
     }
 
     @FXML
@@ -386,7 +393,8 @@ public class TransmittanceMapFrameController extends ConfigurationController {
                 SimulationPeriod period = dateChooserFrameController.getDateRange();
 
                 if (period != null) {
-                    data.add(period);
+                    simulationPeriods.add(period);
+                    simulationPeriodsProperty.set(!simulationPeriodsProperty.get());
                 }
             }
         });

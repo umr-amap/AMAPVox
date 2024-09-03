@@ -78,6 +78,20 @@
                                                                                                         <Insets left="25.0" />
                                                                                                     </padding>
                                                                                                 </VBox>
+                                                                                                <HBox spacing="15.0" alignment="CENTER_LEFT">
+                                                                                                    <children>
+                                                                                                        <CheckBox fx:id="checkboxLasTimeRange" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Time range" />
+                                                                                                        <fx:include fx:id="buttonHelpLasTimeRange" source="../HelpButton.fxml" />
+                                                                                                        <HBox fx:id="hboxLasTimeRange" spacing="5.0" alignment="CENTER_LEFT" disable="true" >
+                                                                                                            <children>
+                                                                                                                <Label text="min:" />
+                                                                                                                <TextField fx:id="textFieldLasTimeMin" prefWidth="90.0" text="0.0" />
+                                                                                                                <Label text="max:" />
+                                                                                                                <TextField fx:id="textFieldLasTimeMax" prefWidth="90.0" text="0.0" />
+                                                                                                            </children>
+                                                                                                        </HBox>
+                                                                                                    </children>
+                                                                                                </HBox>
                                                                                                 <HBox fx:id="hboxLasConsistency" spacing="10.0" alignment="CENTER_LEFT">
                                                                                                     <children>
                                                                                                         <CheckBox fx:id="checkboxLasConsistency" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Discard shots with inconsistent number of echoes or ranks." />

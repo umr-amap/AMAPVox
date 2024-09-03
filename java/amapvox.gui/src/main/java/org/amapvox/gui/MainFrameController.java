@@ -1147,8 +1147,7 @@ public class MainFrameController implements Initializable {
             }
             return true;
         } catch (Exception ex) {
-            Util.showErrorDialog(stage,
-                    new IOException("Cannot write configuration file.", ex), getCfg(file).getClassName());
+            Util.showErrorDialog(stage, ex, "Save configuration");
         }
         getCfg(file).getTask().setButtonDisable(true);
         return false;

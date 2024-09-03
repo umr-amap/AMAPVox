@@ -23,6 +23,7 @@ import org.amapvox.shot.Shot;
 import com.github.mreutegg.laszip4j.LASHeader;
 import com.github.mreutegg.laszip4j.LASPoint;
 import com.github.mreutegg.laszip4j.LASReader;
+import java.text.DecimalFormat;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Supplier;
@@ -67,6 +68,9 @@ public class LasShotExtractor extends Process implements IterableWithException<S
     private final boolean collinearityCheckEnabled;
     private final boolean collinearityWarningEnabled;
 
+    // 
+    private final double timeMin, timeMax;
+
     private int nshot;
 
     // logger
@@ -76,7 +80,8 @@ public class LasShotExtractor extends Process implements IterableWithException<S
             File inputFile, Matrix4d vopMatrix,
             boolean echoConsistencyCheckEnabled, boolean echoConsistencyWarningEnabled,
             boolean collinearityCheckEnabled, boolean collinearityWarningEnabled,
-            double maxDeviation) {
+            double maxDeviation,
+            double timeMin, double timeMax) {
 
         this.trajectoryFile = trajectoryFile;
         this.scannerPosition = scannerPosition;
@@ -89,6 +94,22 @@ public class LasShotExtractor extends Process implements IterableWithException<S
         this.collinearityWarningEnabled = collinearityWarningEnabled;
         this.collinearityError = Math.abs(1.d - Math.abs(Math.cos(Math.toRadians(maxDeviation))));
 
+        this.timeMin = timeMin;
+        this.timeMax = timeMax;
+    }
+
+    public LasShotExtractor(CSVFile trajectoryFile, Point3d scannerPosition,
+            File inputFile, Matrix4d vopMatrix,
+            boolean echoConsistencyCheckEnabled, boolean echoConsistencyWarningEnabled,
+            boolean collinearityCheckEnabled, boolean collinearityWarningEnabled,
+            double maxDeviation) {
+
+        this(trajectoryFile, scannerPosition,
+                inputFile, vopMatrix,
+                echoConsistencyCheckEnabled, echoConsistencyWarningEnabled,
+                collinearityCheckEnabled, collinearityWarningEnabled,
+                maxDeviation,
+                0.d, Double.MAX_VALUE);
     }
 
     public int getNShot() {
@@ -168,7 +189,9 @@ public class LasShotExtractor extends Process implements IterableWithException<S
         LASHeader header;
 
         int count = 0;
+        int countDiscarded = 0;
         long nPoint;
+        double tmin = Double.MAX_VALUE, tmax = 0.d;
 
         LOGGER.info("Reading LAS file " + file.getName());
         // open LAS reader
@@ -191,6 +214,13 @@ public class LasShotExtractor extends Process implements IterableWithException<S
             if (isCancelled()) {
                 return null;
             }
+            tmin = Math.min(p.getGPSTime(), tmin);
+            tmax = Math.max(p.getGPSTime(), tmax);
+            // time filtering
+            if (p.getGPSTime() < timeMin | p.getGPSTime() > timeMax) {
+                countDiscarded++;
+                continue;
+            }
             Vector3d location = new Vector3d(
                     (p.getX() * x_scale_factor) + x_offset,
                     (p.getY() * y_scale_factor) + y_offset,
@@ -202,6 +232,19 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                     p.getClassification(),
                     p.getGPSTime());
             points.add(point);
+        }
+        if (countDiscarded > 0) {
+            float percent = 100.f * countDiscarded / count;
+            DecimalFormat df = new DecimalFormat();
+            df.setMaximumFractionDigits(2);
+            LOGGER.info("LAS points outside time range: " + countDiscarded + " / " + count + " (" + df.format(percent) + "%)");
+        }
+        if (countDiscarded >= count) {
+            StringBuilder msg = new StringBuilder();
+            msg.append("All LAS points have been discarded from time range. LAS time range: ");
+            msg.append((long) tmin).append(", ").append((long) tmax);
+            msg.append("; time filter: ").append((long) timeMin).append(", ").append((long) timeMax);
+            throw new IOException(msg.toString());
         }
 
         // sort LAS point by time stamp

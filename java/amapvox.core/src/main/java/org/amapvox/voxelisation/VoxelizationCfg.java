@@ -110,6 +110,9 @@ public class VoxelizationCfg extends Configuration {
     private boolean collinearityCheckEnabled;
     private boolean collinearityWarningEnabled;
     private double collinearityMaxDeviation;
+    private double lasTimeMin;
+    private double lasTimeMax;
+    private boolean timeRangeEnabled;
 
     // Voxelization parameters
     //voxel space parameters
@@ -231,9 +234,9 @@ public class VoxelizationCfg extends Configuration {
                 File f = new File(resolve(scanElement.getAttributeValue("src")));
 
                 if (lidarType == LidarType.PTX) {
-                    long offset = Long.valueOf(scanElement.getAttributeValue("offset"));
-                    int numRows = Integer.valueOf(scanElement.getAttributeValue("numRows"));
-                    int numCols = Integer.valueOf(scanElement.getAttributeValue("numCols"));
+                    long offset = Long.parseLong(scanElement.getAttributeValue("offset"));
+                    int numRows = Integer.parseInt(scanElement.getAttributeValue("numRows"));
+                    int numCols = Integer.parseInt(scanElement.getAttributeValue("numCols"));
                     PTXHeader header = new PTXHeader();
                     header.setNAzimuth(numRows);
                     header.setNZenith(numCols);
@@ -254,13 +257,13 @@ public class VoxelizationCfg extends Configuration {
                             ? trajectoryElement.getAttributeValue("column-separator")
                             : " ");
                     trajectoryFile.setContainsHeader(null != trajectoryElement.getAttribute("has-header")
-                            ? Boolean.valueOf(trajectoryElement.getAttributeValue("has-header"))
+                            ? Boolean.parseBoolean(trajectoryElement.getAttributeValue("has-header"))
                             : true);
                     trajectoryFile.setNbOfLinesToRead(null != trajectoryElement.getAttribute("nb-of-lines-to-read")
-                            ? Long.valueOf(trajectoryElement.getAttributeValue("nb-of-lines-to-read"))
+                            ? Long.parseLong(trajectoryElement.getAttributeValue("nb-of-lines-to-read"))
                             : Integer.MAX_VALUE);
                     trajectoryFile.setNbOfLinesToSkip(null != trajectoryElement.getAttribute("nb-of-lines-to-skip")
-                            ? Long.valueOf(trajectoryElement.getAttributeValue("nb-of-lines-to-skip"))
+                            ? Long.parseLong(trajectoryElement.getAttributeValue("nb-of-lines-to-skip"))
                             : 0L);
                     String columnAssignment = (null != trajectoryElement.getAttribute("column-assignment"))
                             ? trajectoryElement.getAttributeValue("column-assignment")
@@ -277,6 +280,14 @@ public class VoxelizationCfg extends Configuration {
                 }
             }
 
+            // time range
+            if (null != inputElement.getChild("time-range")) {
+                Element timeRangeElement = inputElement.getChild("time-range");
+                timeRangeEnabled = Boolean.parseBoolean(timeRangeElement.getAttributeValue("enabled"));
+                lasTimeMin = Double.parseDouble(timeRangeElement.getAttributeValue("min"));
+                lasTimeMax = Double.parseDouble(timeRangeElement.getAttributeValue("max"));
+            }
+
             if (null != inputElement.getChild("scanner")) {
                 String position = inputElement.getChild("scanner").getAttributeValue("position");
                 if (!position.equalsIgnoreCase("null")) {
@@ -287,11 +298,11 @@ public class VoxelizationCfg extends Configuration {
 
             if (null != inputElement.getChild("als-consistency")) {
                 Element consistencyElement = inputElement.getChild("als-consistency");
-                echoConsistencyCheckEnabled = Boolean.valueOf(consistencyElement.getAttributeValue("echoes"));
-                echoConsistencyWarningEnabled = Boolean.valueOf(consistencyElement.getAttributeValue("echoes-warn"));
-                collinearityCheckEnabled = Boolean.valueOf(consistencyElement.getAttributeValue("collinearity"));
-                collinearityWarningEnabled = Boolean.valueOf(consistencyElement.getAttributeValue("collinearity-warn"));
-                collinearityMaxDeviation = Double.valueOf(consistencyElement.getAttributeValue("max-deviation"));
+                echoConsistencyCheckEnabled = Boolean.parseBoolean(consistencyElement.getAttributeValue("echoes"));
+                echoConsistencyWarningEnabled = Boolean.parseBoolean(consistencyElement.getAttributeValue("echoes-warn"));
+                collinearityCheckEnabled = Boolean.parseBoolean(consistencyElement.getAttributeValue("collinearity"));
+                collinearityWarningEnabled = Boolean.parseBoolean(consistencyElement.getAttributeValue("collinearity-warn"));
+                collinearityMaxDeviation = Double.parseDouble(consistencyElement.getAttributeValue("max-deviation"));
             } else {
                 // set to false for backward compatibility
                 echoConsistencyCheckEnabled = false;
@@ -306,7 +317,7 @@ public class VoxelizationCfg extends Configuration {
                 if (null != dtmElement.getAttribute("src") && !dtmElement.getAttributeValue("src").isEmpty()) {
                     dtmFile = new File(dtmElement.getAttributeValue("src"));
                 }
-                dtmUseVopMatrix = Boolean.valueOf(dtmElement.getAttributeValue("use-vop"));
+                dtmUseVopMatrix = Boolean.parseBoolean(dtmElement.getAttributeValue("use-vop"));
             }
 
         } else {
@@ -325,7 +336,7 @@ public class VoxelizationCfg extends Configuration {
                 // voxel output enabled
                 setVoxelOutputEnabled(
                         null != voxelsElement.getAttribute("enabled")
-                        ? Boolean.valueOf(voxelsElement.getAttributeValue("enabled"))
+                        ? Boolean.parseBoolean(voxelsElement.getAttributeValue("enabled"))
                         : true
                 );
                 // voxel output format
@@ -340,11 +351,11 @@ public class VoxelizationCfg extends Configuration {
                 }
                 // skip empty voxels
                 setSkipEmptyVoxel(null != voxelsElement.getAttribute("skip-empty-voxel")
-                        ? Boolean.valueOf(voxelsElement.getAttributeValue("skip-empty-voxel"))
+                        ? Boolean.parseBoolean(voxelsElement.getAttributeValue("skip-empty-voxel"))
                         : false);
                 // number of fraction digits
                 if (null != voxelsElement.getAttribute("fraction-digits")) {
-                    decimalFormat.setMaximumFractionDigits(Integer.valueOf(voxelsElement.getAttributeValue("fraction-digits")));
+                    decimalFormat.setMaximumFractionDigits(Integer.parseInt(voxelsElement.getAttributeValue("fraction-digits")));
                 }
                 setFractionDigits(decimalFormat.getMaximumFractionDigits());
 
@@ -356,39 +367,38 @@ public class VoxelizationCfg extends Configuration {
                     variableElements.forEach((variableElement) -> {
                         try {
                             OutputVariable variable = OutputVariable.valueOf(variableElement.getAttributeValue("name").toUpperCase());
-                            setOutputVariableEnabled(variable, Boolean.valueOf(variableElement.getAttributeValue("enabled")));
+                            setOutputVariableEnabled(variable, Boolean.parseBoolean(variableElement.getAttributeValue("enabled")));
                             Element parametersElement = variableElement.getChild("parameters");
                             if (null != parametersElement) {
                                 // output variable specific parameters
                                 switch (variable) {
-                                    case ESTIMATED_TRANSMITTANCE:
+                                    case ESTIMATED_TRANSMITTANCE -> {
                                         // check whether attributes exist for backward compatibility
                                         if (null != parametersElement.getAttribute("error")) {
-                                            setTrNumEstimError(Double.valueOf(parametersElement.getAttributeValue("error")));
+                                            setTrNumEstimError(Double.parseDouble(parametersElement.getAttributeValue("error")));
                                         }
                                         if (null != parametersElement.getAttribute("fallback-error")) {
-                                            setTrNumEstimFallbackError(Double.valueOf(parametersElement.getAttributeValue("fallback-error")));
+                                            setTrNumEstimFallbackError(Double.parseDouble(parametersElement.getAttributeValue("fallback-error")));
                                         }
                                         if (null != parametersElement.getAttribute("nrecordmax")) {
-                                            setNTrRecordMax(Integer.valueOf(parametersElement.getAttributeValue("nrecordmax")));
+                                            setNTrRecordMax(Integer.parseInt(parametersElement.getAttributeValue("nrecordmax")));
                                         }
-
-                                        break;
-                                    case ATTENUATION_PPL_MLE:
+                                    }
+                                    case ATTENUATION_PPL_MLE -> {
                                         // maximal attenuation
                                         if (null != parametersElement.getAttribute("maximal-attenuation")) {
-                                            setMaxAttenuation(Double.valueOf(parametersElement.getAttributeValue("maximal-attenuation")));
+                                            setMaxAttenuation(Double.parseDouble(parametersElement.getAttributeValue("maximal-attenuation")));
                                         }
                                         // attenuation error
                                         if (null != parametersElement.getAttribute("error")) {
-                                            setAttenuationError(Double.valueOf(parametersElement.getAttributeValue("error")));
+                                            setAttenuationError(Double.parseDouble(parametersElement.getAttributeValue("error")));
                                         }
-                                        break;
-                                    case EXPLORATION_RATE:
+                                    }
+                                    case EXPLORATION_RATE -> {
                                         if (null != parametersElement.getAttribute("subvoxel")) {
-                                            setSubVoxelSplit(Integer.valueOf(parametersElement.getAttributeValue("subvoxel")));
+                                            setSubVoxelSplit(Integer.parseInt(parametersElement.getAttributeValue("subvoxel")));
                                         }
-                                        break;
+                                    }
                                 }
                             }
                         } catch (java.lang.IllegalArgumentException ex) {
@@ -405,8 +415,8 @@ public class VoxelizationCfg extends Configuration {
             // path length export element
             Element pathLengthElement = outputElement.getChild("pathlength");
             if (null != pathLengthElement) {
-                setPathLengthEnabled(Boolean.valueOf(pathLengthElement.getAttributeValue("enabled")));
-                setPathLengthMaxSize(Integer.valueOf(pathLengthElement.getAttributeValue("array-max-size")));
+                setPathLengthEnabled(Boolean.parseBoolean(pathLengthElement.getAttributeValue("enabled")));
+                setPathLengthMaxSize(Integer.parseInt(pathLengthElement.getAttributeValue("array-max-size")));
             }
 
         } else {
@@ -471,19 +481,17 @@ public class VoxelizationCfg extends Configuration {
         Element transformationElement = processElement.getChild("transformation");
 
         if (transformationElement != null) {
-            usePopMatrix = Boolean.valueOf(transformationElement.getAttributeValue("use-pop"));
-            useSopMatrix = Boolean.valueOf(transformationElement.getAttributeValue("use-sop"));
-            useVopMatrix = Boolean.valueOf(transformationElement.getAttributeValue("use-vop"));
+            usePopMatrix = Boolean.parseBoolean(transformationElement.getAttributeValue("use-pop"));
+            useSopMatrix = Boolean.parseBoolean(transformationElement.getAttributeValue("use-sop"));
+            useVopMatrix = Boolean.parseBoolean(transformationElement.getAttributeValue("use-vop"));
             List<Element> matrixList = transformationElement.getChildren("matrix");
             for (Element e : matrixList) {
                 Matrix matrix = Matrix.valueOf(e);
                 switch (matrix.getId()) {
-                    case "pop":
+                    case "pop" ->
                         popMatrix = matrix.toMatrix4d();
-                        break;
-                    case "vop":
+                    case "vop" ->
                         vopMatrix = matrix.toMatrix4d();
-                        break;
                 }
             }
         }
@@ -496,7 +504,7 @@ public class VoxelizationCfg extends Configuration {
                 // get class name
                 String classname = filterElement.getAttributeValue("classname");
                 // enabled
-                if (!Boolean.valueOf(filterElement.getAttributeValue("enabled"))) {
+                if (!Boolean.parseBoolean(filterElement.getAttributeValue("enabled"))) {
                     continue;
                 }
                 Element parametersElement = filterElement.getChild("parameters");
@@ -505,16 +513,16 @@ public class VoxelizationCfg extends Configuration {
                     String variable = parametersElement.getAttributeValue("variable");
                     String inequality = parametersElement.getAttributeValue("inequality");
                     String value = parametersElement.getAttributeValue("value");
-                    shotFilters.add(new ShotAttributeFilter(new FloatFilter(variable, Float.valueOf(value), FloatFilter.getConditionFromString(inequality))));
+                    shotFilters.add(new ShotAttributeFilter(new FloatFilter(variable, Float.parseFloat(value), FloatFilter.getConditionFromString(inequality))));
                 } else if (classname.equalsIgnoreCase(ShotDecimationFilter.class.getCanonicalName())) {
                     // shot decimation
-                    float decimationFactor = Float.valueOf(parametersElement.getAttributeValue("decimation-factor"));
+                    float decimationFactor = Float.parseFloat(parametersElement.getAttributeValue("decimation-factor"));
                     shotFilters.add(new ShotDecimationFilter(decimationFactor));
                 } else if (classname.equalsIgnoreCase(EchoRangeFilter.class.getCanonicalName())) {
                     // echo range filter
-                    boolean blankEchoDiscarded = Boolean.valueOf(parametersElement.getAttributeValue("blank-echo-discarded"));
+                    boolean blankEchoDiscarded = Boolean.parseBoolean(parametersElement.getAttributeValue("blank-echo-discarded"));
                     boolean warningEnabled = (null != parametersElement.getAttribute("warning-enabled"))
-                            ? Boolean.valueOf(parametersElement.getAttributeValue("warning-enabled"))
+                            ? Boolean.parseBoolean(parametersElement.getAttributeValue("warning-enabled"))
                             : true;
                     shotFilters.add(new EchoRangeFilter(blankEchoDiscarded, warningEnabled));
                 } else if (classname.equalsIgnoreCase(EchoAttributeFilter.class.getCanonicalName())) {
@@ -522,7 +530,7 @@ public class VoxelizationCfg extends Configuration {
                     String variable = parametersElement.getAttributeValue("variable");
                     String inequality = parametersElement.getAttributeValue("inequality");
                     String value = parametersElement.getAttributeValue("value");
-                    echoFilters.add(new EchoAttributeFilter(new FloatFilter(variable, Float.valueOf(value), FloatFilter.getConditionFromString(inequality))));
+                    echoFilters.add(new EchoAttributeFilter(new FloatFilter(variable, Float.parseFloat(value), FloatFilter.getConditionFromString(inequality))));
                 } else if (classname.equalsIgnoreCase(EchoRankFilter.class.getCanonicalName())) {
                     // echo rank filter
                     String src = resolve(parametersElement.getAttributeValue("src"));
@@ -539,9 +547,9 @@ public class VoxelizationCfg extends Configuration {
                         String columnAssignment = parametersElement.getAttributeValue("column-assignment");
 
                         file.setColumnSeparator(columnSeparator);
-                        file.setContainsHeader(Boolean.valueOf(hasHeader));
-                        file.setNbOfLinesToRead(Long.valueOf(nbOfLinesToRead));
-                        file.setNbOfLinesToSkip(Long.valueOf(nbOfLinesToSkip));
+                        file.setContainsHeader(Boolean.parseBoolean(hasHeader));
+                        file.setNbOfLinesToRead(Long.parseLong(nbOfLinesToRead));
+                        file.setNbOfLinesToSkip(Long.parseLong(nbOfLinesToSkip));
 
                         Map<String, Integer> colMap = new HashMap<>();
                         String[] split = columnAssignment.split(",");
@@ -559,17 +567,17 @@ public class VoxelizationCfg extends Configuration {
 
                     String behavior = parametersElement.getAttributeValue("behavior").toUpperCase();
                     boolean applyVOP = null != parametersElement.getAttribute("apply-vop")
-                            ? Boolean.valueOf(parametersElement.getAttributeValue("apply-vop"))
+                            ? Boolean.parseBoolean(parametersElement.getAttributeValue("apply-vop"))
                             : true;
                     Matrix4d vop = applyVOP && (null != vopMatrix)
                             ? new Matrix4d(vopMatrix)
                             : MatrixUtility.identity4d();
                     echoFilters.add(new PointcloudFilter(file,
-                            Float.valueOf(parametersElement.getAttributeValue("error-margin")),
+                            Float.parseFloat(parametersElement.getAttributeValue("error-margin")),
                             EchoRankFilter.Behavior.valueOf(behavior), vop));
                 } else if (classname.equalsIgnoreCase(DigitalTerrainModelFilter.class.getCanonicalName())) {
                     // digital terrain model filter
-                    echoFilters.add(new DigitalTerrainModelFilter(Float.valueOf(parametersElement.getAttributeValue("height-min"))));
+                    echoFilters.add(new DigitalTerrainModelFilter(Float.parseFloat(parametersElement.getAttributeValue("height-min"))));
                 } else if (classname.equalsIgnoreCase(RXPFalseEmptyShotRemover.class.getCanonicalName())) {
                     enableEmptyShotsFiltering = true;
                 } else if (classname.equalsIgnoreCase(ClassifiedPointFilter.class.getCanonicalName())) {
@@ -591,8 +599,8 @@ public class VoxelizationCfg extends Configuration {
         if (laserSpecElement != null) {
             // laser-specification element exist in XML configuration file
             String laserSpecName = laserSpecElement.getAttributeValue("name");
-            double beamDivergence = Double.valueOf(laserSpecElement.getAttributeValue("beam-divergence"));
-            double beamDiameterAtExit = Double.valueOf(laserSpecElement.getAttributeValue("beam-diameter-at-exit"));
+            double beamDivergence = Double.parseDouble(laserSpecElement.getAttributeValue("beam-divergence"));
+            double beamDiameterAtExit = Double.parseDouble(laserSpecElement.getAttributeValue("beam-diameter-at-exit"));
 
             // check with preset values
             for (LaserSpecification laserSpec : LaserSpecification.getPresets()) {
@@ -618,13 +626,12 @@ public class VoxelizationCfg extends Configuration {
         // single leaf area
         Element leafAreaElement = processElement.getChild("single-leaf-area");
         if (null != leafAreaElement) {
-            setMeanLeafArea(Double.valueOf(leafAreaElement.getAttributeValue("value")));
+            setMeanLeafArea(Double.parseDouble(leafAreaElement.getAttributeValue("value")));
         }
     }
 
     @Override
-    public void writeProcessElements(Element processElement
-    ) {
+    public void writeProcessElements(Element processElement) {
 
         Element inputElement = new Element("input");
         inputElement.setAttribute(new Attribute("type", String.valueOf(lidarType)));
@@ -683,6 +690,13 @@ public class VoxelizationCfg extends Configuration {
             Element scannerPositionElement = new Element("scanner");
             scannerPositionElement.setAttribute("position", String.valueOf(scannerPosition));
             inputElement.addContent(scannerPositionElement);
+            
+            // time range
+            Element timeRangeElement = new Element("time-range");
+            timeRangeElement.setAttribute("enabled", String.valueOf(timeRangeEnabled));
+            timeRangeElement.setAttribute("min", String.valueOf(lasTimeMin));
+            timeRangeElement.setAttribute("max", String.valueOf(lasTimeMax));
+            inputElement.addContent(timeRangeElement);
 
             // echoes and collinearity checks
             Element consistencyElement = new Element("als-consistency");
@@ -722,18 +736,17 @@ public class VoxelizationCfg extends Configuration {
                 variableElement.setAttribute("enabled", String.valueOf(isOutputVariableEnabled(variable)));
                 Element parametersElement = new Element("parameters");
                 switch (variable) {
-                    case ESTIMATED_TRANSMITTANCE:
+                    case ESTIMATED_TRANSMITTANCE -> {
                         parametersElement.setAttribute(new Attribute("error", String.valueOf(getTrNumEstimError())));
                         parametersElement.setAttribute(new Attribute("fallback-error", String.valueOf(getTrNumEstimFallbackError())));
                         parametersElement.setAttribute(new Attribute("nrecordmax", String.valueOf(getNTrRecordMax())));
-                        break;
-                    case ATTENUATION_PPL_MLE:
+                    }
+                    case ATTENUATION_PPL_MLE -> {
                         parametersElement.setAttribute("maximal-attenuation", String.valueOf(getMaxAttenuation()));
                         parametersElement.setAttribute("error", String.valueOf(getAttenuationError()));
-                        break;
-                    case EXPLORATION_RATE:
+                    }
+                    case EXPLORATION_RATE ->
                         parametersElement.setAttribute("subvoxel", String.valueOf(getSubVoxelSplit()));
-                        break;
                 }
                 // add specific parameters element
                 if (!parametersElement.getAttributes().isEmpty()) {
@@ -816,18 +829,21 @@ public class VoxelizationCfg extends Configuration {
             for (Filter filter : shotFilters) {
                 Element filterElement = new Element("filter");
                 Element parametersElement = new Element("parameters");
-                if (filter instanceof ShotAttributeFilter) {
-                    FloatFilter f = ((ShotAttributeFilter) filter).getFilter();
-                    parametersElement.setAttribute("variable", f.getVariable());
-                    parametersElement.setAttribute("inequality", f.getConditionString());
-                    parametersElement.setAttribute("value", String.valueOf(f.getValue()));
-                } else if (filter instanceof ShotDecimationFilter) {
-                    ShotDecimationFilter f = (ShotDecimationFilter) filter;
-                    parametersElement.setAttribute("decimation-factor", String.valueOf(f.getDecimationFactor()));
-                } else if (filter instanceof EchoRangeFilter) {
-                    EchoRangeFilter f = (EchoRangeFilter) filter;
-                    parametersElement.setAttribute("blank-echo-discarded", String.valueOf(f.isBlankEchoDiscarded()));
-                    parametersElement.setAttribute("warning-enabled", String.valueOf(f.isWarningEnabled()));
+                switch (filter) {
+                    case ShotAttributeFilter shotAttributeFilter -> {
+                        FloatFilter f = shotAttributeFilter.getFilter();
+                        parametersElement.setAttribute("variable", f.getVariable());
+                        parametersElement.setAttribute("inequality", f.getConditionString());
+                        parametersElement.setAttribute("value", String.valueOf(f.getValue()));
+                    }
+                    case ShotDecimationFilter f ->
+                        parametersElement.setAttribute("decimation-factor", String.valueOf(f.getDecimationFactor()));
+                    case EchoRangeFilter f -> {
+                        parametersElement.setAttribute("blank-echo-discarded", String.valueOf(f.isBlankEchoDiscarded()));
+                        parametersElement.setAttribute("warning-enabled", String.valueOf(f.isWarningEnabled()));
+                    }
+                    default -> {
+                    }
                 }
                 if (!parametersElement.getAttributes().isEmpty()) {
                     filterElement.addContent(parametersElement);
@@ -842,40 +858,45 @@ public class VoxelizationCfg extends Configuration {
             for (Filter filter : echoFilters) {
                 Element filterElement = new Element("filter");
                 Element parametersElement = new Element("parameters");
-                if (filter instanceof EchoAttributeFilter) {
-                    FloatFilter f = ((EchoAttributeFilter) filter).getFilter();
-                    parametersElement.setAttribute("variable", f.getVariable());
-                    parametersElement.setAttribute("inequality", f.getConditionString());
-                    parametersElement.setAttribute("value", String.valueOf(f.getValue()));
-                } else if (filter instanceof EchoRankFilter) {
-                    EchoRankFilter f = (EchoRankFilter) filter;
-                    parametersElement.setAttribute("src", f.getFile().getAbsolutePath());
-                    parametersElement.setAttribute("behavior", f.behavior().toString());
-                } else if (filter instanceof PointcloudFilter) {
-                    PointcloudFilter f = (PointcloudFilter) filter;
-                    parametersElement.setAttribute(new Attribute("src", f.getPointcloudFile().getAbsolutePath()));
-                    parametersElement.setAttribute(new Attribute("error-margin", String.valueOf(f.getPointcloudErrorMargin())));
-                    parametersElement.setAttribute(new Attribute("apply-vop", String.valueOf(f.isApplyVOPMatrix())));
-                    parametersElement.setAttribute(new Attribute("behavior", f.behavior().toString()));
-                    parametersElement.setAttribute(new Attribute("column-separator", f.getPointcloudFile().getColumnSeparator()));
-                    parametersElement.setAttribute(new Attribute("has-header", String.valueOf(f.getPointcloudFile().containsHeader())));
-                    parametersElement.setAttribute(new Attribute("nb-of-lines-to-read", String.valueOf(f.getPointcloudFile().getNbOfLinesToRead())));
-                    parametersElement.setAttribute(new Attribute("nb-of-lines-to-skip", String.valueOf(f.getPointcloudFile().getNbOfLinesToSkip())));
-                    Map<String, Integer> columnAssignment = f.getPointcloudFile().getColumnAssignment();
-                    Iterator<Map.Entry<String, Integer>> iterator = columnAssignment.entrySet().iterator();
-                    String colAssignment = new String();
-                    while (iterator.hasNext()) {
-                        Map.Entry<String, Integer> entry = iterator.next();
-                        colAssignment += entry.getKey() + "=" + entry.getValue() + ",";
+                switch (filter) {
+                    case EchoAttributeFilter echoAttributeFilter -> {
+                        FloatFilter f = echoAttributeFilter.getFilter();
+                        parametersElement.setAttribute("variable", f.getVariable());
+                        parametersElement.setAttribute("inequality", f.getConditionString());
+                        parametersElement.setAttribute("value", String.valueOf(f.getValue()));
                     }
-                    parametersElement.setAttribute(new Attribute("column-assignment", colAssignment));
-                } else if (filter instanceof DigitalTerrainModelFilter) {
-                    parametersElement.setAttribute(new Attribute("height-min", String.valueOf(((DigitalTerrainModelFilter) filter).getMinDistance())));
-                } else if (filter instanceof ClassifiedPointFilter) {
-                    String classifications = ((ClassifiedPointFilter) filter).getClasses().stream()
-                            .map(iclass -> String.valueOf(iclass) + " ")
-                            .reduce("", String::concat).trim();
-                    parametersElement.setAttribute("classifications", classifications.trim());
+                    case EchoRankFilter f -> {
+                        parametersElement.setAttribute("src", f.getFile().getAbsolutePath());
+                        parametersElement.setAttribute("behavior", f.behavior().toString());
+                    }
+                    case PointcloudFilter f -> {
+                        parametersElement.setAttribute(new Attribute("src", f.getPointcloudFile().getAbsolutePath()));
+                        parametersElement.setAttribute(new Attribute("error-margin", String.valueOf(f.getPointcloudErrorMargin())));
+                        parametersElement.setAttribute(new Attribute("apply-vop", String.valueOf(f.isApplyVOPMatrix())));
+                        parametersElement.setAttribute(new Attribute("behavior", f.behavior().toString()));
+                        parametersElement.setAttribute(new Attribute("column-separator", f.getPointcloudFile().getColumnSeparator()));
+                        parametersElement.setAttribute(new Attribute("has-header", String.valueOf(f.getPointcloudFile().containsHeader())));
+                        parametersElement.setAttribute(new Attribute("nb-of-lines-to-read", String.valueOf(f.getPointcloudFile().getNbOfLinesToRead())));
+                        parametersElement.setAttribute(new Attribute("nb-of-lines-to-skip", String.valueOf(f.getPointcloudFile().getNbOfLinesToSkip())));
+                        Map<String, Integer> columnAssignment = f.getPointcloudFile().getColumnAssignment();
+                        Iterator<Map.Entry<String, Integer>> iterator = columnAssignment.entrySet().iterator();
+                        String colAssignment = new String();
+                        while (iterator.hasNext()) {
+                            Map.Entry<String, Integer> entry = iterator.next();
+                            colAssignment += entry.getKey() + "=" + entry.getValue() + ",";
+                        }
+                        parametersElement.setAttribute(new Attribute("column-assignment", colAssignment));
+                    }
+                    case DigitalTerrainModelFilter digitalTerrainModelFilter ->
+                        parametersElement.setAttribute(new Attribute("height-min", String.valueOf(digitalTerrainModelFilter.getMinDistance())));
+                    case ClassifiedPointFilter classifiedPointFilter -> {
+                        String classifications = classifiedPointFilter.getClasses().stream()
+                                .map(iclass -> String.valueOf(iclass) + " ")
+                                .reduce("", String::concat).trim();
+                        parametersElement.setAttribute("classifications", classifications.trim());
+                    }
+                    default -> {
+                    }
                 }
                 filterElement.setAttribute("enabled", Boolean.toString(true));
                 filterElement.setAttribute("classname", filter.getClass().getCanonicalName());
@@ -1109,6 +1130,48 @@ public class VoxelizationCfg extends Configuration {
      */
     public void setCollinearityMaxDeviation(double collinearityMaxDeviation) {
         this.collinearityMaxDeviation = collinearityMaxDeviation;
+    }
+
+    /**
+     * @return the lasTimeMin
+     */
+    public double getLasTimeMin() {
+        return lasTimeMin;
+    }
+
+    /**
+     * @param lasTimeMin the lasTimeMin to set
+     */
+    public void setLasTimeMin(double lasTimeMin) {
+        this.lasTimeMin = lasTimeMin;
+    }
+
+    /**
+     * @return the lasTimeMax
+     */
+    public double getLasTimeMax() {
+        return lasTimeMax;
+    }
+
+    /**
+     * @param lasTimeMax the lasTimeMax to set
+     */
+    public void setLasTimeMax(double lasTimeMax) {
+        this.lasTimeMax = lasTimeMax;
+    }
+    
+    /**
+     * @return the timeRangeEnabled
+     */
+    public boolean isTimeRangeEnabled() {
+        return timeRangeEnabled;
+    }
+
+    /**
+     * @param timeRangeEnabled the timeRangeEnabled to set
+     */
+    public void setTimeRangeEnabled(boolean timeRangeEnabled) {
+        this.timeRangeEnabled = timeRangeEnabled;
     }
 
     public LaserSpecification getLaserSpecification() {

@@ -8,7 +8,6 @@ import org.amapvox.commons.math.util.SphericalCoordinates;
 import org.amapvox.lidar.riegl.RxpExtraction;
 import org.amapvox.lidar.riegl.RxpShot;
 import org.amapvox.canopy.DirectionalTransmittance;
-import org.amapvox.canopy.LeafAngleDistribution;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -51,7 +50,6 @@ public class HemiScanView extends AVoxTask {
     private Point3f rgbCan;
 
     private int nbPixels;
-    private int decimation; // the proportion of shots used for computation is 1/decimation
 
     private int minSampling;	// minimum number of shots sampling a sector for calculating its gap fraction
 
@@ -77,7 +75,7 @@ public class HemiScanView extends AVoxTask {
 
     @Override
     protected void doInit() throws Exception {
-        
+
         parameters = ((HemiPhotoCfg) getConfiguration()).getParameters();
 
         nbPixels = parameters.getPixelNumber();
@@ -172,13 +170,12 @@ public class HemiScanView extends AVoxTask {
 
     @Override
     public File[] call() throws Exception {
-        
+
         LOGGER.info(logHeader + " started...");
 
         switch (parameters.getMode()) {
-            case ECHOS:
-                
 
+            case ECHOS -> {
                 initArrays();
 
                 for (LidarScan scan : parameters.getRxpScansList()) {
@@ -198,24 +195,21 @@ public class HemiScanView extends AVoxTask {
                     }
 
                     switch (parameters.getBitmapMode()) {
-                        case PIXEL:
-                            writeHemiPhoto(parameters.getOutputBitmapFile());
-                            break;
-                        case COLOR:
-                            sectorTable(parameters.getOutputBitmapFile());
-                            break;
+                        case PIXEL -> writeHemiPhoto(parameters.getOutputBitmapFile());
+                        case COLOR -> sectorTable(parameters.getOutputBitmapFile());
                     }
                     return new File[]{parameters.getOutputBitmapFile()};
                 }
+            }
 
-                break;
-
-            case PAD:
-                DirectionalTransmittance dt = new DirectionalTransmittance(
+            case PAD -> {
+                DirectionalTransmittance direcTransmittance = new DirectionalTransmittance(
                         parameters.getVoxelFile(),
                         parameters.getPADVariable(),
-                        LeafAngleDistribution.Type.SPHERIC);
-                return hemiFromPAD(dt, parameters.getSensorPositions());
+                        parameters.getLeafAngleDistribution(),
+                        parameters.getLeafAngleDistributionParameters());
+                return hemiFromPAD(direcTransmittance, parameters.getSensorPositions());
+            }
         }
         return null;
     }
@@ -324,10 +318,10 @@ public class HemiScanView extends AVoxTask {
 
         int positionID = 0;
 
-        List<File> outputFiles = new ArrayList<>();
+        List<File> outputFiles = new ArrayList();
 
         for (Point3d position : positions) {
-            
+
             LOGGER.info(logHeader + " from position " + position);
 
             initArrays();
@@ -392,12 +386,8 @@ public class HemiScanView extends AVoxTask {
                 File outputFile = new File(parameters.getOutputBitmapFile(), "position_" + positionID + ".png");
 
                 switch (parameters.getBitmapMode()) {
-                    case PIXEL:
-                        writeHemiPhoto(outputFile);
-                        break;
-                    case COLOR:
-                        sectorTable(outputFile);
-                        break;
+                    case PIXEL -> writeHemiPhoto(outputFile);
+                    case COLOR -> sectorTable(outputFile);
                 }
                 outputFiles.add(outputFile);
             }
@@ -415,7 +405,7 @@ public class HemiScanView extends AVoxTask {
 
             positionID++;
         }
-        return outputFiles.toArray(new File[outputFiles.size()]);
+        return outputFiles.toArray(File[]::new);
     }
 
 //    private void transform(String line, Transformations tr) {
@@ -461,7 +451,7 @@ public class HemiScanView extends AVoxTask {
     public void writeHemiPhotoAsText(File outputFile) throws IOException {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
-            
+
             LOGGER.info(logHeader + " writing image (as text) " + outputFile.getName());
 
             DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
@@ -655,7 +645,6 @@ public class HemiScanView extends AVoxTask {
         double azimut = Math.acos(x / normalizedRadius);
         double zenith = (normalizedRadius / radius) * Math.PI / 2.0;
 
-        SphericalCoordinates sc = new SphericalCoordinates(azimut, zenith);
         Vector3d direction = new Vector3d(SphericalCoordinates.toCartesian(azimut, zenith));
         return direction;
     }

@@ -7,7 +7,6 @@ package org.amapvox.gui.configuration;
 
 import org.amapvox.commons.javafx.SelectableMenuButton;
 import org.amapvox.commons.Configuration;
-import org.amapvox.gui.CheckMissingVoxelController;
 import org.amapvox.gui.DateChooserFrameController;
 import org.amapvox.gui.PositionImporterFrameController;
 import org.amapvox.gui.TextFieldUtil;
@@ -17,6 +16,9 @@ import org.amapvox.canopy.transmittance.SimulationPeriod;
 import org.amapvox.canopy.transmittance.TransmittanceCfg;
 import org.amapvox.canopy.transmittance.TransmittanceParameters;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -39,6 +41,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javax.vecmath.Point3d;
+import org.amapvox.gui.VoxelFileCanopyController;
 import org.apache.log4j.Logger;
 import org.controlsfx.validation.ValidationSupport;
 
@@ -61,7 +64,6 @@ public class TransmittanceMapFrameController extends ConfigurationController {
     private ObservableList<SimulationPeriod> simulationPeriods;
     private final SimpleBooleanProperty simulationPeriodsProperty = new SimpleBooleanProperty();
     // file choosers
-    private File lastFCOpenVoxelFile;
     private File lastFCSaveTransmittanceTextFile;
     private File lastDCSaveTransmittanceBitmapFile;
     private FileChooser fileChooserSaveTransmittanceTextFile;
@@ -69,9 +71,7 @@ public class TransmittanceMapFrameController extends ConfigurationController {
 
     // FXML import
     @FXML
-    private TextField textfieldVoxelFilePathTransmittance;
-    @FXML
-    private CheckMissingVoxelController checkMissingVoxelTransmittanceController;
+    private VoxelFileCanopyController voxelFileCanopyController;
     @FXML
     private TextField textfieldOutputTextFilePath;
     @FXML
@@ -121,7 +121,7 @@ public class TransmittanceMapFrameController extends ConfigurationController {
 
         tableViewSimulationPeriods.setItems(simulationPeriods);
         tableViewSimulationPeriods.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        tableViewSimulationPeriods.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableViewSimulationPeriods.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         comboboxChooseDirectionsNumber.getItems().addAll(1, 6, 16, 46, 136, 406);
         comboboxChooseDirectionsNumber.getSelectionModel().select(4);
@@ -135,14 +135,11 @@ public class TransmittanceMapFrameController extends ConfigurationController {
         hboxGenerateBitmapFiles.disableProperty().bind(checkboxGenerateBitmapFile.selectedProperty().not());
         hboxGenerateTextFile.disableProperty().bind(checkboxGenerateTextFile.selectedProperty().not());
 
-        textfieldVoxelFilePathTransmittance.textProperty().addListener(checkMissingVoxelTransmittanceController);
-
         listViewTransmittanceMapSensorPositions.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         Util.linkSelectorToList(selectorTransmittanceSensor, listViewTransmittanceMapSensorPositions);
 
         Util.setDragGestureEvents(textfieldOutputTextFilePath);
         Util.setDragGestureEvents(textfieldOutputBitmapFilePath);
-        Util.setDragGestureEvents(textfieldVoxelFilePathTransmittance, Util.isVoxelFile, Util.doNothing);
 
         // validation support
     }
@@ -151,7 +148,6 @@ public class TransmittanceMapFrameController extends ConfigurationController {
     void initValidationSupport() {
 
         transLightMapValidationSupport = new ValidationSupport();
-        transLightMapValidationSupport.registerValidator(textfieldVoxelFilePathTransmittance, true, Validators.fileExistValidator("Voxel file"));
 
         transLightMapValidationSupport.registerValidator(textfieldDirectionRotationTransmittanceMap, true, Validators.fieldDoubleValidator);
 
@@ -181,34 +177,59 @@ public class TransmittanceMapFrameController extends ConfigurationController {
         transLightMapValidationSupport.registerValidator(textfieldLatitudeRadians, true, Validators.fieldDoubleValidator);
         //transLightMapValidationSupport.registerValidator(listViewTransmittanceMapSensorPositions, true, emptyListValidator);
         //transLightMapValidationSupport.registerValidator(tableViewSimulationPeriods, true, emptyTableValidator);
+
+        voxelFileCanopyController.registerValidators();
     }
 
     @Override
     ObservableValue[] getListenedProperties() {
-        
-        
-        
-        return new ObservableValue[]{
-            textfieldVoxelFilePathTransmittance.textProperty(),
-            checkboxGenerateTextFile.selectedProperty(),
-            textfieldOutputTextFilePath.textProperty(),
-            checkboxGenerateBitmapFile.selectedProperty(),
-            textfieldOutputBitmapFilePath.textProperty(),
-            sensorPositionsProperty,
-            comboboxChooseDirectionsNumber.getSelectionModel().selectedItemProperty(),
-            textfieldDirectionRotationTransmittanceMap.textProperty(),
-            checkboxTransmittanceMapToricity.selectedProperty(),
-            textfieldLatitudeRadians.textProperty(),
-            simulationPeriodsProperty
-        };
+        List<ObservableValue> properties = new ArrayList();
+
+        properties.addAll(Arrays.asList(
+                new ObservableValue[]{
+                    checkboxGenerateTextFile.selectedProperty(),
+                    textfieldOutputTextFilePath.textProperty(),
+                    checkboxGenerateBitmapFile.selectedProperty(),
+                    textfieldOutputBitmapFilePath.textProperty(),
+                    sensorPositionsProperty,
+                    comboboxChooseDirectionsNumber.getSelectionModel().selectedItemProperty(),
+                    textfieldDirectionRotationTransmittanceMap.textProperty(),
+                    checkboxTransmittanceMapToricity.selectedProperty(),
+                    textfieldLatitudeRadians.textProperty(),
+                    simulationPeriodsProperty
+                }
+        ));
+
+        properties.addAll(Arrays.asList(voxelFileCanopyController.getListenedProperties()));
+
+        return properties.toArray(ObservableValue[]::new);
     }
 
     @Override
     public void saveConfiguration(File file) throws Exception {
 
+        // validation support
+        StringBuilder sb = new StringBuilder();
+        if (transLightMapValidationSupport.isInvalid()) {
+            transLightMapValidationSupport.initInitialDecoration();
+            transLightMapValidationSupport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
+        }
+        ValidationSupport voxelFileValidationSuuport = voxelFileCanopyController.getValidationSupport();
+        if (voxelFileValidationSuuport.isInvalid()) {
+            voxelFileValidationSuuport.initInitialDecoration();
+            voxelFileValidationSuuport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
+        }
+        if (!sb.toString().isEmpty()) {
+            throw new IOException(sb.toString());
+        }
+
         TransmittanceParameters transmParameters = new TransmittanceParameters();
 
-        transmParameters.setInputFile(new File(textfieldVoxelFilePathTransmittance.getText()));
+        transmParameters.setVoxelFile(voxelFileCanopyController.getVoxelFile());
+        transmParameters.setPADVariable(voxelFileCanopyController.getPADVariable());
+        transmParameters.setLeafAngleDistribution(voxelFileCanopyController.getLeafAngleDistribution());
+        transmParameters.setLeafAngleDistributionParameters(voxelFileCanopyController.getLeafAngleDistributionParameters());
+
         transmParameters.setGenerateBitmapFile(checkboxGenerateBitmapFile.isSelected());
         transmParameters.setGenerateTextFile(checkboxGenerateTextFile.isSelected());
         transmParameters.setToricity(checkboxTransmittanceMapToricity.isSelected());
@@ -242,7 +263,9 @@ public class TransmittanceMapFrameController extends ConfigurationController {
         trCfg.read(file);
         TransmittanceParameters trParams = ((TransmittanceCfg) trCfg).getParameters();
 
-        textfieldVoxelFilePathTransmittance.setText(trParams.getInputFile().getAbsolutePath());
+        voxelFileCanopyController.setVoxelFile(trParams.getVoxelFile(), trParams.getPADVariable());
+        voxelFileCanopyController.setLeafAngleDistribution(trParams.getLeafAngleDistribution());
+        voxelFileCanopyController.setLeafAngleDistributionParameters(trParams.getLeafAngleDistributionParameters());
 
         comboboxChooseDirectionsNumber.getSelectionModel().select(Integer.valueOf(trParams.getDirectionsNumber()));
         textfieldDirectionRotationTransmittanceMap.setText(df.format(trParams.getDirectionsRotation()));
@@ -271,24 +294,6 @@ public class TransmittanceMapFrameController extends ConfigurationController {
         if (periods != null) {
             simulationPeriods.addAll(periods);
         }
-    }
-
-    @FXML
-    private void onActionButtonOpenVoxelFileTransmittance(ActionEvent event) {
-
-        if (lastFCOpenVoxelFile != null) {
-            Util.FILE_CHOOSER_VOXELFILE.setInitialDirectory(lastFCOpenVoxelFile.getParentFile());
-        }
-
-        File selectedFile = Util.FILE_CHOOSER_VOXELFILE.showOpenDialog(null);
-
-        if (selectedFile != null) {
-
-            lastFCOpenVoxelFile = selectedFile;
-            textfieldVoxelFilePathTransmittance.setText(selectedFile.getAbsolutePath());
-            LOGGER.info("Transmittance voxel file opened.");
-        }
-
     }
 
     @FXML
@@ -345,11 +350,9 @@ public class TransmittanceMapFrameController extends ConfigurationController {
     @FXML
     private void onActionButtonAddPositionTransmittanceMap(ActionEvent event) {
 
-        if (!textfieldVoxelFilePathTransmittance.getText().isEmpty()) {
-            File voxelFile = new File(textfieldVoxelFilePathTransmittance.getText());
-            if (voxelFile.exists()) {
-                positionImporterFrameController.setInitialVoxelFile(voxelFile);
-            }
+        File voxelFile = voxelFileCanopyController.getVoxelFile();
+        if (null != voxelFile && voxelFile.exists()) {
+            positionImporterFrameController.setInitialVoxelFile(voxelFile);
         }
 
         Stage positionImporterFrame = positionImporterFrameController.getStage();

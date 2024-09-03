@@ -56,12 +56,12 @@ public class VoxelFileReader implements Iterable<VoxelFileVoxel>, Closeable {
 
     private VoxelFileHeader readHeader() throws IOException {
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader bfr = new BufferedReader(new FileReader(file))) {
 
-            String identifier = reader.readLine();
+            String identifier = bfr.readLine();
 
             if (!identifier.equals("VOXEL SPACE")) {
-                reader.close();
+                bfr.close();
                 throw new IOException("Voxel file is invalid, VOXEL SPACE identifier is missing");
             }
 
@@ -69,7 +69,7 @@ public class VoxelFileReader implements Iterable<VoxelFileVoxel>, Closeable {
             int nLine = 0;
 
             String line;
-            while (null != (line = reader.readLine().trim())) {
+            while (null != (line = bfr.readLine().trim())) {
 
                 // increment line number
                 nLine++;
@@ -115,6 +115,18 @@ public class VoxelFileReader implements Iterable<VoxelFileVoxel>, Closeable {
         } catch (IOException ex) {
             throw new IOException("Error reading voxel file header", ex);
         }
+    }
+
+    public int findColumn(String variableName) {
+
+        int column = 0;
+        for (String columnName : header.getColumnNames()) {
+            if (columnName.equalsIgnoreCase(variableName)) {
+                return column - 3;
+            }
+            column++;
+        }
+        return -1;
     }
 
     public int findColumn(OutputVariable variable) {
@@ -185,9 +197,9 @@ public class VoxelFileReader implements Iterable<VoxelFileVoxel>, Closeable {
                 if (null != line) {
                     String[] split = line.split(" ");
                     VoxelFileVoxel voxel = new VoxelFileVoxel(
-                            Integer.valueOf(split[0]), // i
-                            Integer.valueOf(split[1]), // j
-                            Integer.valueOf(split[2]), // k
+                            Integer.parseInt(split[0]), // i
+                            Integer.parseInt(split[1]), // j
+                            Integer.parseInt(split[2]), // k
                             Arrays.copyOfRange(split, 3, split.length));
                     // flush current line
                     line = null;

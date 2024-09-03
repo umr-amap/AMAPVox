@@ -11,7 +11,6 @@ Authors:
 
 For further information, please contact Gregoire Vincent.
  */
-
 package org.amapvox.canopy.transmittance;
 
 import java.io.File;
@@ -19,60 +18,70 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
+import org.amapvox.canopy.LeafAngleDistribution;
 
 /**
  *
  * @author Julien Heurtebize
  */
-
-
 public class TransmittanceParameters {
-    
-    private File inputFile;
+
+    private File voxelFile;
+    private String padVariable;
+    private LeafAngleDistribution.Type leafAngleDistribution;
+    private double[] leafAngleDistributionParameters;
     private int directionsNumber;
     private float directionsRotation;
     private boolean toricity;
-    
+
     //scanner positions
     private boolean useScanPositionsFile;
     private Point3f centerPoint;
     private float width;
     private float step;
     private List<Point3d> positions;
-    
+
     private float latitudeInDegrees;
-    
+
     private List<SimulationPeriod> simulationPeriods;
     private boolean generateTextFile;
     private boolean generateBitmapFile;
     private File textFile;
     private File bitmapFolder;
-    
+
     private Mode mode;
-    
+
     //lai2xxx specific
     private boolean[] masks; //ring masks
     private boolean generateLAI2xxxTypeFormat;
-    
-    public enum Mode{
-        
+
+    public enum Mode {
+
         TRANSMITTANCE,
         LAI2000,
         LAI2200;
-    } 
+    }
 
-    public TransmittanceParameters(){
+    public TransmittanceParameters() {
         simulationPeriods = new ArrayList<>();
         mode = Mode.TRANSMITTANCE;
         masks = new boolean[]{false, false, false, false, false};
     }
-    
-    public File getInputFile() {
-        return inputFile;
+
+    public File getVoxelFile() {
+        return voxelFile;
     }
 
-    public void setInputFile(File inputFile) {
-        this.inputFile = inputFile;
+    public void setVoxelFile(File inputFile) {
+        this.voxelFile = inputFile;
+    }
+
+    public String getPADVariable() {
+        return padVariable;
+    }
+
+    public void setPADVariable(String padVariable) {
+        this.padVariable = padVariable;
     }
 
     public int getDirectionsNumber() {
@@ -185,7 +194,7 @@ public class TransmittanceParameters {
 
     public void setMasks(boolean[] masks) {
         this.masks = masks;
-    }   
+    }
 
     public boolean isGenerateLAI2xxxTypeFormat() {
         return generateLAI2xxxTypeFormat;
@@ -209,5 +218,33 @@ public class TransmittanceParameters {
 
     public void setToricity(boolean toricity) {
         this.toricity = toricity;
+    }
+
+    /**
+     * @return the leafAngleDistribution
+     */
+    public LeafAngleDistribution.Type getLeafAngleDistribution() {
+        return leafAngleDistribution;
+    }
+
+    /**
+     * @param leafAngleDistribution the leafAngleDistribution to set
+     */
+    public void setLeafAngleDistribution(LeafAngleDistribution.Type leafAngleDistribution) {
+        this.leafAngleDistribution = leafAngleDistribution;
+    }
+
+    /**
+     * @return the leafAngleDistribution parameters
+     */
+    public double[] getLeafAngleDistributionParameters() {
+        return leafAngleDistributionParameters;
+    }
+
+    /**
+     * @param leafAngleDistributionParameters
+     */
+    public void setLeafAngleDistributionParameters(double[] leafAngleDistributionParameters) {
+        this.leafAngleDistributionParameters = leafAngleDistributionParameters;
     }
 }

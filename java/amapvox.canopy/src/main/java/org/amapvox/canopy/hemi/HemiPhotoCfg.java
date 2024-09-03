@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
+import org.amapvox.canopy.LeafAngleDistribution;
 import org.amapvox.commons.AVoxTask;
 import org.amapvox.commons.Release;
 import org.amapvox.voxelisation.output.OutputVariable;
@@ -56,12 +57,10 @@ public class HemiPhotoCfg extends Configuration {
         String processTypeValue = processElement.getAttributeValue("type");
 
         switch (processTypeValue) {
-            case "0": //ECHOS
+            case "0" -> //ECHOS
                 parameters.setMode(HemiParameters.Mode.ECHOS);
-                break;
-            case "1": //PAD
+            case "1" -> //PAD
                 parameters.setMode(HemiParameters.Mode.PAD);
-                break;
         }
 
         if (parameters.getMode() == HemiParameters.Mode.ECHOS) {
@@ -96,15 +95,32 @@ public class HemiPhotoCfg extends Configuration {
                 parameters.setPADVariable(inputFileElement.getAttributeValue("variable"));
             }
 
+            Element ladElement = processElement.getChild("leaf-angle-distribution");
+            if (ladElement != null) {
+                parameters.setLeafAngleDistribution(LeafAngleDistribution.Type.fromString(ladElement.getAttributeValue("type")));
+                double[] ladParams = new double[2];
+                String alphaValue = ladElement.getAttributeValue("alpha");
+                if (alphaValue != null) {
+                    ladParams[0] = Double.parseDouble(alphaValue);
+                }
+                String betaValue = ladElement.getAttributeValue("beta");
+                if (betaValue != null) {
+                    ladParams[0] = Double.parseDouble(betaValue);
+                }
+                parameters.setLeafAngleDistributionParameters(ladParams);
+            } else {
+                throw new IOException("Cannot find leaf-angle-distribution element");
+            }
+
             List<Point3d> positions = new ArrayList<>();
 
             Element sensorPositionElement = processElement.getChild("sensor-position");
 
             if (sensorPositionElement != null) { //work around for old config
 
-                positions.add(new Point3d(Double.valueOf(sensorPositionElement.getAttributeValue("x")),
-                        Double.valueOf(sensorPositionElement.getAttributeValue("y")),
-                        Double.valueOf(sensorPositionElement.getAttributeValue("z"))));
+                positions.add(new Point3d(Double.parseDouble(sensorPositionElement.getAttributeValue("x")),
+                        Double.parseDouble(sensorPositionElement.getAttributeValue("y")),
+                        Double.parseDouble(sensorPositionElement.getAttributeValue("z"))));
 
                 parameters.setSensorPositions(positions);
 
@@ -114,9 +130,9 @@ public class HemiPhotoCfg extends Configuration {
                 List<Element> children = sensorPositionsElement.getChildren("position");
                 children.forEach((element) -> {
                     positions.add(new Point3d(
-                            Double.valueOf(element.getAttributeValue("x")),
-                            Double.valueOf(element.getAttributeValue("y")),
-                            Double.valueOf(element.getAttributeValue("z"))));
+                            Double.parseDouble(element.getAttributeValue("x")),
+                            Double.parseDouble(element.getAttributeValue("y")),
+                            Double.parseDouble(element.getAttributeValue("z"))));
                 });
 
                 parameters.setSensorPositions(positions);
@@ -127,21 +143,21 @@ public class HemiPhotoCfg extends Configuration {
         //common parameters
         Element pixelNumberElement = processElement.getChild("pixel-number");
         if (null != pixelNumberElement) {
-            parameters.setPixelNumber(Integer.valueOf(pixelNumberElement.getAttributeValue("value")));
+            parameters.setPixelNumber(Integer.parseInt(pixelNumberElement.getAttributeValue("value")));
         } else {
             throw new IOException("Cannot find pixel-number element");
         }
 
         Element azimutsNumberElement = processElement.getChild("azimut-number");
         if (null != azimutsNumberElement) {
-            parameters.setAzimutsNumber(Integer.valueOf(azimutsNumberElement.getAttributeValue("value")));
+            parameters.setAzimutsNumber(Integer.parseInt(azimutsNumberElement.getAttributeValue("value")));
         } else {
             throw new IOException("Cannot find azimut-number element");
         }
 
         Element zenithNumberElement = processElement.getChild("zenith-number");
         if (null != zenithNumberElement) {
-            parameters.setZenithsNumber(Integer.valueOf(zenithNumberElement.getAttributeValue("value")));
+            parameters.setZenithsNumber(Integer.parseInt(zenithNumberElement.getAttributeValue("value")));
         } else {
             throw new IOException("Cannot find zenith-number element");
         }
@@ -151,7 +167,7 @@ public class HemiPhotoCfg extends Configuration {
         Element outputTextFileElement = outputFilesElement.getChild("output_text_file");
 
         if (outputTextFileElement != null) {
-            boolean generateOutputTextFile = Boolean.valueOf(outputTextFileElement.getAttributeValue("generate"));
+            boolean generateOutputTextFile = Boolean.parseBoolean(outputTextFileElement.getAttributeValue("generate"));
             parameters.setGenerateTextFile(generateOutputTextFile);
 
             if (generateOutputTextFile) {
@@ -167,21 +183,17 @@ public class HemiPhotoCfg extends Configuration {
         Element outputBitmapFileElement = outputFilesElement.getChild("output_bitmap_file");
 
         if (outputBitmapFileElement != null) {
-            boolean generateOutputBitmapFile = Boolean.valueOf(outputBitmapFileElement.getAttributeValue("generate"));
+            boolean generateOutputBitmapFile = Boolean.parseBoolean(outputBitmapFileElement.getAttributeValue("generate"));
             parameters.setGenerateBitmapFile(generateOutputBitmapFile);
 
             if (generateOutputBitmapFile) {
 
                 String outputBitmapFileSrc = resolve(outputBitmapFileElement.getAttributeValue("src"));
-                int bitmapMode = Integer.valueOf(outputBitmapFileElement.getAttributeValue("mode"));
+                int bitmapMode = Integer.parseInt(outputBitmapFileElement.getAttributeValue("mode"));
 
                 switch (bitmapMode) {
-                    case 0:
-                        parameters.setBitmapMode(HemiParameters.BitmapMode.PIXEL);
-                        break;
-                    case 1:
-                        parameters.setBitmapMode(HemiParameters.BitmapMode.COLOR);
-                        break;
+                    case 0 -> parameters.setBitmapMode(HemiParameters.BitmapMode.PIXEL);
+                    case 1 -> parameters.setBitmapMode(HemiParameters.BitmapMode.COLOR);
                 }
 
                 if (outputBitmapFileSrc != null) {
@@ -225,6 +237,21 @@ public class HemiPhotoCfg extends Configuration {
             inputFileElement.setAttribute("variable", parameters.getPADVariable());
             processElement.addContent(inputFileElement);
 
+            // leaf angle distribution
+            Element ladElement = new Element("leaf-angle-distribution");
+            ladElement.setAttribute("type", parameters.getLeafAngleDistribution().toString());
+            processElement.addContent(ladElement);
+
+            if (parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA
+                    || parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.ELLIPSOIDAL) {
+                ladElement.setAttribute("alpha", String.valueOf(parameters.getLeafAngleDistributionParameters()[0]));
+
+                if (parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA) {
+                    ladElement.setAttribute("beta", String.valueOf(parameters.getLeafAngleDistributionParameters()[1]));
+                }
+            }
+
+            // sensor positions
             Element sensorPositionsElement = new Element("sensor-positions");
 
             parameters.getSensorPositions().forEach(position -> {
@@ -307,7 +334,7 @@ public class HemiPhotoCfg extends Configuration {
                             scanElement.addContent(matrix.toElement());
                         });
 
-                    }
+}
                 }
             },
             // 2023-03-23

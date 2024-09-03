@@ -20,18 +20,7 @@
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
                                             <children>
-                                                <VBox spacing="5.0" >
-                                                    <children>
-                                                        <Label text="Input file (.vox)" />
-                                                        <HBox>
-                                                            <children>
-                                                                <TextField fx:id="textfieldVoxelFilePathTransmittance" prefHeight="26.0" HBox.hgrow="ALWAYS" />
-                                                                <Button fx:id="buttonOpenVoxelFileTransmittance" mnemonicParsing="false" onAction="#onActionButtonOpenVoxelFileTransmittance" text="..." />
-                                                            </children>
-                                                        </HBox>
-                                                        <fx:include fx:id="checkMissingVoxelTransmittance" source="../CheckMissingVoxel.fxml"/>
-                                                    </children>
-                                                </VBox>
+                                                <fx:include fx:id="voxelFileCanopy" source="../VoxelFileCanopy.fxml" />
                                                 <VBox spacing="5.0">
                                                     <children>
                                                         <Label text="Output" />

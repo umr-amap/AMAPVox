@@ -11,6 +11,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
+import org.apache.log4j.Logger;
 
 /**
  * FXML Controller class
@@ -18,6 +19,8 @@ import javafx.scene.layout.Region;
  * @author calcul
  */
 public class HelpButtonController implements Initializable {
+    
+    final Logger LOGGER = Logger.getLogger(HelpButtonController.class);
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -25,6 +28,8 @@ public class HelpButtonController implements Initializable {
     }
 
     public void showHelpDialog(String message) {
+        
+        LOGGER.info("[help] " + message);
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setResizable(true);

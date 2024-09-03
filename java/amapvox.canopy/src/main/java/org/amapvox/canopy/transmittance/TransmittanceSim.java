@@ -4,7 +4,6 @@
 package org.amapvox.canopy.transmittance;
 
 import org.amapvox.canopy.DirectionalTransmittance;
-import org.amapvox.canopy.LeafAngleDistribution;
 import org.amapvox.canopy.mmr.IncidentRadiation;
 import org.amapvox.canopy.mmr.SolarRadiation;
 import org.amapvox.canopy.mmr.Turtle;
@@ -27,7 +26,6 @@ import org.apache.log4j.Logger;
 import org.amapvox.commons.AVoxTask;
 import org.amapvox.commons.raytracing.geometry.Transformations;
 import org.amapvox.commons.raytracing.voxel.VoxelSpace;
-import org.amapvox.voxelisation.output.OutputVariable;
 
 /**
  * @author dauzat
@@ -90,17 +88,18 @@ public class TransmittanceSim extends AVoxTask {
             writeBitmaps();
         }
 
-        return outputFiles.toArray(new File[outputFiles.size()]);
+        return outputFiles.toArray(File[]::new);
     }
 
     public void process() throws IOException, Exception {
 
-        LOGGER.info(logHeader + " Processing " + parameters.getInputFile().getName());
+        LOGGER.info(logHeader + " Processing " + parameters.getVoxelFile().getName());
 
         direcTransmittance = new DirectionalTransmittance(
-                parameters.getInputFile(),
-                OutputVariable.PLANT_AREA_DENSITY.getShortName(),
-                LeafAngleDistribution.Type.SPHERIC);
+                        parameters.getVoxelFile(),
+                        parameters.getPADVariable(),
+                        parameters.getLeafAngleDistribution(),
+                        parameters.getLeafAngleDistributionParameters());
         direcTransmittance.setToric(parameters.isToricity());
 
         voxelSpace = direcTransmittance.getVoxelSpace();

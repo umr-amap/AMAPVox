@@ -232,6 +232,9 @@ public class VoxelizationCfg extends Configuration {
                     mat = Matrix.valueOf(scanElement.getChild("matrix")).toMatrix4d();
                 }
                 File f = new File(resolve(scanElement.getAttributeValue("src")));
+                String name = null != scanElement.getAttributeValue("name") 
+                        ? scanElement.getAttributeValue("name")
+                        : f.getName();
 
                 if (lidarType == LidarType.PTX) {
                     long offset = Long.parseLong(scanElement.getAttributeValue("offset"));
@@ -244,7 +247,7 @@ public class VoxelizationCfg extends Configuration {
                     PTXScan scan = new PTXScan(f, header, offset);
                     lidarScans.add(new PTXLidarScan(f, mat, scan, count++));
                 } else {
-                    lidarScans.add(new LidarScan(f, mat));
+                    lidarScans.add(new LidarScan(f, mat, name));
                 }
             }
 
@@ -643,6 +646,7 @@ public class VoxelizationCfg extends Configuration {
             for (LidarScan scan : lidarScans) {
                 Element scanElement = new Element("scan");
                 scanElement.setAttribute("src", scan.getFile().getAbsolutePath());
+                scanElement.setAttribute("name", scan.getName());
 
                 if (lidarType == LidarType.PTX) {
                     scanElement.setAttribute("offset", String.valueOf(((PTXLidarScan) scan).getScan().getOffset()));

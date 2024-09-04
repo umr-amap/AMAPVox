@@ -517,15 +517,15 @@ public class VoxelizationFrameController extends ConfigurationController {
                         .and(labelLidarType.textProperty().isNotEqualTo(VoxelizationCfg.LidarType.LAZ.name())));
 
         listviewLidarScans.disableProperty().bind(Bindings.isEmpty(listviewLidarScans.getItems()));
-        listviewLidarScans.setCellFactory((ListView<LidarScan> p) -> new ListCell<LidarScan>() {
-            @Override
-            protected void updateItem(LidarScan value, boolean empty) {
-                super.updateItem(value, empty);
-                if (null != value) {
-                    setText(value.getFile().getAbsolutePath());
-                }
-            }
-        });
+//        listviewLidarScans.setCellFactory((ListView<LidarScan> p) -> new ListCell<LidarScan>() {
+//            @Override
+//            protected void updateItem(LidarScan value, boolean empty) {
+//                super.updateItem(value, empty);
+//                if (null != value) {
+//                    setText(value.getName() + " (" + value.getFile().getAbsolutePath() + ")");
+//                }
+//            }
+//        });
 
         fileChooserOutputFile = new FileChooser();
         fileChooserOutputFile.getExtensionFilters().addAll(

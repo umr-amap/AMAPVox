@@ -34,13 +34,13 @@
                                                                                 <fx:include fx:id="buttonHelpScans" source="../HelpButton.fxml" />
                                                                             </children>
                                                                         </HBox>
-                                                                        <ListView fx:id="listviewLidarScans" prefHeight="150.0" prefWidth="300.0" />
                                                                         <HBox spacing="5.0">
                                                                             <children>
                                                                                 <Label text="Lidar type:" />
                                                                                 <Label fx:id="labelLidarType" text="NULL" />
                                                                             </children>
                                                                         </HBox>
+                                                                        <ListView fx:id="listviewLidarScans" prefHeight="150.0" prefWidth="300.0" />
                                                                         <TitledPane fx:id="lasTitledPane" animated="false" expanded="false" text="LAS/LAZ">
                                                                             <content>
                                                                                 <AnchorPane minHeight="0.0" minWidth="0.0">

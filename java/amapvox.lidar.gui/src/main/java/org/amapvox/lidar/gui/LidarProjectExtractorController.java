@@ -232,6 +232,15 @@ public class LidarProjectExtractorController implements Initializable {
         treeView.setCellFactory(CheckBoxTreeCell.<LidarScan>forTreeView());
         treeView.setRoot(root);
         treeView.setShowRoot(false);
+//        treeView.setCellFactory((TreeView<LidarScan> p) -> new CheckBoxTreeCell<LidarScan>() {
+//            @Override
+//            public void updateItem(LidarScan value, boolean empty) {
+//                super.updateItem(value, empty);
+//                if (null != value) {
+//                    setText(value.getName() + " (" + value.getFile().getName() + ")");
+//                }
+//            }
+//        });
 
         selectMenuButton.setSelected(true);
 

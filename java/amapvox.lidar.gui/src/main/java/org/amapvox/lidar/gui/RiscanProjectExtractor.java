@@ -23,7 +23,7 @@ public class RiscanProjectExtractor extends LidarProjectExtractor {
     private void setSelected(boolean selected, String s) {
 
         controller.getRoot().getChildren().stream()
-                .forEach(treeItem -> ((CheckBoxTreeItem) treeItem).setSelected(treeItem.getValue().getName().contains(s) ? selected : !selected));
+                .forEach(treeItem -> ((CheckBoxTreeItem) treeItem).setSelected(treeItem.getValue().getFile().getName().contains(s) ? selected : !selected));
     }
 
     @Override

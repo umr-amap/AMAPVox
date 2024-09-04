@@ -35,7 +35,7 @@ public class LidarScan {
 
     @Override
     public String toString() {
-        return name;
+        return name + " (" + file.getAbsolutePath() + ")";
     }
     
     public void addFilter(FloatFilter filter) {

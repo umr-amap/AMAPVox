@@ -57,7 +57,7 @@ public class LasShotExtractor extends Process implements IterableWithException<S
     private final Matrix4d vopMatrix;
 
     private final double collinearityError;
-    private final static float RATIO_REFLECTANCE_VEGETATION_SOL = 0.4f;
+    
     private final static int SHOT_BUFFER = 100;
 
     // whether the task is cancelled
@@ -375,9 +375,7 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                 ranges[pt.r - 1] = origin.distance(pt3d);
                 // classification
                 classifications[pt.r - 1] = pt.classification;
-                intensities[pt.r - 1] = (pt.classification == LasPoint.CLASSIFICATION_GROUND)
-                        ? (int) (pt.i * RATIO_REFLECTANCE_VEGETATION_SOL)
-                        : pt.i;
+                intensities[pt.r - 1] = pt.i;
             });
 
             // create new shot

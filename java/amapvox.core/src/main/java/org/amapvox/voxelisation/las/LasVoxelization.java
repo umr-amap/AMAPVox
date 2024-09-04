@@ -30,9 +30,9 @@ public class LasVoxelization extends AbstractVoxelization {
     public Object call() throws Exception {
 
         // vop matrix
-        Matrix4d vop = (null == cfg.getVopMatrix())
-                ? MatrixUtility.identity4d()
-                : new Matrix4d(cfg.getVopMatrix());
+        Matrix4d vop = (cfg.isUseVopMatrix() && null != cfg.getVopMatrix())
+                ? new Matrix4d(cfg.getVopMatrix())
+                : MatrixUtility.identity4d();
 
         // LAS shot builder
         double lasTimeMin = cfg.isTimeRangeEnabled() ? cfg.getLasTimeMin() : 0.d;

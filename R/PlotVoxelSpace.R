@@ -16,6 +16,7 @@
 #' @param voxel.size numeric, the size of voxel in pixels
 #' @param unsampled.discard logical, whether to discard unsampled voxel
 #' @param empty.discard logical, whether to discard empty voxel (no hit)
+#' @param axis character, one of `c('ijk', xyz')`, ijk the voxel index or xyz the voxel coordinates
 #' @param ... additional parameters which will be passed to [rgl::plot3d()].
 #' @include Classes.R
 #' @seealso [rgl::plot3d()]
@@ -42,6 +43,7 @@ setMethod("plot",
                    palette = "viridis", bg.color = "lightgrey",
                    width = 640, voxel.size = 5,
                    unsampled.discard = TRUE, empty.discard = TRUE,
+                   axis = 'xyz',
                    ...) {
             i <- j <- k <- NULL
             return (
@@ -51,6 +53,7 @@ setMethod("plot",
                           width = width, voxel.size = voxel.size,
                           unsampled.discard = unsampled.discard,
                           empty.discard = empty.discard,
+                          axis = axis,
                           ...))
           })
 
@@ -61,6 +64,7 @@ setMethod("plot",
                            palette = "viridis", bg.color = "lightgrey",
                            width = 640, voxel.size = 5,
                            unsampled.discard = TRUE, empty.discard = TRUE,
+                           axis = 'xyz',
                            ...) {
 
  # check if rgl package is installed
@@ -83,6 +87,8 @@ setMethod("plot",
   stopifnot(empty.discard | ('nbSampling' %in% colnames(x@data)))
   # make sure variable nbEchos exists if discard empty voxel is TRUE
   stopifnot(empty.discard | ('nbEchos' %in% colnames(x@data)))
+  # make sure axis type is either xyz (default) or ijk
+  if (!axis %in% c('xyz', 'ijk')) axis <- 'xyz'
 
   # discard empty voxels
   i <- j <- k <- NULL # trick to get rid of R CMD check warning with data.table
@@ -90,8 +96,7 @@ setMethod("plot",
   nbSampling <- nbEchos <- NULL # due to NSE notes in R CMD check
   if (unsampled.discard) vx <- vx[nbSampling > 0]
   if (empty.discard) vx <- vx[nbEchos > 0]
-  # compute x, y, z positions
-  pos <- getPosition(x, vx)
+
   # extract variable to plot
   variable <- unlist(vx[, variable.name, with = FALSE])
   # variable range
@@ -104,9 +109,17 @@ setMethod("plot",
   palette(colorlut)
   # 3d plot
   rgl::par3d(windowRect = 200 + c( 0, 0, width, 0.8 * width ) )
-  rgl::plot3d(pos$x, pos$y, pos$z,
-         col=col, size=voxel.size, aspect="iso",
-         xlab="x", ylab="y", zlab="z")
+  if (axis == 'xyz') {
+    # compute x, y, z positions
+    pos <- getPosition(x, vx)
+    rgl::plot3d(pos$x, pos$y, pos$z,
+                col=col, size=voxel.size, aspect="iso",
+                xlab="x", ylab="y", zlab="z")
+  } else {
+    rgl::plot3d(vx$i, vx$j, vx$k,
+                col=col, size=voxel.size, aspect="iso",
+                xlab="i", ylab="j", zlab="k")
+  }
   rgl::bgplot3d({
     # background color
     graphics::par(bg= bg.color)

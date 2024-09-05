@@ -18,6 +18,7 @@ plot(x, y, ...)
   voxel.size = 5,
   unsampled.discard = TRUE,
   empty.discard = TRUE,
+  axis = "xyz",
   ...
 )
 
@@ -31,6 +32,7 @@ plot(x, y, ...)
   voxel.size = 5,
   unsampled.discard = TRUE,
   empty.discard = TRUE,
+  axis = "xyz",
   ...
 )
 }
@@ -55,6 +57,8 @@ Missing parameter means whole voxel space.}
 \item{unsampled.discard}{logical, whether to discard unsampled voxel}
 
 \item{empty.discard}{logical, whether to discard empty voxel (no hit)}
+
+\item{axis}{character, one of \verb{c('ijk', xyz')}, ijk the voxel index or xyz the voxel coordinates}
 }
 \description{
 plot a \code{\linkS4class{VoxelSpace}} object.

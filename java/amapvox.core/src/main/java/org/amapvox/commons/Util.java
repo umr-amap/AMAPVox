@@ -55,7 +55,7 @@ public class Util {
         LASHeader header = lasReader.getHeader();
         return new BoundingBox3D(
                 new Point3d(header.getMinX(), header.getMinY(), header.getMinZ()),
-                new Point3d(header.getMaxZ(), header.getMaxY(), header.getMaxZ()));
+                new Point3d(header.getMaxX(), header.getMaxY(), header.getMaxZ()));
     }
 
     public static Octree loadOctree(CSVFile pointcloudFile, Matrix4d vopMatrix) {
@@ -81,22 +81,25 @@ public class Util {
     /**
      *
      * @param pointFile
-     * @param resultMatrix
+     * @param transformationMatrix
      * @param quick don't use classification filters
      * @param classificationsToDiscard list of point classification to skip
      * during getting bounding box process
      * @return
      */
-    public static BoundingBox3D getBoundingBoxOfPoints(File pointFile, Matrix4d resultMatrix, boolean quick, List<Integer> classificationsToDiscard) {
+    public static BoundingBox3D getBoundingBoxOfPoints(File pointFile, Matrix4d transformationMatrix, boolean quick, List<Integer> classificationsToDiscard) {
 
         BoundingBox3D boundingBox = new BoundingBox3D();
 
         Matrix4d identityMatrix = new Matrix4d();
         identityMatrix.setIdentity();
 
-        if (resultMatrix.equals(identityMatrix) && quick) {
+        if (transformationMatrix.equals(identityMatrix) && quick) {
 
-            boundingBox = getALSMinAndMax(pointFile);
+            LASReader lasReader = new LASReader(pointFile);
+            LASHeader header = lasReader.getHeader();
+            boundingBox.min = new Point3d(header.getMinX(), header.getMinY(), header.getMinZ());
+            boundingBox.max = new Point3d(header.getMaxX(), header.getMaxY(), header.getMaxZ());
 
         } else {
 
@@ -121,7 +124,7 @@ public class Util {
                             (p.getX() * x_scale_factor) + x_offset,
                             (p.getY() * y_scale_factor) + y_offset,
                             (p.getZ() * z_scale_factor) + z_offset);
-                    resultMatrix.transform(pt);
+                    transformationMatrix.transform(pt);
 
                     if (count != 0) {
 

@@ -133,7 +133,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
     private Matrix4d sopMatrix;
     private Matrix4d vopMatrix;
-    private Matrix4d resultMatrix;
+    private Matrix4d transformationMatrix;
     private FileChooser fileChooserOpenPopMatrixFile;
     private FileChooser fileChooserOpenSopMatrixFile;
     private FileChooser fileChooserOpenVopMatrixFile;
@@ -1366,7 +1366,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                         @Override
                         protected Void call() throws InterruptedException {
 
-                            final BoundingBox3D boundingBox = org.amapvox.commons.Util.getBoundingBoxOfPoints(file, resultMatrix, quick, getListOfLASClassificationPointToDiscard());
+                            final BoundingBox3D boundingBox = org.amapvox.commons.Util.getBoundingBoxOfPoints(file, transformationMatrix, quick, getListOfLASClassificationPointToDiscard());
 
                             Point3d minPoint = boundingBox.min;
                             Point3d maxPoint = boundingBox.max;
@@ -1449,8 +1449,8 @@ public class VoxelizationFrameController extends ConfigurationController {
         sopMatrix.setIdentity();
         vopMatrix = new Matrix4d();
         vopMatrix.setIdentity();
-        resultMatrix = new Matrix4d();
-        resultMatrix.setIdentity();
+        transformationMatrix = new Matrix4d();
+        transformationMatrix.setIdentity();
     }
 
     private void disableSopMatrixChoice(boolean value) {
@@ -1467,25 +1467,25 @@ public class VoxelizationFrameController extends ConfigurationController {
 
     private void updateResultMatrix() {
 
-        resultMatrix = new Matrix4d();
-        resultMatrix.setIdentity();
+        transformationMatrix = new Matrix4d();
+        transformationMatrix.setIdentity();
 
         if (checkboxUseVopMatrix.isSelected() && vopMatrix != null) {
-            resultMatrix.mul(vopMatrix);
+            transformationMatrix.mul(vopMatrix);
             vopMatrixController.setMatrix(vopMatrix);
         }
 
         if (checkboxUsePopMatrix.isSelected() && popMatrix != null) {
-            resultMatrix.mul(popMatrix);
+            transformationMatrix.mul(popMatrix);
             popMatrixController.setMatrix(popMatrix);
         }
 
         if (checkboxUseSopMatrix.isSelected() && sopMatrix != null) {
-            resultMatrix.mul(sopMatrix);
+            transformationMatrix.mul(sopMatrix);
             sopMatrixController.setMatrix(sopMatrix);
         }
 
-        transformationMatrixController.setMatrix(resultMatrix);
+        transformationMatrixController.setMatrix(transformationMatrix);
     }
 
     private void addPointcloudFilter(PointcloudFilter f) {

@@ -503,7 +503,7 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
             enteringBeamSection += beamSection;
             // here we consider the beam fraction that either goes
             // through the whole voxel (no hit) or that is intercepted but
-            // discarded (rulled out as wood for instance).
+            // discarded (rulled out as wood or ground for instance).
             if (!freepath.hit || freepath.discardedHit) {
                 exitingPathLength += freepath.length;
                 nExitingPath += 1;
@@ -511,7 +511,7 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         }
         /**
          * PhV 20201020 - trick for handling free paths that are intercepted but
-         * discarded (as wood echo for instance). Basic idea: we handle such
+         * discarded (as wood or ground echo for instance). Basic idea: we handle such
          * beam as a traversing one that goes out of the voxel with path length
          * = distance(voxel entering point, echo). If it is not a last echo
          * (meaning that a beam fraction effectively exits the voxel) then the

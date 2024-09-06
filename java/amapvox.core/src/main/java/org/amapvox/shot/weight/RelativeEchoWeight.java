@@ -1,6 +1,7 @@
 package org.amapvox.shot.weight;
 
 import java.io.IOException;
+import java.util.Arrays;
 import org.amapvox.shot.Echo;
 import org.amapvox.shot.Shot;
 import org.amapvox.voxelisation.VoxelizationCfg;
@@ -17,6 +18,7 @@ public class RelativeEchoWeight extends EchoWeight {
 
     private String attribute;
     private double[] weight;
+    private boolean normalized;
 
     public RelativeEchoWeight(boolean enabled) {
         super(enabled);
@@ -26,21 +28,23 @@ public class RelativeEchoWeight extends EchoWeight {
     public void init(VoxelizationCfg cfg) throws IOException {
 
         attribute = cfg.getRelativeEchoWeightVariable();
+        normalized = cfg.isEchoWeightNormalized();
     }
 
     @Override
     public void setWeight(Shot shot) {
 
-        // echo weights from relative intensity
-        float[] values = new float[shot.echoes.length];
-        double sumValues = 0.d;
-        for (int k = 0; k < values.length; k++) {
-            values[k] = shot.echoes[k].getFloat(attribute);
-            sumValues += values[k];
+        // echo weights from attribute
+        weight = new double[shot.echoes.length];
+        for (int k = 0; k < weight.length; k++) {
+            weight[k] = shot.echoes[k].getFloat(attribute);
         }
-        weight = new double[values.length];
-        for (int k = 0; k < values.length; k++) {
-            weight[k] = values[k] / sumValues;
+        
+        if (normalized) {
+            double sumValues = Arrays.stream(weight).sum();
+            for (int k = 0; k < weight.length; k++) {
+                weight[k] /= sumValues;
+            }
         }
     }
 

@@ -77,7 +77,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
@@ -103,7 +102,6 @@ import org.amapvox.shot.weight.EqualEchoWeight;
 import org.amapvox.shot.weight.RankEchoWeight;
 import org.amapvox.shot.weight.RelativeEchoWeight;
 import org.amapvox.shot.weight.StrongestEchoWeight;
-import org.amapvox.voxelisation.VoxelizationCfg.LidarType;
 import org.apache.log4j.Logger;
 import org.controlsfx.dialog.ProgressDialog;
 import org.controlsfx.validation.ValidationSupport;
@@ -276,6 +274,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                     textAreaRankEchoWeightMatrix.textProperty(),
                     rdbtnRelativeEchoWeight.selectedProperty(),
                     textFieldRelativeEchoWeightVariable.textProperty(),
+                    checkboxNormalizedEchoWeight.selectedProperty(),
                     rdbtnStrongestEchoWeight.selectedProperty(),
                     textFieldStrongestEchoWeightVariable.textProperty(),
                     // LASER
@@ -1007,6 +1006,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         cfg.setRankEchoWeightMatrix(Matrix.valueOf(textAreaRankEchoWeightMatrix.getText()));
         cfg.addEchoWeight(new RelativeEchoWeight(rdbtnRelativeEchoWeight.isSelected()));
         cfg.setRelativeEchoWeightVariable(textFieldRelativeEchoWeightVariable.getText());
+        cfg.setEchoWeightNormalized(checkboxNormalizedEchoWeight.isSelected());
         cfg.addEchoWeight(new StrongestEchoWeight(rdbtnStrongestEchoWeight.isSelected()));
         cfg.setStrongestEchoWeightVariable(textFieldStrongestEchoWeightVariable.getText());
 
@@ -1088,7 +1088,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         return listviewClassifications.getItems().stream()
                 .filter(checkBox -> !checkBox.isSelected())
-                .map(checkBox -> Integer.parseInt(checkBox.getText().substring(0, checkBox.getText().indexOf("-") - 1)))
+                .map(checkBox -> Integer.valueOf(checkBox.getText().substring(0, checkBox.getText().indexOf("-") - 1)))
                 .collect(Collectors.toList());
     }
 
@@ -1229,6 +1229,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                 case RelativeEchoWeight relativeEchoWeight -> {
                     rdbtnRelativeEchoWeight.setSelected(relativeEchoWeight.isEnabled());
                     textFieldRelativeEchoWeightVariable.setText(cfg.getRelativeEchoWeightVariable());
+                    checkboxNormalizedEchoWeight.setSelected(cfg.isEchoWeightNormalized());
                 }
                 case StrongestEchoWeight strongestEchoWeight -> {
                     rdbtnStrongestEchoWeight.setSelected(strongestEchoWeight.isEnabled());
@@ -2057,8 +2058,6 @@ public class VoxelizationFrameController extends ConfigurationController {
 
     // Point cloud filter
     @FXML
-    private HBox hBoxPointCloudFiltering;
-    @FXML
     private VBox vBoxPointCloudFiltering;
 
     // Echo filter by attribute
@@ -2119,6 +2118,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     private HBox hboxRelativeEchoWeight;
     @FXML
     private TextField textFieldRelativeEchoWeightVariable;
+    @FXML
+    private CheckBox checkboxNormalizedEchoWeight;
     // Strongest echo weight
     @FXML
     private RadioButton rdbtnStrongestEchoWeight;

@@ -135,6 +135,7 @@ public class VoxelizationCfg extends Configuration {
     private File echoWeightFile;
     private String strongestEchoWeightVariable;
     private String relativeEchoWeightVariable;
+    private boolean echoWeightNormalized;
 
     private LidarScan lidarScan;
 
@@ -466,6 +467,10 @@ public class VoxelizationCfg extends Configuration {
                 } else if (classname.equalsIgnoreCase(RelativeEchoWeight.class.getCanonicalName())) {
                     echoWeights.add(new RelativeEchoWeight(enabled));
                     setRelativeEchoWeightVariable(parametersElement.getAttributeValue("variable"));
+                    // normalized echo weight by default
+                    setEchoWeightNormalized(null != parametersElement.getAttribute("normalized")
+                            ? Boolean.parseBoolean(parametersElement.getAttributeValue("normalized"))
+                            : true);
                 } else if (classname.equalsIgnoreCase(ShotEchoWeight.class.getCanonicalName())) {
                     echoWeights.add(new ShotEchoWeight(enabled));
                     if (null != parametersElement) {
@@ -787,6 +792,7 @@ public class VoxelizationCfg extends Configuration {
                     parametersElement.addContent(echoWeightMatrix.toElement());
                 } else if (echoWeight instanceof RelativeEchoWeight) {
                     parametersElement.setAttribute("variable", null != relativeEchoWeightVariable ? relativeEchoWeightVariable : "");
+                    parametersElement.setAttribute("normalized", String.valueOf(echoWeightNormalized));
                 } else if (echoWeight instanceof ShotEchoWeight) {
                     parametersElement.setAttribute("src", null != echoWeightFile ? echoWeightFile.toString() : "");
                 } else if (echoWeight instanceof StrongestEchoWeight) {
@@ -1216,6 +1222,14 @@ public class VoxelizationCfg extends Configuration {
 
     public void setRelativeEchoWeightVariable(String relativeEchoWeightVariable) {
         this.relativeEchoWeightVariable = relativeEchoWeightVariable;
+    }
+    
+    public boolean isEchoWeightNormalized() {
+        return echoWeightNormalized;
+    }
+
+    public void setEchoWeightNormalized(boolean echoWeightNormalized) {
+        this.echoWeightNormalized = echoWeightNormalized;
     }
 
     public File getShotEchoWeightFile() {

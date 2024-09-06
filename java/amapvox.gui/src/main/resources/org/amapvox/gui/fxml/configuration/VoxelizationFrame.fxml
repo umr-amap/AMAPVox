@@ -698,10 +698,11 @@
                                                         <fx:include fx:id="helpButtonRelativeEchoWeight" source="../HelpButton.fxml" />
                                                     </children>
                                                 </HBox>
-                                                <HBox fx:id="hboxRelativeEchoWeight" spacing="10.0">
+                                                <HBox fx:id="hboxRelativeEchoWeight" spacing="10.0" alignment="CENTER_LEFT">
                                                     <children>
                                                         <Label text="Weighting variable:" />
                                                         <TextField fx:id="textFieldRelativeEchoWeightVariable" prefHeight="26.0" prefWidth="80.0" text="intensity" />
+                                                        <CheckBox fx:id="checkboxNormalizedEchoWeight" mnemonicParsing="false" selected="true" text="Weight normalization" />
                                                     </children>
                                                     <padding>
                                                         <Insets left="25.0" />

@@ -98,8 +98,7 @@
                         <executions>
                             <execution>
                                 <id>Build Native Linux App</id>
-                                <phase />
-                                <!-- <phase>install</phase> -->
+                                <phase>install</phase>
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>

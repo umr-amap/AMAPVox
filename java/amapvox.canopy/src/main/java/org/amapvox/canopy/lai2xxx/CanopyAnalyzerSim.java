@@ -16,7 +16,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.vecmath.Point3d;
@@ -100,13 +99,14 @@ public class CanopyAnalyzerSim extends AVoxTask {
     public File[] call() throws Exception {
 
         if (!TRANSMITTANCE_NORMALISEE) {
-            LOGGER.info("===== " + parameters.getInputFile().getAbsolutePath() + " =====");
+            LOGGER.info("===== " + parameters.getVoxelFile().getAbsolutePath() + " =====");
 
             if (direcTransmittance == null) {
                 direcTransmittance = new DirectionalTransmittance(
-                        parameters.getInputFile(),
-                        OutputVariable.PLANT_AREA_DENSITY.getShortName(),
-                        LeafAngleDistribution.Type.SPHERIC);
+                        parameters.getVoxelFile(),
+                        parameters.getPADVariable(),
+                        parameters.getLeafAngleDistribution(),
+                        parameters.getLeafAngleDistributionParameters());
             }
 
             positions = parameters.getPositions();
@@ -161,12 +161,12 @@ public class CanopyAnalyzerSim extends AVoxTask {
         } else {
             //*******début du test
             //lecture du fichier voxel
-            VoxelFileReader reader = new VoxelFileReader(parameters.getInputFile());
+            VoxelFileReader reader = new VoxelFileReader(parameters.getVoxelFile());
             VoxelFileHeader header = reader.getHeader();
 
             Iterator<VoxelFileVoxel> iterator = reader.iterator();
             CAVoxel voxels[][][] = new CAVoxel[header.getDimension().x][header.getDimension().y][header.getDimension().z];
-            int padColumn = reader.findColumn(OutputVariable.PLANT_AREA_DENSITY);
+            int padColumn = reader.findColumn(parameters.getPADVariable());
             if (padColumn < 0) {
                 throw new IOException("[canopy analyzer] Output variable \"plant area density\" is missing");
             }
@@ -180,8 +180,8 @@ public class CanopyAnalyzerSim extends AVoxTask {
                 VoxelFileVoxel voxel = iterator.next();
                 voxels[voxel.i][voxel.j][voxel.k] = new CAVoxel();
                 voxels[voxel.i][voxel.j][voxel.k].k = voxel.k;
-                voxels[voxel.i][voxel.j][voxel.k].plantAreaDensity = Float.valueOf(voxel.variables[padColumn]);
-                voxels[voxel.i][voxel.j][voxel.k].groundDistance = Float.valueOf(voxel.variables[groundDistanceColumn]);
+                voxels[voxel.i][voxel.j][voxel.k].plantAreaDensity = Float.parseFloat(voxel.variables[padColumn]);
+                voxels[voxel.i][voxel.j][voxel.k].groundDistance = Float.parseFloat(voxel.variables[groundDistanceColumn]);
             }
 
             //création d'un nouveau VoxelManager avec les paramètres du fichier voxel
@@ -189,169 +189,160 @@ public class CanopyAnalyzerSim extends AVoxTask {
                     header.getMinCorner(), header.getMaxCorner(),
                     header.getDimension(), Topology.NON_TORIC_FINITE_BOX_TOPOLOGY);
 
-            List<Double[]> l = new ArrayList<>();
-
-
             /*try (BufferedReader reader = new BufferedReader(new FileReader(new File("/media/forestview01/partageLidar/FTH2014_LAI2200/data/LAI_P9_M_fusion_new.txt")))) {
-                reader.readLine();
-
-                String line;
-
-                while((line = reader.readLine()) != null){
-                    String[] split = line.split("\t");
-                    l.add(new Double[]{Double.valueOf(split[4]), Double.valueOf(split[5]), Double.valueOf(split[6]), Double.valueOf(split[7]), Double.valueOf(split[8])});
-                }
-            }*/
-
- /*Statistic[][] tranStattistics = new Statistic[l.size()][5];
+            reader.readLine();
+            String line;
+            while((line = reader.readLine()) != null){
+            String[] split = line.split("\t");
+            l.add(new Double[]{Double.valueOf(split[4]), Double.valueOf(split[5]), Double.valueOf(split[6]), Double.valueOf(split[7]), Double.valueOf(split[8])});
+            }
+            }*/ /*Statistic[][] tranStattistics = new Statistic[l.size()][5];
             for(int i=0;i<tranStattistics.length;i++){
-                for(int j=0;j<5;j++){
-                    tranStattistics[i][j] = new Statistic();
-                }
+            for(int j=0;j<5;j++){
+            tranStattistics[i][j] = new Statistic();
+            }
             }*/
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(parameters.getTextFile().getAbsolutePath() + "_test.txt")));
-            writer.write("position.ID" + " " + "position.x" + " " + "position.y" + " " + "position.z" + " " + "ring" + " " + "pathLength" + " " + "transmittance" + " " + "isOut" + " " + "azimut" + " " + "elevation" + " " + "cross_NA" + "\n");
-
-            //*******fin du test
-            LOGGER.info("===== " + parameters.getInputFile().getAbsolutePath() + " =====");
-
-            direcTransmittance = new DirectionalTransmittance(
-                    parameters.getInputFile(), 
-                    OutputVariable.PLANT_AREA_DENSITY.getShortName(),
-                    LeafAngleDistribution.Type.SPHERIC);
-
-            positions = parameters.getPositions();
-
-            // TRANSMITTANCE
-            LOGGER.info("Computation of transmittance");
-
-            lai2xxx.initPositions(positions.size());
-
-            int positionID = 0;
-            double transmitted;
-
-            Statistic NaNCounter = new Statistic();
-
-            for (Point3d position : positions) {
-
-                for (int t = 0; t < directions.length; t++) {
-
-                    if (isCancelled()) {
-                        return null;
-                    }
-
-                    Vector3d dir = new Vector3d(directions[t]);
-                    dir.normalize();
-
-                    transmitted = direcTransmittance.directionalTransmittance(position, dir);
-//                    System.out.println("Position " + position + " direction " + directions[t] +"  transmittance " + transmitted);
-
-                    int ring = lai2xxx.getRingIDFromDirectionID(t);
-
-                    //test
-                    LineElement lineElement = new LineSegment(position, new Vector3d(dir), 99999999);
-                    //distance cumulée
-                    double distance = 0;
-
-                    //dernière distance valide (sortie de canopée)
-                    double lastValidDistance = 0;
-
-                    //get the first voxel cross by the line
-                    VoxelManager.VoxelCrossingContext context = vm.getFirstVoxel(lineElement);
-
-                    double distanceToHit = lineElement.getLength();
-                    boolean gotOneNaN = false;
-
-                    boolean wasOutside = false;
-
-                    SphericalCoordinates sc = SphericalCoordinates.fromCartesian(dir);
-
-                    while ((context != null) && (context.indices != null)) {
-
+            
+            try (  BufferedWriter writer = new BufferedWriter(new FileWriter(new File(parameters.getTextFile().getAbsolutePath() + "_test.txt")))) {
+                writer.write("""
+                             position.ID position.x position.y position.z ring pathLength transmittance isOut azimut elevation cross_NA
+                             """);
+                
+                //*******fin du test
+                LOGGER.info("===== " + parameters.getVoxelFile().getAbsolutePath() + " =====");
+                
+                direcTransmittance = new DirectionalTransmittance(
+                        parameters.getVoxelFile(),
+                        parameters.getPADVariable(),
+                        parameters.getLeafAngleDistribution());
+                
+                positions = parameters.getPositions();
+                
+                // TRANSMITTANCE
+                LOGGER.info("Computation of transmittance");
+                
+                lai2xxx.initPositions(positions.size());
+                
+                int positionID = 0;
+                double transmitted;
+                
+                Statistic NaNCounter = new Statistic();
+                
+                for (Point3d position : positions) {
+                    
+                    for (int t = 0; t < directions.length; t++) {
+                        
                         if (isCancelled()) {
                             return null;
                         }
+                        
+                        Vector3d dir = new Vector3d(directions[t]);
+                        dir.normalize();
+                        
+                        transmitted = direcTransmittance.directionalTransmittance(position, dir);
+//                    System.out.println("Position " + position + " direction " + directions[t] +"  transmittance " + transmitted);
 
-                        //current voxel
-                        Point3i indices = context.indices;
-                        CAVoxel voxel = voxels[indices.x][indices.y][indices.z];
+int ring = lai2xxx.getRingIDFromDirectionID(t);
 
-                        if (null != voxel && voxel.groundDistance < 0.0f) {
-                            break;
-                        }
+//test
+LineElement lineElement = new LineSegment(position, new Vector3d(dir), 99999999);
+//distance cumulée
+double distance = 0;
 
-                        if (null == voxel || Double.isNaN(voxel.plantAreaDensity)) {
-                            gotOneNaN = true;
-                            break;
-                        }
+//dernière distance valide (sortie de canopée)
+double lastValidDistance = 0;
 
-                        //distance from the last origin to the point in which the ray enter the voxel
-                        double d1 = context.length;
+//get the first voxel cross by the line
+VoxelManager.VoxelCrossingContext context = vm.getFirstVoxel(lineElement);
 
-                        context = vm.CrossVoxel(lineElement, indices);
+double distanceToHit = lineElement.getLength();
+boolean gotOneNaN = false;
 
-                        if (context != null && context.indices == null) {
-                            if (voxel.k == header.getDimension().z - 1) {
-                                wasOutside = false;
-                            } else {
-                                wasOutside = true;
-                            }
-                        }
+boolean wasOutside = false;
 
-                        //distance from the last origin to the point in which the ray exit the voxel
-                        double d2 = context.length;
+SphericalCoordinates sc = SphericalCoordinates.fromCartesian(dir);
 
-                        if (d2 < distanceToHit) {
+while ((context != null) && (context.indices != null)) {
+    
+    if (isCancelled()) {
+        return null;
+    }
+    
+    //current voxel
+    Point3i indices = context.indices;
+    CAVoxel voxel = voxels[indices.x][indices.y][indices.z];
+    
+    if (null != voxel && voxel.groundDistance < 0.0f) {
+        break;
+    }
+    
+    if (null == voxel || Double.isNaN(voxel.plantAreaDensity)) {
+        gotOneNaN = true;
+        break;
+    }
+    
+    //distance from the last origin to the point in which the ray enter the voxel
+    double d1 = context.length;
+    
+    context = vm.CrossVoxel(lineElement, indices);
+    
+    if (context != null && context.indices == null) {
+        wasOutside = voxel.k != header.getDimension().z - 1;
+    }
+    
+    //distance from the last origin to the point in which the ray exit the voxel
+    double d2 = context.length;
+    
+    if (d2 < distanceToHit) {
+        
+        distance += (d2 - d1);
+        
+    } else if (d1 >= distanceToHit) {
+        
+    } else {
+        distance += (d2 - d1);
+    }
+    
+    if (voxel.plantAreaDensity > 0) {
+        lastValidDistance = distance;
+    }
+}
 
-                            distance += (d2 - d1);
+double pathLength = lastValidDistance;
 
-                        } else if (d1 >= distanceToHit) {
+if (Double.isNaN(transmitted)) {
+    gotOneNaN = true;
+}
 
-                        } else {
-                            distance += (d2 - d1);
-                        }
+//test
+if (!gotOneNaN && pathLength != 0) {
+    
+    NaNCounter.addValue(transmitted);
+    
+    //lai2xxx.addNormalizedTransmittance(ring, positionID, (float) (Math.pow(transmitted, 1/pathLength)), (float) pathLength);
+    lai2xxx.addTransmittance(ring, positionID, (float) transmitted);
+    
+    //tranStattistics[positionID][ring].addValue((Math.pow(l.get(positionID)[ring], 1/pathLength)));
+} else {
+    NaNCounter.addValue(Double.NaN);
+}
 
-                        if (voxel.plantAreaDensity > 0) {
-                            lastValidDistance = distance;
-                        }
+writer.write(positionID + " " + position.x + " " + position.y + " " + position.z + " " + (ring + 1) + " " + pathLength + " " + transmitted + " " + wasOutside + " " + (float) Math.toDegrees(sc.getAzimut()) + " " + (float) Math.toDegrees(sc.getZenith()) + " " + gotOneNaN + "\n");
+
+//lai2xxx.addTransmittance(ring, positionID, (float) transmitted);
                     }
-
-                    double pathLength = lastValidDistance;
-
-                    if (Double.isNaN(transmitted)) {
-                        gotOneNaN = true;
+                    
+                    positionID++;
+                    
+                    if (positionID % 1000 == 0) {
+                        LOGGER.info(positionID + "/" + positions.size());
                     }
-
-                    //test
-                    if (!gotOneNaN && pathLength != 0) {
-
-                        NaNCounter.addValue(transmitted);
-
-                        //lai2xxx.addNormalizedTransmittance(ring, positionID, (float) (Math.pow(transmitted, 1/pathLength)), (float) pathLength);
-                        lai2xxx.addTransmittance(ring, positionID, (float) transmitted);
-
-                        //tranStattistics[positionID][ring].addValue((Math.pow(l.get(positionID)[ring], 1/pathLength)));
-                    } else {
-                        NaNCounter.addValue(Double.NaN);
-                    }
-
-                    writer.write(positionID + " " + position.x + " " + position.y + " " + position.z + " " + (ring + 1) + " " + pathLength + " " + transmitted + " " + wasOutside + " " + (float) Math.toDegrees(sc.getAzimut()) + " " + (float) Math.toDegrees(sc.getZenith()) + " " + gotOneNaN + "\n");
-
-                    //lai2xxx.addTransmittance(ring, positionID, (float) transmitted);
                 }
-
-                positionID++;
-
-                if (positionID % 1000 == 0) {
-                    LOGGER.info(positionID + "/" + positions.size());
-                }
+                
+                //test
+                System.out.println("Nb values : " + NaNCounter.getNbValues());
+                System.out.println("Nb NaN values : " + NaNCounter.getNbNaNValues());
             }
-
-            //test
-            System.out.println("Nb values : " + NaNCounter.getNbValues());
-            System.out.println("Nb NaN values : " + NaNCounter.getNbNaNValues());
-
-            writer.close();
 
             //        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File("/media/forestview01/partageLidar/FTH2014_LAI2200/data/tests/normalisation_mesure/methode2/transmittances.txt")))) {
             //            

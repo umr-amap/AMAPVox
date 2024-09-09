@@ -55,13 +55,18 @@ public class DirectionalTransmittance {
     }
 
     /**
-     *
+     * Create new directional transmittance calculator.
+     * 
      * @param inputFile voxel file
-     * @param lad
-     * @param ladParams
+     * @param padVariable name of pad column in voxel file
+     * @param lad type of leaf area distribution
+     * @param ladParams optional parameters associated to leaf area distribution
+     * 
      * @throws Exception
      */
-    public DirectionalTransmittance(File inputFile, String padVariable, LeafAngleDistribution.Type lad, double... ladParams) throws Exception {
+    public DirectionalTransmittance(File inputFile,
+            String padVariable,
+            LeafAngleDistribution.Type lad, double... ladParams) throws Exception {
 
         VoxelFileReader reader = new VoxelFileReader(inputFile);
         VoxelFileHeader header = reader.getHeader();
@@ -87,8 +92,7 @@ public class DirectionalTransmittance {
 
         Iterator<VoxelFileVoxel> iterator = reader.iterator();
 
-        OutputVariable pad = OutputVariable.find(padVariable);
-        int padColumn = reader.findColumn(pad);
+        int padColumn = reader.findColumn(padVariable);
         if (padColumn < 0) {
             throw new IOException("[directional transmittance] Output variable \"plant area density\" (" + padVariable + ") is missing");
         }
@@ -101,8 +105,8 @@ public class DirectionalTransmittance {
             VoxelFileVoxel voxel = iterator.next();
             if (voxel != null) {
                 voxels[voxel.i][voxel.j][voxel.k] = new DTVoxel();
-                voxels[voxel.i][voxel.j][voxel.k].pad = Float.valueOf(voxel.variables[padColumn]);
-                voxels[voxel.i][voxel.j][voxel.k].groundDistance = Float.valueOf(voxel.variables[groundDistanceColumn]);
+                voxels[voxel.i][voxel.j][voxel.k].pad = Float.parseFloat(voxel.variables[padColumn]);
+                voxels[voxel.i][voxel.j][voxel.k].groundDistance = Float.parseFloat(voxel.variables[groundDistanceColumn]);
             }
         }
     }

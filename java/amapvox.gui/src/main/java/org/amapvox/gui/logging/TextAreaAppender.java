@@ -41,10 +41,12 @@ public class TextAreaAppender extends WriterAppender {
                 sb.append(MESSAGE_QUEUE.poll());
             }
             String message = sb.toString();
-            // do stuff
-            Platform.runLater(() -> {
-                textArea.insertText(textArea.getText().length(), message);
-            });
+            if (!message.isBlank()) {
+                // do stuff
+                Platform.runLater(() -> {
+                    textArea.insertText(textArea.getText().length(), message);
+                });
+            }
         }, 0L, 250, TimeUnit.MILLISECONDS);
     }
 

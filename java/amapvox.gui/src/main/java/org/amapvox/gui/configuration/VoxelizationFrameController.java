@@ -77,7 +77,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
@@ -132,7 +131,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
     private Matrix4d sopMatrix;
     private Matrix4d vopMatrix;
-    private Matrix4d resultMatrix;
+    private Matrix4d transformationMatrix;
     private FileChooser fileChooserOpenPopMatrixFile;
     private FileChooser fileChooserOpenSopMatrixFile;
     private FileChooser fileChooserOpenVopMatrixFile;
@@ -209,6 +208,9 @@ public class VoxelizationFrameController extends ConfigurationController {
                     textFieldLasPositionX.textProperty(),
                     textFieldLasPositionY.textProperty(),
                     textFieldLasPositionZ.textProperty(),
+                    checkboxLasTimeRange.selectedProperty(),
+                    textFieldLasTimeMin.textProperty(),
+                    textFieldLasTimeMax.textProperty(),
                     checkboxLasConsistency.selectedProperty(),
                     textfieldMaxDeviation.textProperty(),
                     rdbtnLasConsistencyWarn.selectedProperty(),
@@ -272,6 +274,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                     textAreaRankEchoWeightMatrix.textProperty(),
                     rdbtnRelativeEchoWeight.selectedProperty(),
                     textFieldRelativeEchoWeightVariable.textProperty(),
+                    checkboxNormalizedEchoWeight.selectedProperty(),
                     rdbtnStrongestEchoWeight.selectedProperty(),
                     textFieldStrongestEchoWeightVariable.textProperty(),
                     // LASER
@@ -300,6 +303,16 @@ public class VoxelizationFrameController extends ConfigurationController {
         textFieldLasPositionX.setTextFormatter(TextFieldUtil.createFloatTextFormatter(0.f, TextFieldUtil.Sign.BOTH));
         textFieldLasPositionY.setTextFormatter(TextFieldUtil.createFloatTextFormatter(0.f, TextFieldUtil.Sign.BOTH));
         textFieldLasPositionZ.setTextFormatter(TextFieldUtil.createFloatTextFormatter(0.f, TextFieldUtil.Sign.BOTH));
+
+        // LAS time range
+        hboxLasTimeRange.disableProperty().bind(checkboxLasTimeRange.selectedProperty().not());
+        checkboxLasTimeRange.setSelected(false);
+        textFieldLasTimeMin.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(0, TextFieldUtil.Sign.POSITIVE));
+        textFieldLasTimeMin.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(0, TextFieldUtil.Sign.POSITIVE));
+        buttonHelpLasTimeRange.setOnAction((ActionEvent event)
+                -> {
+            buttonHelpLasTimeRangeController.showHelpDialog(rb.getString("help_las_time_range"));
+        });
 
         // Las consistency & collinearity checks
         textfieldMaxDeviation.setTextFormatter(TextFieldUtil.createFloatTextFormatter(0.f, TextFieldUtil.Sign.POSITIVE));
@@ -503,15 +516,15 @@ public class VoxelizationFrameController extends ConfigurationController {
                         .and(labelLidarType.textProperty().isNotEqualTo(VoxelizationCfg.LidarType.LAZ.name())));
 
         listviewLidarScans.disableProperty().bind(Bindings.isEmpty(listviewLidarScans.getItems()));
-        listviewLidarScans.setCellFactory((ListView<LidarScan> p) -> new ListCell<LidarScan>() {
-            @Override
-            protected void updateItem(LidarScan value, boolean empty) {
-                super.updateItem(value, empty);
-                if (null != value) {
-                    setText(value.getFile().getAbsolutePath());
-                }
-            }
-        });
+//        listviewLidarScans.setCellFactory((ListView<LidarScan> p) -> new ListCell<LidarScan>() {
+//            @Override
+//            protected void updateItem(LidarScan value, boolean empty) {
+//                super.updateItem(value, empty);
+//                if (null != value) {
+//                    setText(value.getName() + " (" + value.getFile().getAbsolutePath() + ")");
+//                }
+//            }
+//        });
 
         fileChooserOutputFile = new FileChooser();
         fileChooserOutputFile.getExtensionFilters().addAll(
@@ -826,9 +839,17 @@ public class VoxelizationFrameController extends ConfigurationController {
 //                inputValidationSupport.registerValidator(textFieldLasTrajectoryFile, false, Validators.unregisterValidator);
 //            } else {
 //                inputValidationSupport.registerValidator(textFieldLasTrajectoryFile, false, Validators.fileExistValidator("LAS trajectory file"));
-//
-//                 }
+//            }
 //        });
+        checkboxLasTimeRange.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+            if (newValue) {
+                inputValidationSupport.registerValidator(textFieldLasTimeMin, false, Validator.createPredicateValidator(isLasTimeRangeConsistant(), "Time range min value must be lower or equal than time range max value"));
+                inputValidationSupport.registerValidator(textFieldLasTimeMax, false, Validator.createPredicateValidator(isLasTimeRangeConsistant(), "Time range min value must be lower or equal than time range max value"));
+            } else {
+                inputValidationSupport.registerValidator(textFieldLasTimeMin, false, Validators.unregisterValidator);
+                inputValidationSupport.registerValidator(textFieldLasTimeMax, false, Validators.unregisterValidator);
+            }
+        });
 
         // output validation support
         outputValidationSupport = new ValidationSupport();
@@ -910,6 +931,10 @@ public class VoxelizationFrameController extends ConfigurationController {
                             Double.parseDouble(textFieldLasPositionY.getText()),
                             Double.parseDouble(textFieldLasPositionZ.getText())));
                 }
+                // time range
+                cfg.setTimeRangeEnabled(checkboxLasTimeRange.isSelected());
+                cfg.setLasTimeMin(Integer.parseInt(textFieldLasTimeMin.getText()));
+                cfg.setLasTimeMax(Integer.parseInt(textFieldLasTimeMax.getText()));
                 // consistency checks
                 cfg.setEchoConsistencyCheckEnabled(checkboxLasConsistency.isSelected());
                 cfg.setEchoConsistencyWarningEnabled(rdbtnLasConsistencyWarn.isSelected());
@@ -981,6 +1006,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         cfg.setRankEchoWeightMatrix(Matrix.valueOf(textAreaRankEchoWeightMatrix.getText()));
         cfg.addEchoWeight(new RelativeEchoWeight(rdbtnRelativeEchoWeight.isSelected()));
         cfg.setRelativeEchoWeightVariable(textFieldRelativeEchoWeightVariable.getText());
+        cfg.setEchoWeightNormalized(checkboxNormalizedEchoWeight.isSelected());
         cfg.addEchoWeight(new StrongestEchoWeight(rdbtnStrongestEchoWeight.isSelected()));
         cfg.setStrongestEchoWeightVariable(textFieldStrongestEchoWeightVariable.getText());
 
@@ -1062,7 +1088,7 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         return listviewClassifications.getItems().stream()
                 .filter(checkBox -> !checkBox.isSelected())
-                .map(checkBox -> Integer.parseInt(checkBox.getText().substring(0, checkBox.getText().indexOf("-") - 1)))
+                .map(checkBox -> Integer.valueOf(checkBox.getText().substring(0, checkBox.getText().indexOf("-") - 1)))
                 .collect(Collectors.toList());
     }
 
@@ -1203,6 +1229,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                 case RelativeEchoWeight relativeEchoWeight -> {
                     rdbtnRelativeEchoWeight.setSelected(relativeEchoWeight.isEnabled());
                     textFieldRelativeEchoWeightVariable.setText(cfg.getRelativeEchoWeightVariable());
+                    checkboxNormalizedEchoWeight.setSelected(cfg.isEchoWeightNormalized());
                 }
                 case StrongestEchoWeight strongestEchoWeight -> {
                     rdbtnStrongestEchoWeight.setSelected(strongestEchoWeight.isEnabled());
@@ -1229,6 +1256,9 @@ public class VoxelizationFrameController extends ConfigurationController {
                 rdbtnLasTrajectory.setSelected(true);
             }
             trajectoryFile = cfg.getTrajectoryFile();
+            checkboxLasTimeRange.setSelected(cfg.isTimeRangeEnabled());
+            textFieldLasTimeMin.setText(String.valueOf((int) cfg.getLasTimeMin()));
+            textFieldLasTimeMax.setText(String.valueOf((int) cfg.getLasTimeMax()));
             checkboxLasConsistency.setSelected(cfg.isEchoConsistencyCheckEnabled());
             toggleGroupLasConsistency.selectToggle(cfg.isEchoConsistencyWarningEnabled()
                     ? rdbtnLasConsistencyWarn
@@ -1337,7 +1367,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                         @Override
                         protected Void call() throws InterruptedException {
 
-                            final BoundingBox3D boundingBox = org.amapvox.commons.Util.getBoundingBoxOfPoints(file, resultMatrix, quick, getListOfLASClassificationPointToDiscard());
+                            final BoundingBox3D boundingBox = org.amapvox.commons.Util.getBoundingBoxOfPoints(file, transformationMatrix, quick, getListOfLASClassificationPointToDiscard());
 
                             Point3d minPoint = boundingBox.min;
                             Point3d maxPoint = boundingBox.max;
@@ -1395,6 +1425,16 @@ public class VoxelizationFrameController extends ConfigurationController {
         };
     }
 
+    private Predicate<String> isLasTimeRangeConsistant() {
+        return (String p) -> {
+            try {
+                return Integer.parseInt(textFieldLasTimeMax.getText()) >= Integer.parseInt(textFieldLasTimeMin.getText());
+            } catch (NumberFormatException ex) {
+            }
+            return false;
+        };
+    }
+
     private void setOutputVariablesSelected(boolean selected) {
 
         vboxOutputVariables.getChildren().stream()
@@ -1410,8 +1450,8 @@ public class VoxelizationFrameController extends ConfigurationController {
         sopMatrix.setIdentity();
         vopMatrix = new Matrix4d();
         vopMatrix.setIdentity();
-        resultMatrix = new Matrix4d();
-        resultMatrix.setIdentity();
+        transformationMatrix = new Matrix4d();
+        transformationMatrix.setIdentity();
     }
 
     private void disableSopMatrixChoice(boolean value) {
@@ -1428,25 +1468,25 @@ public class VoxelizationFrameController extends ConfigurationController {
 
     private void updateResultMatrix() {
 
-        resultMatrix = new Matrix4d();
-        resultMatrix.setIdentity();
+        transformationMatrix = new Matrix4d();
+        transformationMatrix.setIdentity();
 
         if (checkboxUseVopMatrix.isSelected() && vopMatrix != null) {
-            resultMatrix.mul(vopMatrix);
+            transformationMatrix.mul(vopMatrix);
             vopMatrixController.setMatrix(vopMatrix);
         }
 
         if (checkboxUsePopMatrix.isSelected() && popMatrix != null) {
-            resultMatrix.mul(popMatrix);
+            transformationMatrix.mul(popMatrix);
             popMatrixController.setMatrix(popMatrix);
         }
 
         if (checkboxUseSopMatrix.isSelected() && sopMatrix != null) {
-            resultMatrix.mul(sopMatrix);
+            transformationMatrix.mul(sopMatrix);
             sopMatrixController.setMatrix(sopMatrix);
         }
 
-        transformationMatrixController.setMatrix(resultMatrix);
+        transformationMatrixController.setMatrix(transformationMatrix);
     }
 
     private void addPointcloudFilter(PointcloudFilter f) {
@@ -1737,6 +1777,20 @@ public class VoxelizationFrameController extends ConfigurationController {
     @FXML
     private TextField textFieldLasPositionZ;
 
+    // LAS time range
+    @FXML
+    private CheckBox checkboxLasTimeRange;
+    @FXML
+    private HBox hboxLasTimeRange;
+    @FXML
+    private TextField textFieldLasTimeMin;
+    @FXML
+    private TextField textFieldLasTimeMax;
+    @FXML
+    private Button buttonHelpLasTimeRange;
+    @FXML
+    private HelpButtonController buttonHelpLasTimeRangeController;
+
     // LAS consistency
 //    @FXML
 //    private HBox hboxLasConsistency;
@@ -2004,8 +2058,6 @@ public class VoxelizationFrameController extends ConfigurationController {
 
     // Point cloud filter
     @FXML
-    private HBox hBoxPointCloudFiltering;
-    @FXML
     private VBox vBoxPointCloudFiltering;
 
     // Echo filter by attribute
@@ -2066,6 +2118,8 @@ public class VoxelizationFrameController extends ConfigurationController {
     private HBox hboxRelativeEchoWeight;
     @FXML
     private TextField textFieldRelativeEchoWeightVariable;
+    @FXML
+    private CheckBox checkboxNormalizedEchoWeight;
     // Strongest echo weight
     @FXML
     private RadioButton rdbtnStrongestEchoWeight;
@@ -2362,18 +2416,18 @@ public class VoxelizationFrameController extends ConfigurationController {
             switch (extension) {
                 case ".rsp":
                     try {
-                    RSPReader tempRsp = new RSPReader(selectedFile);
-                    mat = new Matrix4d(tempRsp.getPopMatrix());
-                } catch (IOException ex) {
-                    logger.error("Cannot read rsp project file", ex);
-                }
-                break;
+                        RSPReader tempRsp = new RSPReader(selectedFile);
+                        mat = new Matrix4d(tempRsp.getPopMatrix());
+                    } catch (IOException ex) {
+                        logger.error("Cannot read rsp project file", ex);
+                    }
+                    break;
                 default:
                     try {
-                    mat = MatrixFileParser.getMatrixFromFile(selectedFile);
-                } catch (IOException ex) {
-                    logger.error("Cannot read matrix file", ex);
-                }
+                        mat = MatrixFileParser.getMatrixFromFile(selectedFile);
+                    } catch (IOException ex) {
+                        logger.error("Cannot read matrix file", ex);
+                    }
             }
 
             if (mat != null) {
@@ -2407,8 +2461,8 @@ public class VoxelizationFrameController extends ConfigurationController {
                 case ".rsp":
 
                     try {
-                    RSPReader tempRsp = new RSPReader(selectedFile);
-                    //scan unique
+                        RSPReader tempRsp = new RSPReader(selectedFile);
+                        //scan unique
 //                    if (comboboxModeTLS.getSelectionModel().getSelectedIndex() == 0) {
 //
 //                        File scanFile;
@@ -2440,22 +2494,22 @@ public class VoxelizationFrameController extends ConfigurationController {
 //                        }
 //                    }
 
-                } catch (IOException ex) {
-                    logger.error("Cannot read rsp project file", ex);
-                }
+                    } catch (IOException ex) {
+                        logger.error("Cannot read rsp project file", ex);
+                    }
 
-                break;
+                    break;
                 default:
                     try {
-                    mat = MatrixFileParser.getMatrixFromFile(selectedFile);
-                    if (mat != null) {
-                        sopMatrix = mat;
-                    } else {
-                        showMatrixFormatErrorDialog();
+                        mat = MatrixFileParser.getMatrixFromFile(selectedFile);
+                        if (mat != null) {
+                            sopMatrix = mat;
+                        } else {
+                            showMatrixFormatErrorDialog();
+                        }
+                    } catch (IOException ex) {
+                        logger.error("Cannot read matrix file", ex);
                     }
-                } catch (IOException ex) {
-                    logger.error("Cannot read matrix file", ex);
-                }
             }
 
             updateResultMatrix();

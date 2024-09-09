@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.vecmath.Point3d;
+import org.amapvox.canopy.LeafAngleDistribution;
 import org.amapvox.commons.AVoxTask;
 import org.amapvox.commons.Release;
 import org.jdom2.Attribute;
@@ -66,7 +67,28 @@ public class TransmittanceCfg extends Configuration {
         String inputFileSrc = resolve(inputFileElement.getAttributeValue("src"));
 
         if (inputFileSrc != null) {
-            parameters.setInputFile(new File(inputFileSrc));
+            parameters.setVoxelFile(new File(inputFileSrc));
+        }
+
+        if (null != inputFileElement.getAttribute("variable")) {
+            parameters.setPADVariable(inputFileElement.getAttributeValue("variable"));
+        }
+
+        Element ladElement = processElement.getChild("leaf-angle-distribution");
+        if (ladElement != null) {
+            parameters.setLeafAngleDistribution(LeafAngleDistribution.Type.fromString(ladElement.getAttributeValue("type")));
+            double[] ladParams = new double[2];
+            String alphaValue = ladElement.getAttributeValue("alpha");
+            if (alphaValue != null) {
+                ladParams[0] = Double.parseDouble(alphaValue);
+            }
+            String betaValue = ladElement.getAttributeValue("beta");
+            if (betaValue != null) {
+                ladParams[0] = Double.parseDouble(betaValue);
+            }
+            parameters.setLeafAngleDistributionParameters(ladParams);
+        } else {
+            throw new IOException("Cannot find leaf-angle-distribution element");
         }
 
         Element outputFilesElement = processElement.getChild("output_files");
@@ -226,8 +248,23 @@ public class TransmittanceCfg extends Configuration {
         //input
         Element inputFileElement = new Element("input_file");
         inputFileElement.setAttribute(new Attribute("type", "VOX"));
-        inputFileElement.setAttribute(new Attribute("src", parameters.getInputFile().getAbsolutePath()));
+        inputFileElement.setAttribute(new Attribute("src", parameters.getVoxelFile().getAbsolutePath()));
+        inputFileElement.setAttribute("variable", parameters.getPADVariable());
         processElement.addContent(inputFileElement);
+
+        // leaf angle distribution
+        Element ladElement = new Element("leaf-angle-distribution");
+        ladElement.setAttribute("type", parameters.getLeafAngleDistribution().toString());
+        processElement.addContent(ladElement);
+
+        if (parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA
+                || parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.ELLIPSOIDAL) {
+            ladElement.setAttribute("alpha", String.valueOf(parameters.getLeafAngleDistributionParameters()[0]));
+
+            if (parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA) {
+                ladElement.setAttribute("beta", String.valueOf(parameters.getLeafAngleDistributionParameters()[1]));
+            }
+        }
 
         //outputs
         Element outputFilesElement = new Element("output_files");
@@ -322,6 +359,17 @@ public class TransmittanceCfg extends Configuration {
 
     @Override
     public Release[] getReleases() {
-        return null;
+        return new Release[]{
+            // 2024-09-03
+            new Release("2.3.0") {
+                @Override
+                public void update(Element processElement) {
+
+                    // add default spherical leaf angle distribution element
+                    Element leafAngleDistributionElement = new Element("leaf-angle-distribution");
+                    leafAngleDistributionElement.setAttribute("type", LeafAngleDistribution.Type.SPHERIC.toString());
+                    processElement.addContent(leafAngleDistributionElement);
+                }
+            }};
     }
 }

@@ -20,18 +20,7 @@
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                             <children>
-                                                <VBox spacing="5.0" >
-                                                    <children>
-                                                        <Label text="Input file (.vox)" />
-                                                        <HBox alignment="CENTER">
-                                                            <children>
-                                                                <TextField fx:id="textfieldVoxelFilePathCanopyAnalyzer" prefHeight="25.0" prefWidth="240.0" HBox.hgrow="ALWAYS" />
-                                                                <Button mnemonicParsing="false" onAction="#onActionButtonOpenVoxelFileCanopyAnalyzer" text="..." />
-                                                            </children>
-                                                        </HBox>
-                                                        <fx:include fx:id="checkMissingVoxelCanopy" source="../CheckMissingVoxel.fxml"/>
-                                                    </children>
-                                                </VBox>   
+                                                <fx:include fx:id="voxelFileCanopy" source="../VoxelFileCanopy.fxml" />
                                                 <VBox spacing="5.0">                                                                                                                            
                                                     <children>
                                                         <Label text="Output" />
@@ -61,7 +50,7 @@
                                 </AnchorPane>
                             </content>
                         </TitledPane>
-                        <TitledPane animated="false" expanded="false" text="Options">
+                         <TitledPane animated="false" expanded="false" text="Options">
                             <content>
                                 <AnchorPane minHeight="0.0" minWidth="0.0">
                                     <children>
@@ -75,7 +64,7 @@
                                                             <graphic>
                                                                 <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                                                     <image>
-                                                                        <Image url="@icons/save.png" />
+                                                                        <Image url="@../icons/save.png" />
                                                                     </image>
                                                                 </ImageView>
                                                             </graphic>
@@ -125,7 +114,7 @@
                                                                             <graphic>
                                                                                 <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                                                                     <image>
-                                                                                        <Image url="@icons/remove.png" />
+                                                                                        <Image url="@../icons/remove.png" />
                                                                                     </image>
                                                                                 </ImageView>
                                                                             </graphic>
@@ -134,7 +123,7 @@
                                                                             <graphic>
                                                                                 <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                                                                     <image>
-                                                                                        <Image url="@icons/add.png" />
+                                                                                        <Image url="@../icons/add.png" />
                                                                                     </image>
                                                                                 </ImageView>
                                                                             </graphic>

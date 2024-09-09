@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.TextFlow?>
+
+<AnchorPane id="AnchorPane" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.VoxelFileCanopyController" >
+    <children>
+        <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <VBox spacing="5.0" >
+                    <children>
+                        <Label text="Voxel file (.vox)" />
+                        <HBox alignment="CENTER">
+                            <children>
+                                <TextField fx:id="textfieldVoxelFileCanopyPath" prefHeight="25.0" prefWidth="240.0" HBox.hgrow="ALWAYS" />
+                                <Button mnemonicParsing="false" onAction="#onActionButtonOpenVoxelFile" text="..." />
+                            </children>
+                        </HBox>
+                        <fx:include fx:id="checkMissingVoxelCanopy" source="CheckMissingVoxel.fxml"/>
+                    </children>
+                </VBox>
+                <HBox spacing="15.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Label text="PAD variable name" />
+                        <ComboBox fx:id="comboboxPADVariable" disable="true" prefHeight="25.0" prefWidth="250.0" />
+                        <fx:include fx:id="helpButtonPADVariable" source="HelpButton.fxml" />
+                    </children>
+                </HBox>
+                <HBox spacing="15.0" alignment="CENTER_LEFT" >
+                    <children>
+                        <Label text="Leaf angle distribution" />
+                        <ComboBox fx:id="comboboxLeafAngleDistribution" />
+                        <fx:include fx:id="helpButtonLeafAngleDistribution" source="HelpButton.fxml" />
+                        <HBox fx:id="hboxTwoBetaParameters" spacing="10.0" visible="false" alignment="CENTER_LEFT" >
+                            <children>
+                                <Label text="α" />
+                                <TextField fx:id="textFieldTwoBetaAlphaParameter" prefWidth="60.0" />
+                                <Label fx:id="labelLADBeta" text="β" />
+                                <TextField fx:id="textFieldTwoBetaBetaParameter" prefWidth="60.0" />
+                            </children>
+                        </HBox>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

@@ -5,7 +5,6 @@ package org.amapvox.gui;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -24,7 +23,7 @@ public class VoxelSpacePanelController implements Initializable {
 
     private ChangeListener changeListener;
     private Point3f resolution = new Point3f(1.f, 1.f, 1.f);
-    
+
     @FXML
     private TextField textfieldXNumber;
     @FXML
@@ -46,38 +45,32 @@ public class VoxelSpacePanelController implements Initializable {
 
     /**
      * Initializes the controller class.
+     *
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        
-        changeListener = new ChangeListener<Object>() {
 
-            @Override
-            public void changed(ObservableValue<? extends Object> observable, Object oldValue, Object newValue) {
+        changeListener = (ChangeListener<Object>) (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) -> {
+            try {
+                //float resolution = Float.valueOf(textFieldResolution.getText());
+                double minPointX = Double.parseDouble(textfieldEnterXMin.getText());
+                double maxPointX = Double.parseDouble(textfieldEnterXMax.getText());
+                int voxelNumberX = (int) Math.ceil((maxPointX - minPointX) / resolution.x);
+                textfieldXNumber.setText(String.valueOf(voxelNumberX));
 
-                try {
+                double minPointY = Double.parseDouble(textfieldEnterYMin.getText());
+                double maxPointY = Double.parseDouble(textfieldEnterYMax.getText());
+                int voxelNumberY = (int) Math.ceil((maxPointY - minPointY) / resolution.y);
+                textfieldYNumber.setText(String.valueOf(voxelNumberY));
 
-                    //float resolution = Float.valueOf(textFieldResolution.getText());
+                double minPointZ = Double.parseDouble(textfieldEnterZMin.getText());
+                double maxPointZ = Double.parseDouble(textfieldEnterZMax.getText());
+                int voxelNumberZ = (int) Math.ceil((maxPointZ - minPointZ) / resolution.z);
+                textfieldZNumber.setText(String.valueOf(voxelNumberZ));
 
-                    double minPointX = Double.valueOf(textfieldEnterXMin.getText());
-                    double maxPointX = Double.valueOf(textfieldEnterXMax.getText());
-                    int voxelNumberX = (int) Math.ceil((maxPointX - minPointX) / resolution.x);
-                    textfieldXNumber.setText(String.valueOf(voxelNumberX));
-
-                    double minPointY = Double.valueOf(textfieldEnterYMin.getText());
-                    double maxPointY = Double.valueOf(textfieldEnterYMax.getText());
-                    int voxelNumberY = (int) Math.ceil((maxPointY - minPointY) / resolution.y);
-                    textfieldYNumber.setText(String.valueOf(voxelNumberY));
-
-                    double minPointZ = Double.valueOf(textfieldEnterZMin.getText());
-                    double maxPointZ = Double.valueOf(textfieldEnterZMax.getText());
-                    int voxelNumberZ = (int) Math.ceil((maxPointZ - minPointZ) / resolution.z);
-                    textfieldZNumber.setText(String.valueOf(voxelNumberZ));
-
-                } catch (Exception e) {
-
-                }
-
+            } catch (NumberFormatException e) {
             }
         };
 

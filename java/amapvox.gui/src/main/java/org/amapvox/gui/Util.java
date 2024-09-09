@@ -190,9 +190,9 @@ public class Util {
     public static void showErrorDialog(Stage stage, final Throwable e, String prefix) {
 
         if (null != prefix) {
-            LOGGER.error("["  + prefix + "] Error: ", e);
+            LOGGER.error("["  + prefix + "] Error:\n" + e.getLocalizedMessage(), e);
         } else {
-            LOGGER.error("Error: ", e);
+            LOGGER.error("Error:\n" + e.getLocalizedMessage(), e);
         }
         DialogHelper.showErrorDialog(stage, e);
     }

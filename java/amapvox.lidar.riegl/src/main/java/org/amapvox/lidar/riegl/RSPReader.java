@@ -138,7 +138,7 @@ public class RSPReader extends LidarProjectReader {
                 String rxpFold = child.getAttributeValue("fold");
                 Element registeredElement = child.getChild("registered");
                 if (registeredElement != null) {
-                    if (Integer.valueOf(registeredElement.getText()) == 1) {
+                    if (Integer.parseInt(registeredElement.getText()) == 1) {
 
                         Element singlescans = child.getChild("singlescans");
                         String singlescansFold = singlescans.getAttributeValue("fold");
@@ -149,7 +149,7 @@ public class RSPReader extends LidarProjectReader {
                         Matrix4d sopMatrix = extractMat4D(sop.getChildText("matrix"));
 
                         scansElement.forEach(scanElement -> {
-                            String name = scanElement.getAttributeValue("name");
+//                            String name = scanElement.getAttributeValue("name");
                             String fileName = scanElement.getChildText("file");
                             String rspPath = rspFile.getAbsolutePath().substring(0, rspFile.getAbsolutePath().lastIndexOf(File.separator));
                             StringBuilder filePath = new StringBuilder();
@@ -159,7 +159,7 @@ public class RSPReader extends LidarProjectReader {
                                     .append(singlescansFold).append(File.separator)
                                     .append(fileName);
                             File rxpFile = new File(filePath.toString());
-                            rxpList.add(new LidarScan(rxpFile, sopMatrix, name));
+                            rxpList.add(new LidarScan(rxpFile, sopMatrix, rxpFold));
                         });
                         Collections.sort(rxpList, (LidarScan s1, LidarScan s2) -> s1.getFile().compareTo(s2.getFile()));
                     } else {

@@ -94,7 +94,7 @@ versionManager <- function(version="latest") {
 #' @docType methods
 #' @rdname getRemoteVersions
 #' @description List AMAPVox versions available for download from AMAPVox Gitlab
-#'   package registry \url{https://forge.ird.fr/amap/amapvox/-/packages}
+#'   package registry \url{https://forge.ird.fr/groups/amap/amapvox/-/packages}
 #' @return a `data.frame` with 2 variables: `$version` that stores
 #'   the version number and `$url` the URL of the associated ZIP file.
 #' @seealso [getLocalVersions()]

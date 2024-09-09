@@ -9,6 +9,7 @@ import org.amapvox.lidar.commons.LidarScan;
 import java.io.File;
 import java.util.List;
 import javax.vecmath.Point3d;
+import org.amapvox.canopy.LeafAngleDistribution;
 
 /**
  *
@@ -56,6 +57,8 @@ public class HemiParameters {
     //PAD mode
     private File voxelFile;
     private String padVariable;
+    private LeafAngleDistribution.Type leafAngleDistribution;
+    private double[] leafAngleDistributionParameters = new double[2];
     //private Point3d sensorPosition;
     private List<Point3d> sensorPositions;
     
@@ -181,5 +184,33 @@ public class HemiParameters {
 
     public void setGenerateTextFile(boolean generateTextFile) {
         this.generateTextFile = generateTextFile;
+    }
+    
+    /**
+     * @return the leafAngleDistribution
+     */
+    public LeafAngleDistribution.Type getLeafAngleDistribution() {
+        return leafAngleDistribution;
+    }
+
+    /**
+     * @param leafAngleDistribution the leafAngleDistribution to set
+     */
+    public void setLeafAngleDistribution(LeafAngleDistribution.Type leafAngleDistribution) {
+        this.leafAngleDistribution = leafAngleDistribution;
+    }
+    
+    /**
+     * @return the leafAngleDistribution parameters
+     */
+    public double[] getLeafAngleDistributionParameters() {
+        return leafAngleDistributionParameters;
+    }
+
+    /**
+     * @param leafAngleDistributionParameters
+     */
+    public void setLeafAngleDistributionParameters(double[] leafAngleDistributionParameters) {
+        this.leafAngleDistributionParameters = leafAngleDistributionParameters;
     }
 }

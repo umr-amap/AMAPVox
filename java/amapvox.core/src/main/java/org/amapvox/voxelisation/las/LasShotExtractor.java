@@ -56,7 +56,7 @@ public class LasShotExtractor extends Process implements IterableWithException<S
     private final Matrix4d vopMatrix;
 
     private final double collinearityError;
-    private final static float RATIO_REFLECTANCE_VEGETATION_SOL = 0.4f;
+
     private final static int SHOT_BUFFER = 100;
 
     // whether the task is cancelled
@@ -67,6 +67,10 @@ public class LasShotExtractor extends Process implements IterableWithException<S
     private final boolean collinearityCheckEnabled;
     private final boolean collinearityWarningEnabled;
 
+    //
+    private final double timeMin, timeMax;
+    private double trajTimeMin = 0.d, trajTimeMax = Double.MAX_VALUE;
+
     private int nshot;
 
     // logger
@@ -76,7 +80,8 @@ public class LasShotExtractor extends Process implements IterableWithException<S
             File inputFile, Matrix4d vopMatrix,
             boolean echoConsistencyCheckEnabled, boolean echoConsistencyWarningEnabled,
             boolean collinearityCheckEnabled, boolean collinearityWarningEnabled,
-            double maxDeviation) {
+            double maxDeviation,
+            double timeMin, double timeMax) {
 
         this.trajectoryFile = trajectoryFile;
         this.scannerPosition = scannerPosition;
@@ -89,6 +94,22 @@ public class LasShotExtractor extends Process implements IterableWithException<S
         this.collinearityWarningEnabled = collinearityWarningEnabled;
         this.collinearityError = Math.abs(1.d - Math.abs(Math.cos(Math.toRadians(maxDeviation))));
 
+        this.timeMin = timeMin;
+        this.timeMax = timeMax;
+    }
+
+    public LasShotExtractor(CSVFile trajectoryFile, Point3d scannerPosition,
+            File inputFile, Matrix4d vopMatrix,
+            boolean echoConsistencyCheckEnabled, boolean echoConsistencyWarningEnabled,
+            boolean collinearityCheckEnabled, boolean collinearityWarningEnabled,
+            double maxDeviation) {
+
+        this(trajectoryFile, scannerPosition,
+                inputFile, vopMatrix,
+                echoConsistencyCheckEnabled, echoConsistencyWarningEnabled,
+                collinearityCheckEnabled, collinearityWarningEnabled,
+                maxDeviation,
+                0.d, Double.MAX_VALUE);
     }
 
     public int getNShot() {
@@ -96,6 +117,13 @@ public class LasShotExtractor extends Process implements IterableWithException<S
     }
 
     public void init() throws Exception {
+
+        if (null != trajectoryFile) {
+            // read trajectory file
+            trajectory = readTrajectory(trajectoryFile);
+            trajTimeMin = trajectory.get(0).time;
+            trajTimeMax = trajectory.get(trajectory.size() - 1).time;
+        }
 
         // read LAS / LAZ points
         List<LasPoint> rawLasPoints = readLasPoints(inputFile);
@@ -141,22 +169,11 @@ public class LasShotExtractor extends Process implements IterableWithException<S
             lasPoints = new ArrayList<>(rawLasPoints);
         }
 
-        if (null != trajectoryFile) {
-            // read trajectory file
-            trajectory = readTrajectory(trajectoryFile);
-
+        // trim trajectory
+        if (null != trajectory) {
             // reduce trajectory points to LAS points time range
             int imin = nearestTrajectoryPoint(lasPoints.get(0).t, Search.MIN);
             int imax = nearestTrajectoryPoint(lasPoints.get(lasPoints.size() - 1).t, Search.MAX);
-            if (imin < 0 || imax < 0) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("LAS points time span wider than trajectory file time span:\n");
-                sb.append("LAS points time span [").append(lasPoints.get(0).t);
-                sb.append(" ").append(lasPoints.get(lasPoints.size() - 1).t).append("]\n");
-                sb.append("Trajectory time span [").append(trajectory.get(0).time);
-                sb.append(" ").append(trajectory.get(trajectory.size() - 1).time).append("]");
-                throw new IndexOutOfBoundsException(sb.toString());
-            }
             trajectory = trajectory.subList(imin, imax + 1);
         }
     }
@@ -168,7 +185,10 @@ public class LasShotExtractor extends Process implements IterableWithException<S
         LASHeader header;
 
         int count = 0;
+        int countTimeRangeDiscarded = 0;
+        int countTrajectoryDiscarded = 0;
         long nPoint;
+        double tmin = Double.MAX_VALUE, tmax = 0.d;
 
         LOGGER.info("Reading LAS file " + file.getName());
         // open LAS reader
@@ -191,6 +211,18 @@ public class LasShotExtractor extends Process implements IterableWithException<S
             if (isCancelled()) {
                 return null;
             }
+            tmin = Math.min(p.getGPSTime(), tmin);
+            tmax = Math.max(p.getGPSTime(), tmax);
+            // time range filtering
+            if (p.getGPSTime() < timeMin | p.getGPSTime() > timeMax) {
+                countTimeRangeDiscarded++;
+                continue;
+            }
+            // trajectory filtering
+            if (p.getGPSTime() < trajTimeMin | p.getGPSTime() > trajTimeMax) {
+                countTrajectoryDiscarded++;
+                continue;
+            }
             Vector3d location = new Vector3d(
                     (p.getX() * x_scale_factor) + x_offset,
                     (p.getY() * y_scale_factor) + y_offset,
@@ -202,6 +234,31 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                     p.getClassification(),
                     p.getGPSTime());
             points.add(point);
+        }
+        if (countTimeRangeDiscarded > 0) {
+            int percent = (int) Math.ceil(100.f * countTrajectoryDiscarded / count);
+            LOGGER.info("LAS points outside time range: " + countTimeRangeDiscarded + " / " + count + " (~" + percent + "%)");
+        }
+        if (countTimeRangeDiscarded >= count) {
+            StringBuilder msg = new StringBuilder();
+            msg.append("All LAS points have been discarded from time range. LAS time range: ");
+            msg.append((long) tmin).append(", ").append((long) tmax);
+            msg.append("; time filter: ").append((long) timeMin).append(", ").append((long) timeMax);
+            throw new IOException(msg.toString());
+        }
+        if (countTrajectoryDiscarded > 0) {
+            int percent = (int) Math.ceil(100.f * countTrajectoryDiscarded / count);
+            StringBuilder sb = new StringBuilder();
+            sb.append("LAS points outside trajectory time range (");
+            sb.append(countTrajectoryDiscarded).append(" / ").append(count);
+            sb.append(", ~").append(percent).append("%)");
+            sb.append(" have been discarded.\n");
+            sb.append("\t").append("LAS points time span [").append(tmin);
+            sb.append(" ").append(tmax).append("]\n");
+            sb.append("\t").append("Trajectory time span [").append(trajTimeMin);
+            sb.append(" ").append(trajTimeMax).append("]");
+
+            LOGGER.warn(sb);
         }
 
         // sort LAS point by time stamp
@@ -332,9 +389,7 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                 ranges[pt.r - 1] = origin.distance(pt3d);
                 // classification
                 classifications[pt.r - 1] = pt.classification;
-                intensities[pt.r - 1] = (pt.classification == LasPoint.CLASSIFICATION_GROUND)
-                        ? (int) (pt.i * RATIO_REFLECTANCE_VEGETATION_SOL)
-                        : pt.i;
+                intensities[pt.r - 1] = pt.i;
             });
 
             // create new shot

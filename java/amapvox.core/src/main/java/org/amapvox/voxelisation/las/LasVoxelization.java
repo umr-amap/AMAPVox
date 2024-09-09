@@ -30,17 +30,20 @@ public class LasVoxelization extends AbstractVoxelization {
     public Object call() throws Exception {
 
         // vop matrix
-        Matrix4d vop = (null == cfg.getVopMatrix())
-                ? MatrixUtility.identity4d()
-                : new Matrix4d(cfg.getVopMatrix());
+        Matrix4d vop = (cfg.isUseVopMatrix() && null != cfg.getVopMatrix())
+                ? new Matrix4d(cfg.getVopMatrix())
+                : MatrixUtility.identity4d();
 
         // LAS shot builder
+        double lasTimeMin = cfg.isTimeRangeEnabled() ? cfg.getLasTimeMin() : 0.d;
+        double lasTimeMax = cfg.isTimeRangeEnabled() ? cfg.getLasTimeMax() : Double.MAX_VALUE;
         LasShotExtractor lasShotExtractor = new LasShotExtractor(
                 cfg.getTrajectoryFile(), cfg.getScannerPosition(),
                 getLidarScan().getFile(), vop,
                 cfg.isEchoConsistencyCheckEnabled(), cfg.isEchoConsistencyWarningEnabled(),
                 cfg.isCollinearityCheckEnabled(), cfg.isCollinearityWarningEnabled(),
-                cfg.getCollinearityMaxDeviation());
+                cfg.getCollinearityMaxDeviation(),
+                lasTimeMin, lasTimeMax);
 
         // add listener to monitor progress of the ALS shot builder
         lasShotExtractor.addProcessingListener(parent);

@@ -25,9 +25,8 @@ public abstract class AbstractVoxelization extends CallableTask<Object> {
     protected Matrix4d transformation;
     private final int iscan;
     private String logHeader;
-    
+
     abstract public String getName();
-    
 
     public AbstractVoxelization(VoxelizationTask task, VoxelizationCfg cfg, int iscan) {
         this.parent = task;
@@ -39,26 +38,28 @@ public abstract class AbstractVoxelization extends CallableTask<Object> {
     public LidarScan getLidarScan() {
         return cfg.getLidarScans().get(iscan);
     }
-    
+
     public String logHeader() {
         return logHeader;
     }
 
     protected void init() throws Exception {
-        
+
         int nscan = cfg.getLidarScans().size();
         logHeader = "[Voxelisation " + (iscan + 1) + "/" + nscan + "]";
 
         // Transformation matrices
-        Matrix4d pop = (null == cfg.getPopMatrix())
-                ? MatrixUtility.identity4d()
-                : new Matrix4d(cfg.getPopMatrix());
+        Matrix4d pop = (cfg.isUsePopMatrix() && null != cfg.getPopMatrix())
+                ? new Matrix4d(cfg.getPopMatrix())
+                : MatrixUtility.identity4d();
 
-        Matrix4d vop = (null == cfg.getVopMatrix())
-                ? MatrixUtility.identity4d()
-                : new Matrix4d(cfg.getVopMatrix());
+        Matrix4d vop = (cfg.isUseVopMatrix() && null != cfg.getVopMatrix())
+                ? new Matrix4d(cfg.getVopMatrix())
+                : MatrixUtility.identity4d();
 
-        Matrix4d sop = getLidarScan().getMatrix();
+        Matrix4d sop = cfg.isUseSopMatrix()
+                ? getLidarScan().getMatrix()
+                : MatrixUtility.identity4d();
 
         // multiply vop by pop
         transformation = new Matrix4d(vop);
@@ -71,12 +72,12 @@ public abstract class AbstractVoxelization extends CallableTask<Object> {
 
         for (Filter filter : cfg.getEchoFilters()) {
             // echo rank filter by file
-            if (filter instanceof EchoRankFilter) {
-                ((EchoRankFilter) filter).setScanName(getLidarScan().getFile().getName());
+            if (filter instanceof EchoRankFilter echoRankFilter) {
+                echoRankFilter.setScanName(getLidarScan().getFile().getName());
             }
             // dtm filter
-            if (filter instanceof DigitalTerrainModelFilter) {
-                ((DigitalTerrainModelFilter) filter).setDTM(parent.getDTM());
+            if (filter instanceof DigitalTerrainModelFilter digitalTerrainModelFilter) {
+                digitalTerrainModelFilter.setDTM(parent.getDTM());
             }
         }
 

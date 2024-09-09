@@ -15,6 +15,7 @@ module amapvox.canopy {
     requires amapvox.lidar.riegl;
     
     // exports
+    exports org.amapvox.canopy;
     exports org.amapvox.canopy.hemi;
     exports org.amapvox.canopy.transmittance;
     exports org.amapvox.canopy.lai2xxx;

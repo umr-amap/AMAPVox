@@ -14,3 +14,4 @@ git.log
 ^CRAN-SUBMISSION$
 ^pkgdown$
 ^java$
+^setversion.sh$

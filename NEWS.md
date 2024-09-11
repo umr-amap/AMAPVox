@@ -1,6 +1,7 @@
 # AMAPVox 2.3.1
 
-*yyyy-MM-dd*
+*2024-09-11*
+Bugfix: open and save dialog fail-safe [#51](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/51)
 
 Released/Not release on CRAN
 

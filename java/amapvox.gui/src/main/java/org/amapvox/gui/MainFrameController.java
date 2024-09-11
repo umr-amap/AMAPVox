@@ -392,12 +392,12 @@ public class MainFrameController implements Initializable {
             i++;
         }
     }
-    
+
     /**
      * Reload recent files from preferences.
      */
     void reloadRecentFiles() {
-        
+
         recentFiles.clear();
         IntStream.range(0, maxRecentFiles).forEach(i -> {
             String f = prefs.get("recent.file." + i, "");
@@ -633,7 +633,10 @@ public class MainFrameController implements Initializable {
                 LOGGER.debug("[" + cfg.getLongName() + "] New configuration.");
                 // set file chooser to last opened configuration file
                 if (!prefs.get(lastOpenedFile, "").isBlank()) {
-                    fileChooserSaveConfiguration.setInitialDirectory(new File(prefs.get(lastOpenedFile, "")).getParentFile());
+                    File d = new File(prefs.get(lastOpenedFile, "")).getParentFile();
+                    if (d.exists()) {
+                        fileChooserSaveConfiguration.setInitialDirectory(d);
+                    }
                     fileChooserSaveConfiguration.setInitialFileName(new File(prefs.get(lastOpenedFile, "")).getName());
                 }
                 try {
@@ -687,9 +690,15 @@ public class MainFrameController implements Initializable {
 
         // update file chooser to last opened configuration file
         if (source.savedProperty().get()) {
-            fileChooserSaveConfiguration.setInitialDirectory(source.getFile().getParentFile());
+            File d = source.getFile().getParentFile();
+            if (d.exists()) {
+                fileChooserSaveConfiguration.setInitialDirectory(d);
+            }
         } else {
-            fileChooserSaveConfiguration.setInitialDirectory(new File(prefs.get(lastOpenedFile, "")).getParentFile());
+            File d = new File(prefs.get(lastOpenedFile, "")).getParentFile();
+            if (d.exists()) {
+                fileChooserSaveConfiguration.setInitialDirectory(d);
+            }
         }
         fileChooserSaveConfiguration.setInitialFileName(source.getName());
 
@@ -1160,7 +1169,10 @@ public class MainFrameController implements Initializable {
     private void addTask(boolean edit) {
 
         if (lastOpenedFile != null) {
-            fileChooserOpenConfiguration.setInitialDirectory(new File(prefs.get(lastOpenedFile, "")).getParentFile());
+            File d = new File(prefs.get(lastOpenedFile, "")).getParentFile();
+            if (d.exists()) {
+                fileChooserOpenConfiguration.setInitialDirectory(new File(prefs.get(lastOpenedFile, "")).getParentFile());
+            }
         }
 
         List<File> selectedFiles = fileChooserOpenConfiguration.showOpenMultipleDialog(stage);

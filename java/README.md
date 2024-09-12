@@ -1,42 +1,36 @@
-# AMAPVox readme file
+# AMAPVox Java code
 
-<https://amapvox.org>
+This subfolder contains AMAPVox java code. 
 
-**LiDAR data voxelisation software.**
+## Compilation
 
-Copyright (c) IRD (Institut de Recherche pour le Développement) 2016-2023 <https://www.ird.fr>
+Requirements:
+- [maven](https://maven.apache.org/)
+- [Liberica Full JDK 21](https://bell-sw.com/pages/downloads/#jdk-21-lts) (JDK + LibericaFX, their own implementation of OpenJFX)
 
-AMAPVox is distributed as an R package that encapsulates Java core functionalities (voxelization, 3d visualization, etc.). This repository contains only the Java sources.
+Compile with tests (default): `mvn clean install`
+Compile without tests (faster): `mvn clean install -DskipTests`
 
-AMAPVox R package <https://github.com/umr-amap/AMAPVox>
+## Deploy
 
-## Reference
+Generate package:
+- linux: `mvn clean install -P build-linux` (from linux system only)
+- windows: `mvn clean install -P build-windows` (from windows system only)
 
-Vincent, G., Antin, C., Laurans, M., Heurtebize, J., Durrieu, S., Lavalley, C., & Dauzat, J. (2017). Mapping plant area index of tropical evergreen forest by airborne laser scanning. A cross-validation study using LAI2200 optical sensor. _Remote Sensing of Environment_, 198, 254-266. <https://doi.org/10.1016/j.rse.2017.05.034>
+Generated packages will be found in `java/amapvox.main/target/AMAPVox-x.y.z-{linux|windows}.zip`
 
-## Contact
+Upload packages to [Package registry](https://forge.ird.fr/amap/amapvox/AMAPVox/-/packages): 
+```bash
+curl --header "PRIVATE-TOKEN: *************" \
+     --upload-file /path/to/AMAPVox-x.y.z-linux.zip \
+     "https://forge.ird.fr/api/v4/projects/819/packages/generic/amapvox/x.y.z/AMAPVox-x.y.z-{linux|windows}.zip"
+```
 
-For questions, feedback and bug reporting, please [contact us](mailto:contact@amapvox.org)
+## Versions
 
-Bug report page <https://forge.ird.fr/amap/amapvox/-/issues>
+Project version: use dedicated script in main folder `./setversion.sh`
 
-Senior scientist: Grégoire Vincent (IRD) gregoire dot vincent at ird.fr
+Update dependencies: `mvn versions:display-dependency-updates`
 
-Main developper: Philippe Verley (IRD) philippe dot verley at ird.fr
-
-## Releases, changes history and source code
-
-Releases and changes history: <https://forge.ird.fr/amap/amapvox/-/releases>
-
-Source code: `git clone https://forge.ird.fr/amap/amapvox.git`
-
-## Requirement
-
-A 64 bit Operating System (RiVLib and LASzip libraries have only been compiled for Win64 and Linux_x86_64).
-
-For AMAPVox < 2.0.0 Java 1.8 is mandatory (Oracle or Corretto) and must be installed separately. For AMAPVox >= 2.0.0 Java binary is included in the executable.
-
-## License
-
-AMAPVox is governed by the **CeCILL-B license** under French law and abiding by the rules of distribution of free software. You can  use, modify and/ or redistribute the software under the terms of the CeCILL-B license as circulated by CEA, CNRS and INRIA at the following URL <http://www.cecill.info>.
+Update plugins: `mvn versions:display-plugin-updates`
 

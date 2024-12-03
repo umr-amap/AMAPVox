@@ -23,10 +23,11 @@ public class LaserSpecification {
     public final static LaserSpecification LEICA_SCANSTATION_C10 = new LaserSpecification("LEICA_SCANSTATION_C10", 0.004d, 0.0001d);
     public final static LaserSpecification FARO_FOCUS_X330 = new LaserSpecification("FARO_FOCUS_X330", 0.0025d, 0.00019d);
     public final static LaserSpecification MINIVUX1UAV = new LaserSpecification("miniVUX-1UAV", 0.0145, 0.00105d);
+    public final static LaserSpecification TRIMBLE_X7 = new LaserSpecification("TRIMBLE_X7", 0.0026d, 0.0008d);
     public final static LaserSpecification UNITARY_BEAM_SECTION = new LaserSpecification("Unitary beam section", 0.d, 0.d);
     
-    private final double beamDiameterAtExit;
-    private final double beamDivergence;
+    private final double beamDiameterAtExit; // meter
+    private final double beamDivergence; // radian
     private final String name;
     private final String[] deprecatedNames;
 

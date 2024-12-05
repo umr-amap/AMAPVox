@@ -788,7 +788,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     private void initLeafPane(ResourceBundle resourceBundle) {
 
         // mean leaf size
-        textFieldLeafArea.setTextFormatter(TextFieldUtil.createFloatTextFormatter(0.01f, TextFieldUtil.Sign.POSITIVE));
+        textFieldLeafArea.setTextFormatter(TextFieldUtil.createFloatTextFormatter(0.005f, TextFieldUtil.Sign.POSITIVE));
         BooleanBinding selected = getOutputCheckBox(OutputVariable.ATTENUATION_FPL_BIASED_MLE).selectedProperty()
                 .or(getOutputCheckBox(OutputVariable.ATTENUATION_FPL_BIAS_CORRECTION).selectedProperty())
                 .or(getOutputCheckBox(OutputVariable.ATTENUATION_FPL_UNBIASED_MLE).selectedProperty())

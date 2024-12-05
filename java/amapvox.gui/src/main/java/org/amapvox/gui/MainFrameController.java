@@ -634,7 +634,7 @@ public class MainFrameController implements Initializable {
                 // set file chooser to last opened configuration file
                 if (!prefs.get(lastOpenedFile, "").isBlank()) {
                     File d = new File(prefs.get(lastOpenedFile, "")).getParentFile();
-                    if (d.exists()) {
+                    if (null != d && d.exists()) {
                         fileChooserSaveConfiguration.setInitialDirectory(d);
                     }
                     fileChooserSaveConfiguration.setInitialFileName(new File(prefs.get(lastOpenedFile, "")).getName());
@@ -691,12 +691,12 @@ public class MainFrameController implements Initializable {
         // update file chooser to last opened configuration file
         if (source.savedProperty().get()) {
             File d = source.getFile().getParentFile();
-            if (d.exists()) {
+            if (null != d && d.exists()) {
                 fileChooserSaveConfiguration.setInitialDirectory(d);
             }
         } else {
             File d = new File(prefs.get(lastOpenedFile, "")).getParentFile();
-            if (d.exists()) {
+            if (null != d && d.exists()) {
                 fileChooserSaveConfiguration.setInitialDirectory(d);
             }
         }
@@ -1170,7 +1170,7 @@ public class MainFrameController implements Initializable {
 
         if (lastOpenedFile != null) {
             File d = new File(prefs.get(lastOpenedFile, "")).getParentFile();
-            if (d.exists()) {
+            if (null != d && d.exists()) {
                 fileChooserOpenConfiguration.setInitialDirectory(new File(prefs.get(lastOpenedFile, "")).getParentFile());
             }
         }

@@ -1,3 +1,12 @@
+# AMAPVox 2.3.3
+
+*2025-01-21*
+
+Bugfix: updated laszip4j library to read compressed extra-bytes data [#55](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/55)
+Bugfix: default LAS time range max value set to integer zero [#56](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/56)
+
+Not release on CRAN
+
 # AMAPVox 2.3.2
 
 *2024-12-03*

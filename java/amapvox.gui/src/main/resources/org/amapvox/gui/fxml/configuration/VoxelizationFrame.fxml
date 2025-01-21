@@ -85,9 +85,9 @@
                                                                                                         <HBox fx:id="hboxLasTimeRange" spacing="5.0" alignment="CENTER_LEFT" disable="true" >
                                                                                                             <children>
                                                                                                                 <Label text="min:" />
-                                                                                                                <TextField fx:id="textFieldLasTimeMin" prefWidth="90.0" text="0.0" />
+                                                                                                                <TextField fx:id="textFieldLasTimeMin" prefWidth="90.0" text="0" />
                                                                                                                 <Label text="max:" />
-                                                                                                                <TextField fx:id="textFieldLasTimeMax" prefWidth="90.0" text="0.0" />
+                                                                                                                <TextField fx:id="textFieldLasTimeMax" prefWidth="90.0" text="0" />
                                                                                                             </children>
                                                                                                         </HBox>
                                                                                                     </children>

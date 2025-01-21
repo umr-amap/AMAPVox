@@ -10,7 +10,7 @@ rem PROJECT_VERSION: version used in pom.xml, e.g. 1.0-SNAPSHOT
 rem APP_VERSION: the application version, e.g. 1.0.0, shown in "about" dialog
 
 set JAVA_VERSION=17
-set PROJECT_VERSION=2.3.2
+set PROJECT_VERSION=2.3.3
 set FINAL_NAME=AMAPVox-%PROJECT_VERSION%
 set MAIN_JAR=%FINAL_NAME%.jar
 

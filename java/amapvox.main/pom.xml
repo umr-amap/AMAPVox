@@ -85,9 +85,10 @@
             <id>build-linux</id>
 
             <activation>
-                <os>
+<!--                <os>
                     <family>linux</family>
-                </os>
+                </os>-->
+                <activeByDefault>false</activeByDefault>
             </activation>
 
             <build>
@@ -122,9 +123,10 @@
             <id>build-windows</id>
 
             <activation>
-                <os>
+<!--                <os>
                     <family>windows</family>
-                </os>
+                </os>-->
+                <activeByDefault>false</activeByDefault>
             </activation>
 
             <build>

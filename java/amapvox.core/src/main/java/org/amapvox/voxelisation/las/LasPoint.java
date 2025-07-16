@@ -45,30 +45,29 @@ public class LasPoint implements Comparable<LasPoint> {
     public double t;
 
     /**
-     * intensity
-     */
-    public int i;
-
-    /**
      * classification (ground = 2, unclassified = 1)
      */
     public int classification;
 
     public boolean flawed = false;
+    
+    /**
+     * extra bytes value used for relative echo weight
+     */
+    public float weight;
 
-    public LasPoint(double x, double y, double z, int r, int n, int i, short classification, double t) {
+    public LasPoint(double x, double y, double z, int r, int n, short classification, double t, float weight) {
 
         this.x = x;
         this.y = y;
         this.z = z;
-
         this.r = r;
         this.n = n;
         this.classification = classification;
-        this.i = i;
         this.t = t;
+        this.weight = weight;
     }
-
+    
     /**
      * Compare gps time values
      *
@@ -96,7 +95,8 @@ public class LasPoint implements Comparable<LasPoint> {
                 .append(" rank ").append(r)
                 .append(" nEcho ").append(n)
                 .append(" time ").append(t)
-                .append(" classification ").append(classification);
+                .append(" classification ").append(classification)
+                .append(" weight ").append(weight);
         return sb.toString();
     }
 }

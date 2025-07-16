@@ -8,8 +8,15 @@ Requirements:
 - [maven](https://maven.apache.org/)
 - [Liberica Full JDK 21](https://bell-sw.com/pages/downloads/#jdk-21-lts) (JDK + LibericaFX, their own implementation of OpenJFX)
 
-Compile with tests (default): `mvn clean install`
-Compile without tests (faster): `mvn clean install -DskipTests`
+From `./java` folder: 
+- Compile with tests (default): `mvn clean install`
+- Compile without tests (faster): `mvn clean install -DskipTests`
+
+## Run
+
+From `./java` folder:
+
+`mvn -f amapvox.gui javafx:run` (the 3d viewer is not expected to work when running AMAPVox with the maven javafx plugin)
 
 ## Deploy
 

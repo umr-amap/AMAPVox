@@ -5,6 +5,7 @@
  */
 package org.amapvox.voxelisation.las;
 
+import com.github.mreutegg.laszip4j.LASExtraBytesDescription;
 import org.amapvox.commons.util.io.file.FileManager;
 import org.amapvox.commons.util.Process;
 import org.amapvox.commons.util.io.file.CSVFile;
@@ -73,6 +74,8 @@ public class LasShotExtractor extends Process implements IterableWithException<S
 
     private int nshot;
 
+    private String relativeEchoWeightVariable;
+
     // logger
     private final static Logger LOGGER = Logger.getLogger(LasShotExtractor.class);
 
@@ -81,7 +84,8 @@ public class LasShotExtractor extends Process implements IterableWithException<S
             boolean echoConsistencyCheckEnabled, boolean echoConsistencyWarningEnabled,
             boolean collinearityCheckEnabled, boolean collinearityWarningEnabled,
             double maxDeviation,
-            double timeMin, double timeMax) {
+            double timeMin, double timeMax,
+            String relativeEchoWeightVariable) {
 
         this.trajectoryFile = trajectoryFile;
         this.scannerPosition = scannerPosition;
@@ -96,6 +100,8 @@ public class LasShotExtractor extends Process implements IterableWithException<S
 
         this.timeMin = timeMin;
         this.timeMax = timeMax;
+
+        this.relativeEchoWeightVariable = relativeEchoWeightVariable;
     }
 
     public LasShotExtractor(CSVFile trajectoryFile, Point3d scannerPosition,
@@ -109,7 +115,8 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                 echoConsistencyCheckEnabled, echoConsistencyWarningEnabled,
                 collinearityCheckEnabled, collinearityWarningEnabled,
                 maxDeviation,
-                0.d, Double.MAX_VALUE);
+                0.d, Double.MAX_VALUE,
+                null);
     }
 
     public int getNShot() {
@@ -204,6 +211,16 @@ public class LasShotExtractor extends Process implements IterableWithException<S
         double y_scale_factor = header.getYScaleFactor();
         double z_offset = header.getZOffset();
         double z_scale_factor = header.getZScaleFactor();
+        // look for extrabytes variable for relative echo weight
+        LASExtraBytesDescription extraBytesDescription = null;
+        LOGGER.info("Relative echo weight variable `" + relativeEchoWeightVariable + "`");
+        if (!relativeEchoWeightVariable.equalsIgnoreCase("intensity")) {
+            try {
+                extraBytesDescription = header.getExtraBytesDescription(relativeEchoWeightVariable);
+            } catch (NullPointerException ex) {
+                LOGGER.warn("LAS extra bytes variable `" + relativeEchoWeightVariable + "` not found in LAS file. Relative echo weight function will use `Intensity` variable instead");
+            }
+        }
 
         // loop over LAS points
         for (LASPoint p : lasReader.getPoints()) {
@@ -227,12 +244,16 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                     (p.getX() * x_scale_factor) + x_offset,
                     (p.getY() * y_scale_factor) + y_offset,
                     (p.getZ() * z_scale_factor) + z_offset);
+            float weight = (null != extraBytesDescription)
+                    ? p.getExtraBytes(extraBytesDescription).getValue().floatValue()
+                    : p.getIntensity();
             LasPoint point = new LasPoint(
                     location.x, location.y, location.z,
                     p.getReturnNumber(), p.getNumberOfReturns(),
-                    p.getIntensity(),
                     p.getClassification(),
-                    p.getGPSTime());
+                    p.getGPSTime(),
+                    weight);
+
             points.add(point);
         }
         if (countTimeRangeDiscarded > 0) {
@@ -381,7 +402,7 @@ public class LasShotExtractor extends Process implements IterableWithException<S
             // echoes attributes
             double[] ranges = new double[nEcho];
             int[] classifications = new int[nEcho];
-            float[] intensities = new float[nEcho];
+            float[] weights = new float[nEcho];
             points.forEach(pt -> {
                 // range (distance from source)
                 Point3d pt3d = new Point3d(pt.x, pt.y, pt.z);
@@ -389,7 +410,7 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                 ranges[pt.r - 1] = origin.distance(pt3d);
                 // classification
                 classifications[pt.r - 1] = pt.classification;
-                intensities[pt.r - 1] = pt.i;
+                weights[pt.r - 1] = pt.weight;
             });
 
             // create new shot
@@ -401,7 +422,7 @@ public class LasShotExtractor extends Process implements IterableWithException<S
             // add specific properties
             for (int r = 0; r < nEcho; r++) {
                 shot.getEcho(r).addInteger("classification", classifications[r]);
-                shot.getEcho(r).addFloat("intensity", intensities[r]);
+                shot.getEcho(r).addFloat(relativeEchoWeightVariable, weights[r]);
             }
 
             return shot;

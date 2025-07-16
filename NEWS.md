@@ -1,8 +1,12 @@
-# AMAPVox 2.4.0
+# AMAPVox 2.4.0-BETA
 
-*yyyy-MM-dd*
+*2025-07-16*
 
-Released/Not release on CRAN
+New feature: support LAS extra-bytes variables for relative echo weight [#63](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/63)
+
+Why beta? Temporary release for Yuchen revision of RSE paper.
+
+Not release on CRAN
 
 # AMAPVox 2.3.3
 

@@ -43,7 +43,8 @@ public class LasVoxelization extends AbstractVoxelization {
                 cfg.isEchoConsistencyCheckEnabled(), cfg.isEchoConsistencyWarningEnabled(),
                 cfg.isCollinearityCheckEnabled(), cfg.isCollinearityWarningEnabled(),
                 cfg.getCollinearityMaxDeviation(),
-                lasTimeMin, lasTimeMax);
+                lasTimeMin, lasTimeMax,
+                cfg.getRelativeEchoWeightVariable());
 
         // add listener to monitor progress of the ALS shot builder
         lasShotExtractor.addProcessingListener(parent);

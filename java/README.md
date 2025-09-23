@@ -6,7 +6,7 @@ This subfolder contains AMAPVox java code.
 
 Requirements:
 - [maven](https://maven.apache.org/)
-- [Liberica Full JDK 21](https://bell-sw.com/pages/downloads/#jdk-21-lts) (JDK + LibericaFX, their own implementation of OpenJFX)
+- [Liberica Full JDK 25](https://bell-sw.com/pages/downloads/#jdk-25-lts) (JDK + LibericaFX, their own implementation of OpenJFX)
 
 From `./java` folder: 
 - Compile with tests (default): `mvn clean install`

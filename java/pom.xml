@@ -8,10 +8,10 @@
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-        <maven.compiler.release>21</maven.compiler.release>
-        <javafx.version>21</javafx.version>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.release>25</maven.compiler.release>
+        <javafx.version>25</javafx.version>
     </properties>
     
     <name>AMAPVox</name>
@@ -37,15 +37,6 @@
         <module>amapvox.commons.format</module>
         <module>amapvox.commons.raytracing</module>
     </modules>  
-    
-    <scm>
-        <connection>scm:git:http://amap-dev.cirad.fr/git/amapvox.git</connection>
-        <developerConnection>scm:git:http://amap-dev.cirad.fr/git/amapvox.git</developerConnection>
-        <tag>HEAD</tag>
-        <url>http://amap-dev.cirad.fr/projects/amapvox</url>
-    </scm>
-    
-    
     
     <build>
         

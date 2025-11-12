@@ -18,7 +18,7 @@ cmake -G "Visual Studio 16 2019" -A x64 -B build\win64
 # compile target
 cmake --build build\win64 --config Release
 # copy shared library to JRiegl resources folder
-XCOPY build\win64\Release\RiVLibJNI.dll ..\src\main\resources\lib\win64\s
+XCOPY build\win64\Release\RiVLibJNI.dll ..\src\main\resources\org\amapvox\lidar\riegl\RiVLibJNI.dll
 # clean target
 cmake --build build\win64 --target clean
 
@@ -35,7 +35,7 @@ cmake -G "Unix Makefiles" -B build/linux64
 # compile target
 cmake --build build/linux64 --config Release
 # copy shared library to JRiegl resources folder
-cp build/linux64/libRiVLibJNI.so ../src/main/resources/lib/linux_x86_64/
+cp build/linux64/libRiVLibJNI.so ../src/main/resources/org/amapvox/lidar/riegl/
 # clean target
 cmake --build build/linux64 --target clean
 

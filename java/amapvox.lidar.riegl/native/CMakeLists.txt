@@ -61,7 +61,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_BUILD_TYPE Release)
 
-set(RiVLib_VERSION 2_5_12)
+set(RiVLib_VERSION 2_13_0)
 
 #
 # RiVLib
@@ -74,7 +74,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(RiVLib_DIR "${CMAKE_SOURCE_DIR}/rivlib/rivlib-${RiVLib_VERSION}-x86_64-windows-vc142/cmake")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # 64 bits
-    set(RiVLib_DIR "${CMAKE_SOURCE_DIR}/rivlib/rivlib-${RiVLib_VERSION}-x86_64-linux-gcc9/cmake")
+    set(RiVLib_DIR "${CMAKE_SOURCE_DIR}/rivlib/rivlib-${RiVLib_VERSION}-x86_64-linux-gcc13/cmake")
 endif ()
 
 message("RiVLib folder ${RiVLib_DIR}")
@@ -94,7 +94,7 @@ include_directories(
 # optional: you may set specific Java version, if not FindJNI CMake module will look for default Java
 #set(ENV{JAVA_HOME} "/usr/lib/jvm/bellsoft-java18-full-amd64")
 # preliminary call to FindJava CMake module to make sure there is Java >= 17 installed on the system (or selected with JAVA_HOME) 
-find_package(Java 17)
+find_package(Java 25)
 find_package(JNI REQUIRED) 
 
 include_directories(

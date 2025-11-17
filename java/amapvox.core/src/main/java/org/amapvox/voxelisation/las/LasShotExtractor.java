@@ -601,7 +601,12 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                     .append(trajectory.get(trajectory.size() - 1).time);
             throw new IndexOutOfBoundsException(sb.toString());
         }
-
+        
+        // special case: LAS point gps time matches trajectory upper bound
+        if (behindTrjPointIndex == trajectory.size() - 1) {
+            return trajectory.get(behindTrjPointIndex);
+        }
+        
         // GPS time of the trajectory point behind current LAS point
         double beforeTrjPointTime = trajectory.get(behindTrjPointIndex).time;
         // GPS time of the trajectory point ahead of current LAS point

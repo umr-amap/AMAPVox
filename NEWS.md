@@ -1,3 +1,9 @@
+# AMAPVox 2.4.1
+
+*yyyy-MM-dd*
+
+Released/Not release on CRAN
+
 # AMAPVox 2.4.0
 
 *2025-07-16*

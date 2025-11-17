@@ -1,3 +1,9 @@
+# AMAPVox 2.5.0
+
+*yyyy-MM-dd*
+
+Released/Not release on CRAN
+
 # AMAPVox 2.4.2
 
 *2026-02-16*
@@ -38,7 +44,7 @@ Not release on CRAN
 
 Bugfix: default lead area set to 50cm2 [#53](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/53)
 Bugfix: save dialog intial directory fail-safe [#54](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/54)
-New feature: added Trimble x7 laser specification [#12](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/12)
+New feature: added Trimble x7 laser specification [#12](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/120)
 
 Not release on CRAN
 

@@ -24,6 +24,7 @@ import org.amapvox.shot.Shot;
 import com.github.mreutegg.laszip4j.LASHeader;
 import com.github.mreutegg.laszip4j.LASPoint;
 import com.github.mreutegg.laszip4j.LASReader;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Supplier;
@@ -673,11 +674,34 @@ public class LasShotExtractor extends Process implements IterableWithException<S
         MIN, MAX;
     }
 
+    /**
+     * A thread-safe iterator for reading LAS points and grouping them into
+     * {@link Shot} objects. Uses a producer-consumer pattern with a blocking
+     * queue and a "poison pill" to handle exceptions and graceful termination.
+     * If an exception occurs during processing, a poison pill is enqueued,
+     * ensuring the consumer thread is unblocked and the exception is
+     * propagated.
+     *
+     * <p>
+     * Usage:
+     * <pre>
+     *   LasShotIterator it = new LasShotIterator();
+     *   new Thread(it).start();
+     *   while (it.hasNext()) {
+     *       Shot shot = it.next();
+     *       // Process shot
+     *   }
+     * </pre>
+     *
+     * <p>
+     * Thread Safety: Safe for single-producer, single-consumer scenarios.
+     */
     private class LasShotIterator implements Runnable, IteratorWithException<Shot> {
 
+        private static final Object POISON_PILL = new Object();
         private int shotIndex;
         private int pointIndex;
-        private final BlockingQueue<Shot> queue = new ArrayBlockingQueue<>(SHOT_BUFFER);
+        private final BlockingQueue<Object> queue = new ArrayBlockingQueue<>(SHOT_BUFFER);
         private Exception error;
 
         @Override
@@ -690,7 +714,11 @@ public class LasShotExtractor extends Process implements IterableWithException<S
             if (null != error) {
                 throw error;
             }
-            return queue.take();
+            Object item = queue.take();
+            if (item == POISON_PILL) {
+                throw error != null ? error : new NoSuchElementException("Shot iterator ended unexpectedly");
+            }
+            return (Shot) item;
         }
 
         @Override
@@ -704,6 +732,11 @@ public class LasShotExtractor extends Process implements IterableWithException<S
                 }
             } catch (Exception ex) {
                 error = ex;
+                try {
+                    queue.put(POISON_PILL);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
     }

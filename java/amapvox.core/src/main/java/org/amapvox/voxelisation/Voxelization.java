@@ -75,6 +75,8 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
 
     private double lambda1;
 
+    private static final boolean DRY_RUN = false;
+
     public Voxelization(VoxelizationCfg cfg, String logHeader,
             Raster dtm, VoxelSpace vxsp, PathLengthOutput pathLengthOutput) throws Exception {
 
@@ -285,6 +287,12 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         VoxelCrossingContext voxelCrossing = voxelManager.getFirstVoxelV2(shotLine);
 
         if (null != voxelCrossing) {
+
+            // dry run, does nothing, just returns true
+            if (DRY_RUN) {
+                return true;
+            }
+
             // initialise entering beam fraction (100%)
             double beamFractionIn = 1.d;
             // look for first echo inside or beyond voxel0 (if any)
@@ -511,13 +519,14 @@ public class Voxelization extends org.amapvox.commons.util.Process implements Ca
         }
         /**
          * PhV 20201020 - trick for handling free paths that are intercepted but
-         * discarded (as wood or ground echo for instance). Basic idea: we handle such
-         * beam as a traversing one that goes out of the voxel with path length
-         * = distance(voxel entering point, echo). If it is not a last echo
-         * (meaning that a beam fraction effectively exits the voxel) then the
-         * path length is computed as the average of the "pseudo exiting" path
-         * length and the potential path length. If there is no discarded hit or
-         * no hit at all, then exiting path length is the potential path length.
+         * discarded (as wood or ground echo for instance). Basic idea: we
+         * handle such beam as a traversing one that goes out of the voxel with
+         * path length = distance(voxel entering point, echo). If it is not a
+         * last echo (meaning that a beam fraction effectively exits the voxel)
+         * then the path length is computed as the average of the "pseudo
+         * exiting" path length and the potential path length. If there is no
+         * discarded hit or no hit at all, then exiting path length is the
+         * potential path length.
          */
         exitingPathLength = (nExitingPath > 0) ? exitingPathLength / nExitingPath : pathLength;
 

@@ -1,3 +1,11 @@
+# AMAPVox 2.4.1
+
+*2025-11-17*
+
+Bugfix: LAS shot construction no longer hangs when a LAS point’s GPS time matches the trajectory’s max time. [#71](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/71) & [#72](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/72). Thanks to Daniel K. for raising it!
+
+Not release on CRAN
+
 # AMAPVox 2.4.0
 
 *2025-07-16*

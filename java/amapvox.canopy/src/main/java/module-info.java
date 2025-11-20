@@ -16,7 +16,7 @@ module amapvox.canopy {
     
     // exports
     exports org.amapvox.canopy;
-    exports org.amapvox.canopy.hemi;
+    exports org.amapvox.canopy.hemiphoto;
     exports org.amapvox.canopy.transmittance;
     exports org.amapvox.canopy.lai2xxx;
 }

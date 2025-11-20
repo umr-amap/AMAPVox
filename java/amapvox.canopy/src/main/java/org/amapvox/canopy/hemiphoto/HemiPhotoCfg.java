@@ -11,7 +11,7 @@ Authors:
 
 For further information, please contact Gregoire Vincent.
  */
-package org.amapvox.canopy.hemi;
+package org.amapvox.canopy.hemiphoto;
 
 import org.amapvox.commons.Configuration;
 import org.amapvox.commons.Matrix;
@@ -42,7 +42,7 @@ public class HemiPhotoCfg extends Configuration {
 
     @Override
     public Class<? extends AVoxTask> getTaskClass() {
-        return HemiScanView.class;
+        return HemiPhotoTask.class;
     }
 
     public void setParameters(HemiParameters parameters) {

@@ -13,7 +13,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.amapvox.canopy.hemi.HemiPhotoCfg;
+import org.amapvox.canopy.hemiphoto.HemiPhotoCfg;
 import org.amapvox.canopy.lai2xxx.CanopyAnalyzerCfg;
 import org.amapvox.canopy.transmittance.TransmittanceCfg;
 import org.amapvox.deprecated.ButterflyCfg;

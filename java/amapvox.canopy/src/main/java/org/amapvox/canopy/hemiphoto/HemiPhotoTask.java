@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.amapvox.canopy.hemi;
+package org.amapvox.canopy.hemiphoto;
 
 import org.amapvox.commons.math.util.SphericalCoordinates;
 import org.amapvox.canopy.DirectionalTransmittance;
@@ -31,9 +31,9 @@ import java.util.List;
  * @author dauzat
  *
  */
-public class HemiScanView extends AVoxTask {
+public class HemiPhotoTask extends AVoxTask {
 
-    private final static Logger LOGGER = Logger.getLogger(HemiScanView.class);
+    private final static Logger LOGGER = Logger.getLogger(HemiPhotoTask.class);
     private final String logHeader = "[Hemispherical photography]";
     /**
      * Luminance of the sky.
@@ -75,7 +75,7 @@ public class HemiScanView extends AVoxTask {
      */
     private HemiParameters parameters;
 
-    public HemiScanView(File file, int ncpu) {
+    public HemiPhotoTask(File file, int ncpu) {
         super(file, ncpu);
     }
 

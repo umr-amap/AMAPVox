@@ -203,7 +203,7 @@ public abstract class Configuration {
     private void updateConfiguration(VersionNumber jarVersion, VersionNumber cfgVersion) {
 
         if (null != getReleases()) {
-            
+
             // sort available releases by version number
             Arrays.sort(getReleases(), (r1, r2) -> {
                 return r1.getVersionNumber().compareTo(r2.getVersionNumber());
@@ -299,7 +299,14 @@ public abstract class Configuration {
     private String readClassName() throws IOException {
 
         if (null != processElement.getAttribute("classname")) {
-            return processElement.getAttributeValue("classname");
+            String classname = processElement.getAttributeValue("classname");
+            return switch (classname) {
+                // hemiphoto packages renamed since v2.5.0
+                case "org.amapvox.canopy.hemi.HemiPhotoCfg" ->
+                    "org.amapvox.canopy.hemiphoto.HemiPhotoCfg";
+                default ->
+                    classname;
+            };   
         } else {
             // prior to version 2, classname attribute does not exist
             // must infer it from mode attribute

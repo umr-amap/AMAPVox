@@ -90,8 +90,8 @@ public class HemiPhotoTask extends AVoxTask {
         cfg = ((HemiPhotoCfg) getConfiguration());
 
         npixel = cfg.getPixelNumber();
-        nparallel = cfg.getZenithsNumber();
-        nmeridian = cfg.getAzimutsNumber();
+        nparallel = cfg.getParallelNumber();
+        nmeridian = cfg.getMeridianNumber();
     }
 
     @Override

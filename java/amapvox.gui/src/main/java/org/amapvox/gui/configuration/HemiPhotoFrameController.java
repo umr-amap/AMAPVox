@@ -150,8 +150,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
         listViewHemiPhotoSensorPositions.getItems().setAll(hemiPhotoCfg.getSensorPositions());
 
         textfieldPixelNumber.setText(String.valueOf(hemiPhotoCfg.getPixelNumber()));
-        textfieldAzimuthNumber.setText(String.valueOf(hemiPhotoCfg.getAzimutsNumber()));
-        textfieldZenithNumber.setText(String.valueOf(hemiPhotoCfg.getZenithsNumber()));
+        textfieldAzimuthNumber.setText(String.valueOf(hemiPhotoCfg.getMeridianNumber()));
+        textfieldZenithNumber.setText(String.valueOf(hemiPhotoCfg.getParallelNumber()));
         textfieldHemiPhotoOutputDirectory.setText(hemiPhotoCfg.getOutputDirectory().getAbsolutePath());
         textfieldHemiPhotoOutputPrefix.setText(hemiPhotoCfg.getOutputPrefix());
 
@@ -214,8 +214,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
         HemiPhotoCfg hemiPhotoCfg = new HemiPhotoCfg();
 
         hemiPhotoCfg.setPixelNumber(Integer.parseInt(textfieldPixelNumber.getText()));
-        hemiPhotoCfg.setAzimutsNumber(Integer.parseInt(textfieldAzimuthNumber.getText()));
-        hemiPhotoCfg.setZenithsNumber(Integer.parseInt(textfieldZenithNumber.getText()));
+        hemiPhotoCfg.setMeridianNumber(Integer.parseInt(textfieldAzimuthNumber.getText()));
+        hemiPhotoCfg.setParallelNumber(Integer.parseInt(textfieldZenithNumber.getText()));
 
         hemiPhotoCfg.setVoxelFile(voxelFileCanopyController.getVoxelFile());
         hemiPhotoCfg.setPADVariable(voxelFileCanopyController.getPADVariable());

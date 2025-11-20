@@ -34,21 +34,46 @@ import java.util.List;
 public class HemiScanView extends AVoxTask {
 
     private final static Logger LOGGER = Logger.getLogger(HemiScanView.class);
-
-    private final static float SKY_LUMINANCE = 1f;
-    private final static float CANOPY_LUMINANCE = 0.1f;
-    private Point3f rgbSky;
-    private Point3f rgbCan;
-
-    private int nbPixels;
-
-    private int nbAzimuts;
-    private int nbZeniths;
-    private Pixel[][] pixTab;
-
-    private HemiParameters parameters;
-
     private final String logHeader = "[Hemispherical photography]";
+    /**
+     * Luminance of the sky.
+     */
+    private final static float SKY_LUMINANCE = 1f;
+    /**
+     * Luminance under the canopy.
+     */
+    private final static float CANOPY_LUMINANCE = 0.1f;
+    /**
+     * RGB color for the sky (blue).
+     */
+    private final static Point3f RGB_SKY = new Point3f(0, 0, 255);
+    /**
+     * RGB color for the canopy (green).
+     */
+    private final static Point3f RGB_CANOPY = new Point3f(0, 255, 0);
+
+    /**
+     * Number of pixels of the hemispherical photograph.
+     */
+    private int npixel;
+    /**
+     * Number of meridians drawn on the hemispherical photograph. Number of
+     * azimuthal sectors.
+     */
+    private int nmeridian;
+    /**
+     * Number of parallels drawn on the hemispherical photograph. Number of
+     * zenithal sectors.
+     */
+    private int nparallel;
+    /**
+     * Array of pixels of the hemispherical photograph.
+     */
+    private Pixel[][] pixels;
+    /**
+     * Parameters of the hemispherical photograph.
+     */
+    private HemiParameters parameters;
 
     public HemiScanView(File file, int ncpu) {
         super(file, ncpu);
@@ -64,11 +89,9 @@ public class HemiScanView extends AVoxTask {
 
         parameters = ((HemiPhotoCfg) getConfiguration()).getParameters();
 
-        nbPixels = parameters.getPixelNumber();
-        nbZeniths = parameters.getZenithsNumber(); //6;
-        nbAzimuts = parameters.getAzimutsNumber(); //24;
-        rgbSky = new Point3f(0, 0, 255);
-        rgbCan = new Point3f(0, 255, 0);
+        npixel = parameters.getPixelNumber();
+        nparallel = parameters.getZenithsNumber();
+        nmeridian = parameters.getAzimutsNumber();
     }
 
     @Override
@@ -76,47 +99,37 @@ public class HemiScanView extends AVoxTask {
         return HemiPhotoCfg.class;
     }
 
-    public class Pixel {
+    private class Pixel {
 
-        int nbShots;
+        int nshot;
         float brightness;
         float azimut;
         float zenith;
 
-        public Pixel() {
+        Pixel() {
 
-            this.nbShots = 0;
+            this.nshot = 0;
             this.brightness = Float.NaN;
         }
 
-        protected void updatePixel(float luminance) {
-            if (nbShots == 0 || Float.isNaN(brightness)) {
+        void updatePixel(float luminance) {
+            if (nshot == 0 || Float.isNaN(brightness)) {
                 brightness = luminance;
-                nbShots++;
+                nshot++;
             } else {
-                float newBrightness = (brightness * nbShots) + (luminance);
-                nbShots++;
-                brightness = newBrightness / (float) nbShots;
+                float newBrightness = (brightness * nshot) + (luminance);
+                nshot++;
+                brightness = newBrightness / (float) nshot;
             }
         }
-
-        public int getNbShots() {
-            return nbShots;
-        }
-
-        public float getBrightness() {
-            return brightness;
-        }
-
     }
 
-    private void initArrays() {
+    private void initPixels() {
 
-        pixTab = new Pixel[nbPixels][];
-        for (int x = 0; x < nbPixels; x++) {
-            pixTab[x] = new Pixel[nbPixels];
-            for (int y = 0; y < nbPixels; y++) {
-                pixTab[x][y] = new Pixel();
+        pixels = new Pixel[npixel][npixel];
+        for (int i = 0; i < npixel; i++) {
+            for (int j = 0; j < npixel; j++) {
+                pixels[i][j] = new Pixel();
             }
         }
     }
@@ -126,15 +139,12 @@ public class HemiScanView extends AVoxTask {
 
         LOGGER.info(logHeader + " started...");
 
-        DirectionalTransmittance direcTransmittance = new DirectionalTransmittance(
+        DirectionalTransmittance dt = new DirectionalTransmittance(
                 parameters.getVoxelFile(),
                 parameters.getPADVariable(),
                 parameters.getLeafAngleDistribution(),
                 parameters.getLeafAngleDistributionParameters());
-        return hemiFromPAD(direcTransmittance, parameters.getSensorPositions());
-    }
-
-    private File[] hemiFromPAD(DirectionalTransmittance dt, List<Point3d> positions) throws Exception {
+        List<Point3d> positions = parameters.getSensorPositions();
 
         int positionID = 0;
 
@@ -144,12 +154,12 @@ public class HemiScanView extends AVoxTask {
 
             LOGGER.info(logHeader + " from position " + position);
 
-            initArrays();
+            initPixels();
 
-            float center = nbPixels / 2;
+            float center = npixel / 2;
 
-            for (int i = 0; i < nbPixels; i++) {
-                for (int j = 0; j < nbPixels; j++) {
+            for (int i = 0; i < npixel; i++) {
+                for (int j = 0; j < npixel; j++) {
 
                     if (isCancelled()) {
                         return null;
@@ -186,12 +196,12 @@ public class HemiScanView extends AVoxTask {
  /*if(direction.x != rayDirection.x || direction.y != rayDirection.y || direction.z != rayDirection.z){
                             System.out.println("test");
                         }*/
-                        pixTab[i][j].azimut = (float) Math.toDegrees(azimuthAngle);
-                        pixTab[i][j].zenith = (float) Math.toDegrees(zenithAngle);
+                        pixels[i][j].azimut = (float) Math.toDegrees(azimuthAngle);
+                        pixels[i][j].zenith = (float) Math.toDegrees(zenithAngle);
 
                         double transmittance = dt.directionalTransmittance(position, new Vector3d(direction.x, direction.y, direction.z));
                         if (!Double.isNaN(transmittance)) {
-                            pixTab[i][j].updatePixel((float) transmittance);
+                            pixels[i][j].updatePixel((float) transmittance);
                         }
                     }
                 }
@@ -221,7 +231,7 @@ public class HemiScanView extends AVoxTask {
         return outputFiles.toArray(File[]::new);
     }
 
-    public void writeHemiPhotoAsText(File outputFile) throws IOException {
+    private void writeHemiPhotoAsText(File outputFile) throws IOException {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
 
@@ -235,10 +245,10 @@ public class HemiScanView extends AVoxTask {
 
             writer.write("azimut zenith transmittance\n");
 
-            float center = nbPixels / 2;
+            float center = npixel / 2;
 
-            for (int x = 0; x < pixTab.length; x++) {
-                for (int y = 0; y < pixTab[x].length; y++) {
+            for (int x = 0; x < pixels.length; x++) {
+                for (int y = 0; y < pixels[x].length; y++) {
 
                     if (isCancelled()) {
                         return;
@@ -250,10 +260,10 @@ public class HemiScanView extends AVoxTask {
 
                     if (distToCenter < center) {
 
-                        if (Float.isNaN(pixTab[x][y].azimut)) {
-                            writer.write(df.format(pixTab[x][y].azimut) + " " + df.format(pixTab[x][y].zenith) + " " + pixTab[x][y].brightness + "\n");
+                        if (Float.isNaN(pixels[x][y].azimut)) {
+                            writer.write(df.format(pixels[x][y].azimut) + " " + df.format(pixels[x][y].zenith) + " " + pixels[x][y].brightness + "\n");
                         } else {
-                            writer.write(df.format(pixTab[x][y].azimut) + " " + df.format(pixTab[x][y].zenith) + " " + df.format(pixTab[x][y].brightness) + "\n");
+                            writer.write(df.format(pixels[x][y].azimut) + " " + df.format(pixels[x][y].zenith) + " " + df.format(pixels[x][y].brightness) + "\n");
                         }
                     }
 
@@ -262,10 +272,10 @@ public class HemiScanView extends AVoxTask {
         }
     }
 
-    public void writeHemiPhoto(File outputFile) throws IOException {
+    private void writeHemiPhoto(File outputFile) throws IOException {
 
         int border = 30;
-        int nbPixImage = pixTab.length + (2 * border); //= 600;
+        int nbPixImage = pixels.length + (2 * border); //= 600;
         float center = nbPixImage / 2;
         float radius = center - border;
 
@@ -281,14 +291,14 @@ public class HemiScanView extends AVoxTask {
         g.fillOval((int) (center - radius), (int) (center - radius), (int) (2 * radius), (int) (2 * radius));
 
         // draw points
-        for (int x = 0; x < pixTab.length; x++) {
-            for (int y = 0; y < pixTab[x].length; y++) {
-                int yn = pixTab.length - 1 - y; // North in Y+
-                if (pixTab[x][y].brightness > 0) {
-                    float gf = (pixTab[x][y].brightness - CANOPY_LUMINANCE) / (SKY_LUMINANCE - CANOPY_LUMINANCE);
-                    Point3f rgbr = new Point3f(rgbCan);
+        for (int x = 0; x < pixels.length; x++) {
+            for (int y = 0; y < pixels[x].length; y++) {
+                int yn = pixels.length - 1 - y; // North in Y+
+                if (pixels[x][y].brightness > 0) {
+                    float gf = (pixels[x][y].brightness - CANOPY_LUMINANCE) / (SKY_LUMINANCE - CANOPY_LUMINANCE);
+                    Point3f rgbr = new Point3f(RGB_CANOPY);
                     rgbr.scale(1 - gf);
-                    Point3f rgbb = new Point3f(rgbSky);
+                    Point3f rgbb = new Point3f(RGB_SKY);
                     rgbb.scale(gf);
                     Point3f rgb = new Point3f(rgbb);
                     rgb.add(rgbr);
@@ -307,13 +317,13 @@ public class HemiScanView extends AVoxTask {
 
         // parallels
         g.setColor(new Color(220, 240, 255));
-        double rad = radius / nbZeniths;
-        for (int i = 1; i <= nbZeniths; i++) {
+        double rad = radius / nparallel;
+        for (int i = 1; i <= nparallel; i++) {
             g.drawOval((int) (center - rad * i), (int) (center - rad * i), (int) (2 * rad * i), (int) (2 * rad * i));
         }
         // meridians
-        for (int i = 1; i <= nbAzimuts; i++) {
-            double azimuth = i * (Math.PI * 2 / nbAzimuts);
+        for (int i = 1; i <= nmeridian; i++) {
+            double azimuth = i * (Math.PI * 2 / nmeridian);
             double x = radius * Math.sin(azimuth);
             double y = radius * Math.cos(azimuth);
             g.drawLine((int) (center - x), (int) (center - y), (int) (center + x), (int) (center + y));
@@ -325,20 +335,7 @@ public class HemiScanView extends AVoxTask {
         g.drawString("E", nbPixImage - (border / 2), center);
         g.drawString("W", border / 2, center);
 
-        try {
-            LOGGER.info(logHeader + " writing image " + outputFile.getName());
-            ImageIO.write(bimg, "png", outputFile);
-        } catch (IOException ex) {
-            throw ex;
-        }
+        LOGGER.info(logHeader + " writing image " + outputFile.getName());
+        ImageIO.write(bimg, "png", outputFile);
     }
-
-    public int getNbPixels() {
-        return nbPixels;
-    }
-
-    public Pixel[][] getPixTab() {
-        return pixTab;
-    }
-
 }

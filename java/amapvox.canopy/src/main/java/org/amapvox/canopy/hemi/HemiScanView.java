@@ -3,10 +3,7 @@
  */
 package org.amapvox.canopy.hemi;
 
-import org.amapvox.lidar.commons.LidarScan;
 import org.amapvox.commons.math.util.SphericalCoordinates;
-import org.amapvox.lidar.riegl.RxpExtraction;
-import org.amapvox.lidar.riegl.RxpShot;
 import org.amapvox.canopy.DirectionalTransmittance;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -15,16 +12,12 @@ import java.io.IOException;
 
 import javax.vecmath.Point3f;
 import javax.vecmath.Point3i;
-import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 
 import java.io.File;
-import java.util.Iterator;
 import javax.imageio.ImageIO;
-import javax.vecmath.Point2i;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
-import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Logger;
 import org.amapvox.commons.AVoxTask;
 import java.io.BufferedWriter;
@@ -33,8 +26,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
-import javax.vecmath.Matrix3d;
-import javax.vecmath.Matrix4d;
 
 /**
  * @author dauzat
@@ -51,14 +42,9 @@ public class HemiScanView extends AVoxTask {
 
     private int nbPixels;
 
-    private int minSampling;	// minimum number of shots sampling a sector for calculating its gap fraction
-
     private int nbAzimuts;
     private int nbZeniths;
     private Pixel[][] pixTab;
-    private Sector[][] sectorTable;
-    private boolean random;	// the color of pixels is drawn randomly depending on the gap fraction
-    private Matrix4d transformation;
 
     private HemiParameters parameters;
 
@@ -81,8 +67,6 @@ public class HemiScanView extends AVoxTask {
         nbPixels = parameters.getPixelNumber();
         nbZeniths = parameters.getZenithsNumber(); //6;
         nbAzimuts = parameters.getAzimutsNumber(); //24;
-        random = true;
-        minSampling = 50;
         rgbSky = new Point3f(0, 0, 255);
         rgbCan = new Point3f(0, 255, 0);
     }
@@ -126,29 +110,6 @@ public class HemiScanView extends AVoxTask {
 
     }
 
-    private class Sector {
-
-        int nbShots;
-        float brightness;
-
-        public Sector() {
-            super();
-            this.nbShots = 0;
-            this.brightness = 0;
-        }
-
-        protected void updateSector(float luminance) {
-            if (nbShots == 0) {
-                brightness = luminance;
-                nbShots++;
-            } else {
-                float newBrightness = (brightness * nbShots) + (luminance);
-                nbShots++;
-                brightness = newBrightness / (float) nbShots;
-            }
-        }
-    }
-
     private void initArrays() {
 
         pixTab = new Pixel[nbPixels][];
@@ -158,14 +119,6 @@ public class HemiScanView extends AVoxTask {
                 pixTab[x][y] = new Pixel();
             }
         }
-        // table of azimuthAngle/zenith sectors
-        sectorTable = new Sector[nbZeniths][];
-        for (int z = 0; z < nbZeniths; z++) {
-            sectorTable[z] = new Sector[nbAzimuts];
-            for (int a = 0; a < nbAzimuts; a++) {
-                sectorTable[z][a] = new Sector();
-            }
-        }
     }
 
     @Override
@@ -173,145 +126,12 @@ public class HemiScanView extends AVoxTask {
 
         LOGGER.info(logHeader + " started...");
 
-        switch (parameters.getMode()) {
-
-            case ECHOS -> {
-                initArrays();
-
-                for (LidarScan scan : parameters.getRxpScansList()) {
-
-                    if (isCancelled()) {
-                        return null;
-                    }
-
-                    setTransformation(scan.getMatrix());
-                    setScan(scan.getFile());
-                }
-
-                if (parameters.isGenerateBitmapFile()) {
-
-                    if (isCancelled()) {
-                        return null;
-                    }
-
-                    switch (parameters.getBitmapMode()) {
-                        case PIXEL -> writeHemiPhoto(parameters.getOutputBitmapFile());
-                        case COLOR -> sectorTable(parameters.getOutputBitmapFile());
-                    }
-                    return new File[]{parameters.getOutputBitmapFile()};
-                }
-            }
-
-            case PAD -> {
-                DirectionalTransmittance direcTransmittance = new DirectionalTransmittance(
-                        parameters.getVoxelFile(),
-                        parameters.getPADVariable(),
-                        parameters.getLeafAngleDistribution(),
-                        parameters.getLeafAngleDistributionParameters());
-                return hemiFromPAD(direcTransmittance, parameters.getSensorPositions());
-            }
-        }
-        return null;
-    }
-
-    public void setTransformation(Matrix4d matrix) {
-
-        transformation = matrix;
-    }
-
-    public final Matrix3d getRotationFromMatrix(Matrix4d matrix) {
-
-        Matrix3d rotation = new Matrix3d();
-        matrix.getRotationScale(rotation);
-        return rotation;
-    }
-
-    public void setScan(File scan) throws Exception {
-
-        int count = 0;
-        int totalShots = 0;
-
-        RxpExtraction extraction = new RxpExtraction();
-
-        try {
-            extraction.open(scan);
-
-            Iterator<RxpShot> iterator = extraction.iterator();
-
-            while (iterator.hasNext()) {
-
-                if (isCancelled()) {
-                    return;
-                }
-
-                RxpShot shot = iterator.next();
-
-                Point3d location = shot.origin;
-                transformation.transform(location);
-                Vector3d direction = shot.direction;
-                transformation.transform(direction);
-
-                shot.setOriginAndDirection(location, direction);
-
-                transform(shot);
-
-                count++;
-                totalShots++;
-                if (count == 1000000) {
-                    LOGGER.info(logHeader + " shots " + totalShots);
-                    count = 0;
-                }
-            }
-
-            LOGGER.info(logHeader + " shots " + totalShots);
-
-            extraction.close();
-        } catch (Exception ex) {
-            throw ex;
-        }
-    }
-
-    private void sectorTable(File outputFile) throws IOException {
-
-        float radius = nbPixels / 2f;
-        float zenithWidth = (float) ((Math.PI / 2) / nbZeniths);
-        float azimWidth = (float) ((Math.PI * 2) / nbAzimuts);
-
-        for (int z = 0; z < nbZeniths; z++) {
-            System.out.println();
-            for (int a = 0; a < nbAzimuts; a++) {
-                System.out.print("\t" + sectorTable[z][a].brightness);
-            }
-        }
-
-        for (int x = 0; x < nbPixels; x++) {
-            for (int y = 0; y < nbPixels; y++) {
-                Vector2f v = new Vector2f((x - radius) / radius, (y - radius) / radius);
-                double zen = v.length() * Math.PI / 2;
-                if (zen < Math.PI / 2) {
-
-                    double azim = xyAzimuthNW(v.x, v.y);
-
-                    int sx = (int) (zen / zenithWidth);
-                    int sy = (int) (azim / azimWidth);
-
-                    if (sectorTable[sx][sy].nbShots > minSampling) {
-                        if (random) {
-                            float gf = (sectorTable[sx][sy].brightness - CANOPY_LUMINANCE) / (SKY_LUMINANCE - CANOPY_LUMINANCE);
-                            if (Math.random() > gf) {
-                                pixTab[x][y].brightness = CANOPY_LUMINANCE;
-                            } else {
-                                pixTab[x][y].brightness = SKY_LUMINANCE;
-                            }
-                        } else {
-                            pixTab[x][y].brightness = sectorTable[sx][sy].brightness;
-                        }
-                    }
-                }
-            }
-        }
-
-        writeHemiPhoto(outputFile);
+        DirectionalTransmittance direcTransmittance = new DirectionalTransmittance(
+                parameters.getVoxelFile(),
+                parameters.getPADVariable(),
+                parameters.getLeafAngleDistribution(),
+                parameters.getLeafAngleDistributionParameters());
+        return hemiFromPAD(direcTransmittance, parameters.getSensorPositions());
     }
 
     private File[] hemiFromPAD(DirectionalTransmittance dt, List<Point3d> positions) throws Exception {
@@ -377,75 +197,26 @@ public class HemiScanView extends AVoxTask {
                 }
             }
 
-            if (parameters.isGenerateBitmapFile()) {
-
-                if (isCancelled()) {
-                    return null;
-                }
-
-                File outputFile = new File(parameters.getOutputBitmapFile(), "position_" + positionID + ".png");
-
-                switch (parameters.getBitmapMode()) {
-                    case PIXEL -> writeHemiPhoto(outputFile);
-                    case COLOR -> sectorTable(outputFile);
-                }
-                outputFiles.add(outputFile);
+            if (isCancelled()) {
+                return null;
             }
 
-            if (parameters.isGenerateTextFile()) {
+            File hemiphotoFile = new File(parameters.getOutputBitmapFile(), "position_" + positionID + ".png");
+            writeHemiPhoto(hemiphotoFile);
+            outputFiles.add(hemiphotoFile);
 
-                if (isCancelled()) {
-                    return null;
-                }
-
-                File outputFile = new File(parameters.getOutputTextFile(), "position_" + positionID + ".txt");
-                writeHemiPhotoAsText(outputFile);
-                outputFiles.add(outputFile);
+            if (isCancelled()) {
+                return null;
             }
 
-            positionID++;
+            File hemiPhotoTextFile = new File(parameters.getOutputTextFile(), "position_" + positionID + ".txt");
+            writeHemiPhotoAsText(hemiPhotoTextFile);
+            outputFiles.add(hemiPhotoTextFile);
         }
+
+        positionID++;
+
         return outputFiles.toArray(File[]::new);
-    }
-
-//    private void transform(String line, Transformations tr) {
-//        String[] st = line.split(" ");
-//        int echocount = Integer.valueOf(st[1]);
-//        Point3d origin = new Point3d(Double.valueOf(st[2]), Double.valueOf(st[3]), Double.valueOf(st[4]));
-//        Vector3d direction = new Vector3d(Double.valueOf(st[5]), Double.valueOf(st[6]), Double.valueOf(st[7]));
-//        double range = -9999;
-//        if (echocount > 0) {
-//            range = Float.valueOf(st[8]);
-//        }
-//        tr.apply(direction);
-//        tr.apply(origin);
-//        direction.sub(origin);
-//        direction.normalize();
-//        float zenith = (float) FastMath.acos(direction.z);
-//        double azimuth = xyAzimuthNW(direction.x, direction.y);
-//        
-//        SphericalCoordinates sc = new SphericalCoordinates();
-//        sc.toSpherical(direction);
-//
-//        if (zenith < Math.PI / 2) {
-//            updatePixTab(zenith, azimuth, range);
-//            updateSectorTab(zenith, azimuth, range);
-//        }
-//    }
-    public void transform(RxpShot shot) {
-
-        double zenith = FastMath.acos(shot.direction.z);
-        double azimut = xyAzimuthNW(shot.direction.x, shot.direction.y);
-
-        double range = -9999;
-        if (shot.nEcho > 0) {
-            range = shot.ranges[shot.nEcho - 1];
-        }
-
-        if (zenith < Math.PI / 2) {
-            updatePixTab(zenith, azimut, range);
-            updateSectorTab(zenith, azimut, range);
-        }
     }
 
     public void writeHemiPhotoAsText(File outputFile) throws IOException {
@@ -557,107 +328,6 @@ public class HemiScanView extends AVoxTask {
             ImageIO.write(bimg, "png", outputFile);
         } catch (IOException ex) {
             throw ex;
-        }
-    }
-
-    /**
-     * Get azimuth angle from 2D coordinates
-     *
-     * @param x 2D coordinates
-     * @param y 2D coordinates
-     * @return	azimuthAngle	[radian] clockwise from Y axis
-     */
-    public static double xyAzimuthNW(double x, double y) {
-
-        double azimuth = 0;
-        if (y != 0) {
-
-            azimuth = FastMath.atan(x / y);
-            if (y < 0) {
-                azimuth += Math.PI;
-            } else if (x < 0) {
-                azimuth += Math.PI * 2;
-            }
-        } else if (x < 0) {
-            azimuth = (Math.PI / 2);
-        }
-
-        return azimuth;
-    }
-
-    private void updatePixTab(double zenith, double azimut, double distance) {
-
-        double radius = nbPixels / 2f;
-
-        //normalization from 0 to radius
-        double normalizedRadius = ((zenith / (Math.PI / 2)) * radius);
-
-        double x = normalizedRadius * Math.cos(azimut);
-        double y = normalizedRadius * Math.sin(azimut);
-
-        int indexX = (int) (x + radius);
-        int indexY = (int) (y + radius);
-
-        indexX = Math.min(indexX, nbPixels - 1);
-        indexY = Math.min(indexY, nbPixels - 1);
-
-        if (distance < 0) {
-            pixTab[indexX][indexY].updatePixel(SKY_LUMINANCE);
-        } else {
-            pixTab[indexX][indexY].updatePixel(CANOPY_LUMINANCE);
-        }
-    }
-
-    public static Point2i getPixelIndicesFromDirection(int nbPixels, Vector3f direction) {
-
-        double zenith = FastMath.acos(direction.z);
-        double azimut = xyAzimuthNW(direction.x, direction.y);
-
-        double radius = nbPixels / 2f;
-
-        //normalization from 0 to radius
-        double normalizedRadius = ((zenith / (Math.PI / 2)) * radius);
-
-        double x = (normalizedRadius * Math.cos(azimut));
-        double y = (normalizedRadius * Math.sin(azimut));
-
-        int indexX = (int) (x + radius);
-        int indexY = (int) (y + radius);
-
-        indexX = Math.min(indexX, nbPixels - 1);
-        indexY = Math.min(indexY, nbPixels - 1);
-
-        return new Point2i(indexX, indexY);
-    }
-
-    public static Vector3d getDirectionFromPixel(int nbPixels, int i, int j) {
-
-        double radius = nbPixels / 2;
-
-        int centerX = nbPixels / 2;
-        int centerY = centerX;
-
-        double x = i - centerX;
-        double y = j - centerY;
-
-        double normalizedRadius = Math.sqrt((x * x) + (y * y));
-
-        double azimut = Math.acos(x / normalizedRadius);
-        double zenith = (normalizedRadius / radius) * Math.PI / 2.0;
-
-        Vector3d direction = new Vector3d(SphericalCoordinates.toCartesian(azimut, zenith));
-        return direction;
-    }
-
-    private void updateSectorTab(double zenith, double azimuth, double distance) {
-
-        int indexZn = (int) ((zenith * nbZeniths) / (Math.PI / 2));
-        int indexAz = (int) ((azimuth * nbAzimuts) / (Math.PI * 2));
-
-        if (distance < 0) {
-            sectorTable[indexZn][indexAz].updateSector(SKY_LUMINANCE);
-        } else {
-            sectorTable[indexZn][indexAz].updateSector(CANOPY_LUMINANCE);
         }
     }
 

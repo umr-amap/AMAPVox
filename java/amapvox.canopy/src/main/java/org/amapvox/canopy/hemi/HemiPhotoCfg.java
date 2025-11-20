@@ -15,18 +15,15 @@ package org.amapvox.canopy.hemi;
 
 import org.amapvox.commons.Configuration;
 import org.amapvox.commons.Matrix;
-import org.amapvox.lidar.commons.LidarScan;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 import org.amapvox.canopy.LeafAngleDistribution;
 import org.amapvox.commons.AVoxTask;
 import org.amapvox.commons.Release;
 import org.amapvox.voxelisation.output.OutputVariable;
-import org.jdom2.Attribute;
 import org.jdom2.Element;
 
 /**
@@ -54,90 +51,58 @@ public class HemiPhotoCfg extends Configuration {
     @Override
     public void readProcessElements(Element processElement) throws IOException {
 
-        String processTypeValue = processElement.getAttributeValue("type");
+        Element inputFileElement = processElement.getChild("input_file");
+        String inputFileSrc = resolve(inputFileElement.getAttributeValue("src"));
 
-        switch (processTypeValue) {
-            case "0" -> //ECHOS
-                parameters.setMode(HemiParameters.Mode.ECHOS);
-            case "1" -> //PAD
-                parameters.setMode(HemiParameters.Mode.PAD);
+        if (inputFileSrc != null) {
+            parameters.setVoxelFile(new File(inputFileSrc));
         }
 
-        if (parameters.getMode() == HemiParameters.Mode.ECHOS) {
+        if (null != inputFileElement.getAttribute("variable")) {
+            parameters.setPADVariable(inputFileElement.getAttributeValue("variable"));
+        }
 
-            Element inputFilesElement = processElement.getChild("scans");
-            List<Element> scanElements = inputFilesElement.getChildren("scan");
+        Element ladElement = processElement.getChild("leaf-angle-distribution");
+        if (ladElement != null) {
+            parameters.setLeafAngleDistribution(LeafAngleDistribution.Type.fromString(ladElement.getAttributeValue("type")));
+            double[] ladParams = new double[2];
+            String alphaValue = ladElement.getAttributeValue("alpha");
+            if (alphaValue != null) {
+                ladParams[0] = Double.parseDouble(alphaValue);
+            }
+            String betaValue = ladElement.getAttributeValue("beta");
+            if (betaValue != null) {
+                ladParams[0] = Double.parseDouble(betaValue);
+            }
+            parameters.setLeafAngleDistributionParameters(ladParams);
+        } else {
+            throw new IOException("Cannot find leaf-angle-distribution element");
+        }
 
-            List<LidarScan> scans = new ArrayList<>(scanElements.size());
+        List<Point3d> positions = new ArrayList<>();
 
-            scanElements.forEach((scanElement) -> {
-                String inputFileSrc = resolve(scanElement.getAttributeValue("src"));
-                Element matrixElement = scanElement.getChild("matrix");
-                Matrix4d sopMatrix = Matrix.valueOf(matrixElement).toMatrix4d();
-                if (inputFileSrc != null) {
-                    File f = new File(inputFileSrc);
-                    scans.add(new LidarScan(f, sopMatrix));
-                }
+        Element sensorPositionElement = processElement.getChild("sensor-position");
+
+        if (sensorPositionElement != null) { //work around for old config
+
+            positions.add(new Point3d(Double.parseDouble(sensorPositionElement.getAttributeValue("x")),
+                    Double.parseDouble(sensorPositionElement.getAttributeValue("y")),
+                    Double.parseDouble(sensorPositionElement.getAttributeValue("z"))));
+
+            parameters.setSensorPositions(positions);
+
+        } else {
+
+            Element sensorPositionsElement = processElement.getChild("sensor-positions");
+            List<Element> children = sensorPositionsElement.getChildren("position");
+            children.forEach((element) -> {
+                positions.add(new Point3d(
+                        Double.parseDouble(element.getAttributeValue("x")),
+                        Double.parseDouble(element.getAttributeValue("y")),
+                        Double.parseDouble(element.getAttributeValue("z"))));
             });
 
-            parameters.setRxpScansList(scans);
-
-        } else if (parameters.getMode() == HemiParameters.Mode.PAD) {
-
-            Element inputFileElement = processElement.getChild("input_file");
-            String inputFileSrc = resolve(inputFileElement.getAttributeValue("src"));
-
-            if (inputFileSrc != null) {
-                parameters.setVoxelFile(new File(inputFileSrc));
-            }
-
-            if (null != inputFileElement.getAttribute("variable")) {
-                parameters.setPADVariable(inputFileElement.getAttributeValue("variable"));
-            }
-
-            Element ladElement = processElement.getChild("leaf-angle-distribution");
-            if (ladElement != null) {
-                parameters.setLeafAngleDistribution(LeafAngleDistribution.Type.fromString(ladElement.getAttributeValue("type")));
-                double[] ladParams = new double[2];
-                String alphaValue = ladElement.getAttributeValue("alpha");
-                if (alphaValue != null) {
-                    ladParams[0] = Double.parseDouble(alphaValue);
-                }
-                String betaValue = ladElement.getAttributeValue("beta");
-                if (betaValue != null) {
-                    ladParams[0] = Double.parseDouble(betaValue);
-                }
-                parameters.setLeafAngleDistributionParameters(ladParams);
-            } else {
-                throw new IOException("Cannot find leaf-angle-distribution element");
-            }
-
-            List<Point3d> positions = new ArrayList<>();
-
-            Element sensorPositionElement = processElement.getChild("sensor-position");
-
-            if (sensorPositionElement != null) { //work around for old config
-
-                positions.add(new Point3d(Double.parseDouble(sensorPositionElement.getAttributeValue("x")),
-                        Double.parseDouble(sensorPositionElement.getAttributeValue("y")),
-                        Double.parseDouble(sensorPositionElement.getAttributeValue("z"))));
-
-                parameters.setSensorPositions(positions);
-
-            } else {
-
-                Element sensorPositionsElement = processElement.getChild("sensor-positions");
-                List<Element> children = sensorPositionsElement.getChildren("position");
-                children.forEach((element) -> {
-                    positions.add(new Point3d(
-                            Double.parseDouble(element.getAttributeValue("x")),
-                            Double.parseDouble(element.getAttributeValue("y")),
-                            Double.parseDouble(element.getAttributeValue("z"))));
-                });
-
-                parameters.setSensorPositions(positions);
-            }
-
+            parameters.setSensorPositions(positions);
         }
 
         //common parameters
@@ -167,39 +132,18 @@ public class HemiPhotoCfg extends Configuration {
         Element outputTextFileElement = outputFilesElement.getChild("output_text_file");
 
         if (outputTextFileElement != null) {
-            boolean generateOutputTextFile = Boolean.parseBoolean(outputTextFileElement.getAttributeValue("generate"));
-            parameters.setGenerateTextFile(generateOutputTextFile);
-
-            if (generateOutputTextFile) {
-
-                String outputTextFileSrc = resolve(outputTextFileElement.getAttributeValue("src"));
-                if (outputTextFileSrc != null) {
-                    parameters.setOutputTextFile(new File(outputTextFileSrc));
-                }
-
+            String outputTextFileSrc = resolve(outputTextFileElement.getAttributeValue("src"));
+            if (outputTextFileSrc != null) {
+                parameters.setOutputTextFile(new File(outputTextFileSrc));
             }
         }
 
         Element outputBitmapFileElement = outputFilesElement.getChild("output_bitmap_file");
 
         if (outputBitmapFileElement != null) {
-            boolean generateOutputBitmapFile = Boolean.parseBoolean(outputBitmapFileElement.getAttributeValue("generate"));
-            parameters.setGenerateBitmapFile(generateOutputBitmapFile);
-
-            if (generateOutputBitmapFile) {
-
-                String outputBitmapFileSrc = resolve(outputBitmapFileElement.getAttributeValue("src"));
-                int bitmapMode = Integer.parseInt(outputBitmapFileElement.getAttributeValue("mode"));
-
-                switch (bitmapMode) {
-                    case 0 -> parameters.setBitmapMode(HemiParameters.BitmapMode.PIXEL);
-                    case 1 -> parameters.setBitmapMode(HemiParameters.BitmapMode.COLOR);
-                }
-
-                if (outputBitmapFileSrc != null) {
-                    parameters.setOutputBitmapFile(new File(outputBitmapFileSrc));
-                }
-
+            String outputBitmapFileSrc = resolve(outputBitmapFileElement.getAttributeValue("src"));
+            if (outputBitmapFileSrc != null) {
+                parameters.setOutputBitmapFile(new File(outputBitmapFileSrc));
             }
         }
 
@@ -208,62 +152,39 @@ public class HemiPhotoCfg extends Configuration {
     @Override
     public void writeProcessElements(Element processElement) {
 
-        HemiParameters.Mode mode = parameters.getMode();
-        processElement.setAttribute(new Attribute("type", String.valueOf(mode.getMode())));
+        //input
+        Element inputFileElement = new Element("input_file");
+        inputFileElement.setAttribute("type", "VOX");
+        inputFileElement.setAttribute("src", parameters.getVoxelFile().getAbsolutePath());
+        inputFileElement.setAttribute("variable", parameters.getPADVariable());
+        processElement.addContent(inputFileElement);
 
-        if (mode == HemiParameters.Mode.ECHOS) {
+        // leaf angle distribution
+        Element ladElement = new Element("leaf-angle-distribution");
+        ladElement.setAttribute("type", parameters.getLeafAngleDistribution().toString());
+        processElement.addContent(ladElement);
 
-            //input
-            Element scansElement = new Element("scans");
-            List<LidarScan> rxpScansList = parameters.getRxpScansList();
+        if (parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA
+                || parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.ELLIPSOIDAL) {
+            ladElement.setAttribute("alpha", String.valueOf(parameters.getLeafAngleDistributionParameters()[0]));
 
-            rxpScansList.forEach(scan -> {
-                Element scanElement = new Element("scan");
-                scanElement.setAttribute("src", scan.getFile().getAbsolutePath());
-                Matrix matrix = Matrix.valueOf(scan.getMatrix());
-                matrix.setId("sop");
-                scanElement.addContent(matrix.toElement());
-                scansElement.addContent(scanElement);
-            });
-
-            processElement.addContent(scansElement);
-
-        } else if (mode == HemiParameters.Mode.PAD) {
-
-            //input
-            Element inputFileElement = new Element("input_file");
-            inputFileElement.setAttribute("type", "VOX");
-            inputFileElement.setAttribute("src", parameters.getVoxelFile().getAbsolutePath());
-            inputFileElement.setAttribute("variable", parameters.getPADVariable());
-            processElement.addContent(inputFileElement);
-
-            // leaf angle distribution
-            Element ladElement = new Element("leaf-angle-distribution");
-            ladElement.setAttribute("type", parameters.getLeafAngleDistribution().toString());
-            processElement.addContent(ladElement);
-
-            if (parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA
-                    || parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.ELLIPSOIDAL) {
-                ladElement.setAttribute("alpha", String.valueOf(parameters.getLeafAngleDistributionParameters()[0]));
-
-                if (parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA) {
-                    ladElement.setAttribute("beta", String.valueOf(parameters.getLeafAngleDistributionParameters()[1]));
-                }
+            if (parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA) {
+                ladElement.setAttribute("beta", String.valueOf(parameters.getLeafAngleDistributionParameters()[1]));
             }
-
-            // sensor positions
-            Element sensorPositionsElement = new Element("sensor-positions");
-
-            parameters.getSensorPositions().forEach(position -> {
-                Element positionElement = new Element("position");
-                positionElement.setAttribute("x", String.valueOf(position.x));
-                positionElement.setAttribute("y", String.valueOf(position.y));
-                positionElement.setAttribute("z", String.valueOf(position.z));
-                sensorPositionsElement.addContent(positionElement);
-            });
-
-            processElement.addContent(sensorPositionsElement);
         }
+
+        // sensor positions
+        Element sensorPositionsElement = new Element("sensor-positions");
+
+        parameters.getSensorPositions().forEach(position -> {
+            Element positionElement = new Element("position");
+            positionElement.setAttribute("x", String.valueOf(position.x));
+            positionElement.setAttribute("y", String.valueOf(position.y));
+            positionElement.setAttribute("z", String.valueOf(position.z));
+            sensorPositionsElement.addContent(positionElement);
+        });
+
+        processElement.addContent(sensorPositionsElement);
 
         //common parameters
         Element pixelNumberElement = new Element("pixel-number");
@@ -280,23 +201,13 @@ public class HemiPhotoCfg extends Configuration {
 
         //outputs
         Element outputFilesElement = new Element("output_files");
+        
         Element outputTextFileElement = new Element("output_text_file");
-        outputTextFileElement.setAttribute("generate", String.valueOf(parameters.isGenerateTextFile()));
-
-        if (parameters.isGenerateTextFile() && parameters.getOutputTextFile() != null) {
-            outputTextFileElement.setAttribute("src", parameters.getOutputTextFile().getAbsolutePath());
-        }
-
+        outputTextFileElement.setAttribute("src", parameters.getOutputTextFile().getAbsolutePath());
         outputFilesElement.addContent(outputTextFileElement);
 
         Element outputBitmapFileElement = new Element("output_bitmap_file");
-        outputBitmapFileElement.setAttribute("generate", String.valueOf(parameters.isGenerateBitmapFile()));
-
-        if (parameters.isGenerateBitmapFile() && parameters.getOutputBitmapFile() != null) {
-            outputBitmapFileElement.setAttribute("src", parameters.getOutputBitmapFile().getAbsolutePath());
-            outputBitmapFileElement.setAttribute("mode", String.valueOf(parameters.getBitmapMode().getMode()));
-        }
-
+        outputBitmapFileElement.setAttribute("src", parameters.getOutputBitmapFile().getAbsolutePath());
         outputFilesElement.addContent(outputBitmapFileElement);
 
         processElement.addContent(outputFilesElement);
@@ -334,14 +245,14 @@ public class HemiPhotoCfg extends Configuration {
                             scanElement.addContent(matrix.toElement());
                         });
 
-}
+                    }
                 }
             },
             // 2023-03-23
             new Release("2.0.1") {
                 @Override
                 public void update(Element processElement) {
-                    
+
                     Element inputFileElement = processElement.getChild("input_file");
                     if (null != inputFileElement) {
                         inputFileElement.setAttribute("variable", OutputVariable.PLANT_AREA_DENSITY.getShortName());

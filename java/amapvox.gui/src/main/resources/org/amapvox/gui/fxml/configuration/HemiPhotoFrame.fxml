@@ -15,145 +15,68 @@
             <content>
                 <VBox>
                     <children>
-                        <TitledPane animated="false" text="Input file">
+                        <TitledPane animated="false" text="Input">
                             <content>
                                 <AnchorPane>
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
                                             <children>
-                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                <fx:include fx:id="voxelFileCanopy" source="../VoxelFileCanopy.fxml" />   
+                                                <Label text="Sensor positions" />
+                                                <ListView fx:id="listViewHemiPhotoSensorPositions" prefHeight="250.0" />
+                                                <HBox spacing="10.0">
                                                     <children>
-                                                        <Label text="Input" />
-                                                        <RadioButton fx:id="rdbtnFromScans" mnemonicParsing="false" selected="true" text="From hemi scans" onAction="#onActionRdBtnFromScans" />
-                                                        <RadioButton fx:id="rdbtnFromPAD" mnemonicParsing="false" text="From PAD" onAction="#onActionRdBtnFromPAD" />
-                                                        <fx:include fx:id="helpButtonHemiPhoto" source="../HelpButton.fxml" />
+                                                        <SelectableMenuButton fx:id="selectorHemiPhotoSensor" />
+                                                        <HBox spacing="5.0">
+                                                            <children>
+                                                                <Button mnemonicParsing="false" onAction="#onActionButtonRemovePositionHemiPhoto">
+                                                                    <graphic>
+                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                            <image>
+                                                                                <Image url="@../icons/remove.png" />
+                                                                            </image>
+                                                                        </ImageView>
+                                                                    </graphic>
+                                                                </Button>
+                                                                <Button mnemonicParsing="false" onAction="#onActionButtonAddPositionHemiPhoto">
+                                                                    <graphic>
+                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                            <image>
+                                                                                <Image url="@../icons/add.png" />
+                                                                            </image>
+                                                                        </ImageView>
+                                                                    </graphic>
+                                                                </Button>
+                                                            </children>
+                                                        </HBox>
                                                     </children>
                                                 </HBox>
-                                                <TitledPane fx:id="titledPaneHemiFromScans" animated="false"  expanded="true"  text="From hemi scans">
-                                                    <content>
-                                                        <VBox spacing="10.0" >
-                                                            <children>
-                                                                <ListView fx:id="listViewHemiPhotoScans" prefHeight="200.0" />
-                                                                <HBox spacing="10.0">
-                                                                    <children>
-                                                                        <SelectableMenuButton fx:id="selectorHemiPhotoScans" />
-                                                                        <HBox spacing="5.0">
-                                                                            <children>
-                                                                                <Button mnemonicParsing="false" onAction="#onActionButtonRemoveScanFromHemiPhotoListView">
-                                                                                    <graphic>
-                                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                                                                                            <image>
-                                                                                                <Image url="@../icons/remove.png" />
-                                                                                            </image>
-                                                                                        </ImageView>
-                                                                                    </graphic>
-                                                                                </Button>
-                                                                                <Button mnemonicParsing="false" onAction="#onActionButtonOpenRspProject" text="Import scans">
-                                                                                    <graphic>
-                                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                                                                                            <image>
-                                                                                                <Image url="@../icons/add.png" />
-                                                                                            </image>
-                                                                                        </ImageView>
-                                                                                    </graphic>
-                                                                                </Button>
-                                                                            </children>
-                                                                        </HBox>
-                                                                    </children>
-                                                                </HBox>
-                                                            </children>
-                                                            <padding>
-                                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                                                            </padding>
-                                                        </VBox>
-                                                    </content>
-                                                </TitledPane>
-                                                <TitledPane fx:id="titledPaneHemiFromPAD" animated="false" expanded="false"  text="From PAD">
-                                                    <content>
-                                                        <VBox spacing="10.0" >
-                                                            <children>
-                                                                <fx:include fx:id="voxelFileCanopy" source="../VoxelFileCanopy.fxml" />   
-                                                                <Label text="Sensor positions" />
-                                                                <ListView fx:id="listViewHemiPhotoSensorPositions" prefHeight="250.0" />
-                                                                <HBox spacing="10.0">
-                                                                    <children>
-                                                                        <SelectableMenuButton fx:id="selectorHemiPhotoSensor" />
-                                                                        <HBox spacing="5.0">
-                                                                            <children>
-                                                                                <Button mnemonicParsing="false" onAction="#onActionButtonRemovePositionHemiPhoto">
-                                                                                    <graphic>
-                                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                                                                                            <image>
-                                                                                                <Image url="@../icons/remove.png" />
-                                                                                            </image>
-                                                                                        </ImageView>
-                                                                                    </graphic>
-                                                                                </Button>
-                                                                                <Button mnemonicParsing="false" onAction="#onActionButtonAddPositionHemiPhoto">
-                                                                                    <graphic>
-                                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                                                                                            <image>
-                                                                                                <Image url="@../icons/add.png" />
-                                                                                            </image>
-                                                                                        </ImageView>
-                                                                                    </graphic>
-                                                                                </Button>
-                                                                            </children>
-                                                                        </HBox>
-                                                                    </children>
-                                                                </HBox>
-                                                            </children>
-                                                        </VBox>
-                                                    </content>
-                                                </TitledPane>
                                             </children>
                                         </VBox>
                                     </children>
                                 </AnchorPane>
                             </content>
                         </TitledPane>
-                        <TitledPane animated="false" expanded="false" text="Output files">
+                        <TitledPane animated="false" expanded="false" text="Output">
                             <content>
                                 <AnchorPane>
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
                                             <children>
-                                                <VBox spacing="10.0">
+                                                <HBox>
                                                     <children>
-                                                        <Label text="Output" />
-                                                        <VBox spacing="5.0">
-                                                            <children>
-                                                                <CheckBox fx:id="checkboxGenerateSectorsTextFileHemiPhoto" mnemonicParsing="false" text="Generate text file" />
-                                                                <HBox>
-                                                                    <children>
-                                                                        <TextField fx:id="textfieldHemiPhotoOutputTextFile" prefHeight="26.0" HBox.hgrow="ALWAYS" />
-                                                                        <Button maxWidth="-Infinity" mnemonicParsing="false" onAction="#onActionButtonOpenHemiPhotoOutputTextFile" text="..." />
-                                                                    </children>
-                                                                </HBox>
-                                                            </children>
-                                                        </VBox>
-                                                        <VBox fx:id="vBoxGenerateBitmapFiles1" spacing="5.0">
-                                                            <children>
-                                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                                                    <children>
-                                                                        <CheckBox fx:id="checkboxHemiPhotoGenerateBitmapFile" mnemonicParsing="false" selected="true" text="Generate bitmap file" />
-                                                                        <Label contentDisplay="RIGHT" text="Mode">
-                                                                            <graphic>
-                                                                                <ComboBox fx:id="comboboxHemiPhotoBitmapOutputMode" />
-                                                                            </graphic>
-                                                                        </Label>
-                                                                    </children>
-                                                                </HBox>
-                                                                <HBox>
-                                                                    <children>
-                                                                        <TextField fx:id="textfieldHemiPhotoOutputBitmapFile" prefHeight="26.0" HBox.hgrow="ALWAYS" />
-                                                                        <Button maxWidth="-Infinity" mnemonicParsing="false" onAction="#onActionButtonOpenHemiPhotoOutputBitmapFile" text="..." />
-                                                                    </children>
-                                                                </HBox>
-                                                            </children>
-                                                        </VBox>
+                                                        <Label text="Hemispherical Photograph (TXT)" />
+                                                        <TextField fx:id="textfieldHemiPhotoOutputTextFile" prefHeight="26.0" HBox.hgrow="ALWAYS" />
+                                                        <Button maxWidth="-Infinity" mnemonicParsing="false" onAction="#onActionButtonOpenHemiPhotoOutputTextFile" text="..." />
                                                     </children>
-                                                </VBox>
+                                                </HBox>
+                                                <HBox>
+                                                    <children>
+                                                        <Label text="Hemispherical Photograph (PNG)" />
+                                                        <TextField fx:id="textfieldHemiPhotoOutputBitmapFile" prefHeight="26.0" HBox.hgrow="ALWAYS" />
+                                                        <Button maxWidth="-Infinity" mnemonicParsing="false" onAction="#onActionButtonOpenHemiPhotoOutputBitmapFile" text="..." />
+                                                    </children>
+                                                </HBox>
                                             </children>
                                         </VBox>
                                     </children>

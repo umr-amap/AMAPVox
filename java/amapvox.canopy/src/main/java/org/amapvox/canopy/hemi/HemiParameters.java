@@ -29,8 +29,8 @@ public class HemiParameters {
     private int zenithsNumber = 9;
     
     //output
-    private File outputTextFile;
-    private File outputBitmapFile;
+    private File outputDir;
+    private String outputPrefix;
 
     public File getVoxelFile() {
         return voxelFile;
@@ -80,20 +80,20 @@ public class HemiParameters {
         this.zenithsNumber = zenithsNumber;
     }
 
-    public File getOutputTextFile() {
-        return outputTextFile;
+    public File getOutputDirectory() {
+        return outputDir;
     }
 
-    public void setOutputTextFile(File outputTextFile) {
-        this.outputTextFile = outputTextFile;
+    public void setOutputDirectory(File directory) {
+        this.outputDir = directory;
     }
-
-    public File getOutputBitmapFile() {
-        return outputBitmapFile;
+    
+    public String getOutputPrefix() {
+        return outputPrefix;
     }
-
-    public void setOutputBitmapFile(File outputBitmapFile) {
-        this.outputBitmapFile = outputBitmapFile;
+    
+    public void setOutputPrefix(String prefix) {
+        this.outputPrefix = prefix;
     }
     
     /**

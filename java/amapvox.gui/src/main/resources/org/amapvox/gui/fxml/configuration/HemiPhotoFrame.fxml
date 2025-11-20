@@ -15,7 +15,7 @@
             <content>
                 <VBox>
                     <children>
-                        <TitledPane animated="false" text="Input">
+                        <TitledPane animated="false" expanded="true" text="Input">
                             <content>
                                 <AnchorPane>
                                     <children>
@@ -57,24 +57,23 @@
                                 </AnchorPane>
                             </content>
                         </TitledPane>
-                        <TitledPane animated="false" expanded="false" text="Output">
+                        <TitledPane animated="false" expanded="true" text="Output">
                             <content>
                                 <AnchorPane>
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
                                             <children>
-                                                <HBox>
+                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
                                                     <children>
-                                                        <Label text="Hemispherical Photograph (TXT)" />
-                                                        <TextField fx:id="textfieldHemiPhotoOutputTextFile" prefHeight="26.0" HBox.hgrow="ALWAYS" />
-                                                        <Button maxWidth="-Infinity" mnemonicParsing="false" onAction="#onActionButtonOpenHemiPhotoOutputTextFile" text="..." />
+                                                        <Label text="Output directory" />
+                                                        <TextField fx:id="textfieldHemiPhotoOutputDirectory" prefHeight="26.0" HBox.hgrow="ALWAYS" />
+                                                        <Button maxWidth="-Infinity" mnemonicParsing="false" onAction="#onActionButtonOpenHemiPhotoOutputDirectory" text="..." />
                                                     </children>
                                                 </HBox>
-                                                <HBox>
+                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
                                                     <children>
-                                                        <Label text="Hemispherical Photograph (PNG)" />
-                                                        <TextField fx:id="textfieldHemiPhotoOutputBitmapFile" prefHeight="26.0" HBox.hgrow="ALWAYS" />
-                                                        <Button maxWidth="-Infinity" mnemonicParsing="false" onAction="#onActionButtonOpenHemiPhotoOutputBitmapFile" text="..." />
+                                                        <Label text="Output file prefix" />
+                                                        <TextField fx:id="textfieldHemiPhotoOutputPrefix" prefHeight="26.0" prefWidth="150.0" HBox.hgrow="NEVER" />
                                                     </children>
                                                 </HBox>
                                             </children>
@@ -83,16 +82,17 @@
                                 </AnchorPane>
                             </content>
                         </TitledPane>
-                        <TitledPane animated="false" expanded="false" text="Options">
+                        <TitledPane animated="false" expanded="true" text="Options">
                             <content>
                                 <AnchorPane minHeight="0.0" minWidth="0.0">
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
                                             <children>
-                                                <GridPane vgap="5.0">
+                                                <GridPane vgap="5.0" hgap="5.0">
                                                     <columnConstraints>
-                                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="142.0" minWidth="10.0" prefWidth="138.0" />
+                                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="120.0" minWidth="10.0" prefWidth="120.0" />
                                                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="68.0" minWidth="10.0" prefWidth="57.0" />
+                                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="25.0" minWidth="10.0" prefWidth="25.0" />
                                                     </columnConstraints>
                                                     <rowConstraints>
                                                         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
@@ -100,12 +100,15 @@
                                                         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                                                     </rowConstraints>
                                                     <children>
-                                                        <TextField fx:id="textfieldPixelNumber" prefHeight="26.0" prefWidth="74.0" text="800" GridPane.columnIndex="1" />
-                                                        <Label text="Pixel number" />
-                                                        <TextField fx:id="textfieldAzimutsNumber" prefHeight="26.0" prefWidth="74.0" text="36" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                                        <Label text="Azimuts number" GridPane.rowIndex="1" />
-                                                        <TextField fx:id="textfieldZenithsNumber" prefHeight="26.0" prefWidth="74.0" text="9" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                                        <Label text="Zeniths number" GridPane.rowIndex="2" />
+                                                        <Label GridPane.rowIndex="0" GridPane.columnIndex="0" text="Pixel number"  />
+                                                        <TextField GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="textfieldPixelNumber" prefHeight="26.0" prefWidth="74.0" text="800"  />
+                                                        <fx:include GridPane.rowIndex="0" GridPane.columnIndex="2" fx:id="buttonHelpPixelNumber" source="../HelpButton.fxml"  />
+                                                        <Label GridPane.rowIndex="1" GridPane.columnIndex="0" text="Azimuts number" />
+                                                        <TextField GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="textfieldAzimuthNumber" prefHeight="26.0" prefWidth="74.0" text="36"  />
+                                                        <fx:include GridPane.rowIndex="1" GridPane.columnIndex="2" fx:id="buttonHelpAzimuthNumber" source="../HelpButton.fxml"  />
+                                                        <Label GridPane.rowIndex="2" GridPane.columnIndex="0" text="Zeniths number"  />
+                                                        <TextField GridPane.rowIndex="2" GridPane.columnIndex="1" fx:id="textfieldZenithNumber" prefHeight="26.0" prefWidth="74.0" text="9"  />
+                                                        <fx:include GridPane.rowIndex="2" GridPane.columnIndex="2" fx:id="buttonHelpZenithNumber" source="../HelpButton.fxml" />
                                                     </children>
                                                 </GridPane>
                                             </children>

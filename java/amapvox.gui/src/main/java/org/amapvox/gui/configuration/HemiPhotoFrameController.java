@@ -22,6 +22,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
@@ -29,6 +30,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javax.vecmath.Point3d;
+import org.amapvox.gui.HelpButtonController;
 import org.amapvox.gui.VoxelFileCanopyController;
 import org.apache.log4j.Logger;
 import org.controlsfx.validation.ValidationSupport;
@@ -44,9 +46,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
     private final Logger LOGGER = Logger.getLogger(HemiPhotoFrameController.class);
     // validation support
     private ValidationSupport hemiPhotoSimValidationSupport;
-    // file chooser
-    private DirectoryChooser directoryChooserSaveHemiPhotoOutputBitmapFile;
-    private DirectoryChooser directoryChooserSaveHemiPhotoOutputTextFile;
+    // directory chooser
+    private DirectoryChooser directoryChooserHemiPhotoOutputDirectory;
     // position importer
     private PositionImporterFrameController positionImporterFrameController;
 
@@ -54,9 +55,9 @@ public class HemiPhotoFrameController extends ConfigurationController {
     @FXML
     private VoxelFileCanopyController voxelFileCanopyController;
     @FXML
-    private TextField textfieldHemiPhotoOutputTextFile;
+    private TextField textfieldHemiPhotoOutputDirectory;
     @FXML
-    private TextField textfieldHemiPhotoOutputBitmapFile;
+    private TextField textfieldHemiPhotoOutputPrefix;
     @FXML
     private ListView<Point3d> listViewHemiPhotoSensorPositions;
     @FXML
@@ -64,30 +65,48 @@ public class HemiPhotoFrameController extends ConfigurationController {
     @FXML
     private TextField textfieldPixelNumber;
     @FXML
-    private TextField textfieldAzimutsNumber;
+    private Button buttonHelpPixelNumber;
     @FXML
-    private TextField textfieldZenithsNumber;
+    private HelpButtonController buttonHelpPixelNumberController;
+    @FXML
+    private TextField textfieldAzimuthNumber;
+    @FXML
+    private Button buttonHelpAzimuthNumber;
+    @FXML
+    private HelpButtonController buttonHelpAzimuthNumberController;
+    @FXML
+    private TextField textfieldZenithNumber;
+    @FXML
+    private Button buttonHelpZenithNumber;
+    @FXML
+    private HelpButtonController buttonHelpZenithNumberController;
 
     @Override
     public void initComponents(ResourceBundle rb) {
 
         textfieldPixelNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(800, TextFieldUtil.Sign.POSITIVE));
-        textfieldAzimutsNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(36, TextFieldUtil.Sign.POSITIVE));
-        textfieldZenithsNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(9, TextFieldUtil.Sign.POSITIVE));
+        textfieldAzimuthNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(36, TextFieldUtil.Sign.POSITIVE));
+        textfieldZenithNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(9, TextFieldUtil.Sign.POSITIVE));
 
         listViewHemiPhotoSensorPositions.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         Util.linkSelectorToList(selectorHemiPhotoSensor, listViewHemiPhotoSensorPositions);
 
-        Util.setDragGestureEvents(textfieldHemiPhotoOutputBitmapFile);
-        Util.setDragGestureEvents(textfieldHemiPhotoOutputTextFile);
-
-        directoryChooserSaveHemiPhotoOutputBitmapFile = new DirectoryChooser();
-        directoryChooserSaveHemiPhotoOutputBitmapFile.setTitle("Choose bitmap files output directory");
-
-        directoryChooserSaveHemiPhotoOutputTextFile = new DirectoryChooser();
-        directoryChooserSaveHemiPhotoOutputTextFile.setTitle("Choose text files output directory");
+        directoryChooserHemiPhotoOutputDirectory = new DirectoryChooser();
+        directoryChooserHemiPhotoOutputDirectory.setTitle("Choose output directory");
 
         positionImporterFrameController = PositionImporterFrameController.newInstance();
+
+        buttonHelpPixelNumber.setOnAction((ActionEvent event) -> {
+            buttonHelpPixelNumberController.showHelpDialog(rb.getString("help_hemiphoto_pixel_number"));
+        });
+        
+        buttonHelpAzimuthNumber.setOnAction((ActionEvent event) -> {
+            buttonHelpAzimuthNumberController.showHelpDialog(rb.getString("help_hemiphoto_azimuth_number"));
+        });
+        
+        buttonHelpZenithNumber.setOnAction((ActionEvent event) -> {
+            buttonHelpZenithNumberController.showHelpDialog(rb.getString("help_hemiphoto_zenith_number"));
+        });
     }
 
     @Override
@@ -98,11 +117,11 @@ public class HemiPhotoFrameController extends ConfigurationController {
         properties.addAll(Arrays.asList(
                 new ObservableValue[]{
                     listViewHemiPhotoSensorPositions.itemsProperty(),
-                    textfieldHemiPhotoOutputTextFile.textProperty(),
-                    textfieldHemiPhotoOutputBitmapFile.textProperty(),
+                    textfieldHemiPhotoOutputDirectory.textProperty(),
+                    textfieldHemiPhotoOutputPrefix.textProperty(),
                     textfieldPixelNumber.textProperty(),
-                    textfieldAzimutsNumber.textProperty(),
-                    textfieldZenithsNumber.textProperty()
+                    textfieldAzimuthNumber.textProperty(),
+                    textfieldZenithNumber.textProperty()
                 }));
 
         properties.addAll(Arrays.asList(voxelFileCanopyController.getListenedProperties()));
@@ -115,8 +134,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
 
         hemiPhotoSimValidationSupport = new ValidationSupport();
         hemiPhotoSimValidationSupport.registerValidator(textfieldPixelNumber, true, Validators.fieldIntegerValidator);
-        hemiPhotoSimValidationSupport.registerValidator(textfieldAzimutsNumber, true, Validators.fieldIntegerValidator);
-        hemiPhotoSimValidationSupport.registerValidator(textfieldZenithsNumber, true, Validators.fieldIntegerValidator);
+        hemiPhotoSimValidationSupport.registerValidator(textfieldAzimuthNumber, true, Validators.fieldIntegerValidator);
+        hemiPhotoSimValidationSupport.registerValidator(textfieldZenithNumber, true, Validators.fieldIntegerValidator);
         voxelFileCanopyController.registerValidators();
     }
 
@@ -133,34 +152,22 @@ public class HemiPhotoFrameController extends ConfigurationController {
         listViewHemiPhotoSensorPositions.getItems().setAll(hemiParameters.getSensorPositions());
 
         textfieldPixelNumber.setText(String.valueOf(hemiParameters.getPixelNumber()));
-        textfieldAzimutsNumber.setText(String.valueOf(hemiParameters.getAzimutsNumber()));
-        textfieldZenithsNumber.setText(String.valueOf(hemiParameters.getZenithsNumber()));
-        textfieldHemiPhotoOutputTextFile.setText(hemiParameters.getOutputTextFile().getAbsolutePath());
-        textfieldHemiPhotoOutputBitmapFile.setText(hemiParameters.getOutputBitmapFile().getAbsolutePath());
+        textfieldAzimuthNumber.setText(String.valueOf(hemiParameters.getAzimutsNumber()));
+        textfieldZenithNumber.setText(String.valueOf(hemiParameters.getZenithsNumber()));
+        textfieldHemiPhotoOutputDirectory.setText(hemiParameters.getOutputDirectory().getAbsolutePath());
+        textfieldHemiPhotoOutputPrefix.setText(hemiParameters.getOutputPrefix());
 
     }
 
     @FXML
-    private void onActionButtonOpenHemiPhotoOutputTextFile(ActionEvent event) {
+    private void onActionButtonOpenHemiPhotoOutputDirectory(ActionEvent event) {
 
-        File selectedFile = directoryChooserSaveHemiPhotoOutputTextFile.showDialog(null);
-
-        if (selectedFile != null) {
-            textfieldHemiPhotoOutputTextFile.setText(selectedFile.getAbsolutePath());
-            LOGGER.debug("Hemispherical photo output text file opened.");
-        }
-    }
-
-    @FXML
-    private void onActionButtonOpenHemiPhotoOutputBitmapFile(ActionEvent event) {
-
-        File selectedFile = directoryChooserSaveHemiPhotoOutputBitmapFile.showDialog(null);
+        File selectedFile = directoryChooserHemiPhotoOutputDirectory.showDialog(null);
 
         if (selectedFile != null) {
-            textfieldHemiPhotoOutputBitmapFile.setText(selectedFile.getAbsolutePath());
-            LOGGER.debug("Hemispherical photo output bitmap file opened.");
+            textfieldHemiPhotoOutputDirectory.setText(selectedFile.getAbsolutePath());
+            LOGGER.debug("Hemispherical Photo output directory choosed");
         }
-
     }
 
     @FXML
@@ -209,8 +216,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
         HemiParameters hemiParameters = new HemiParameters();
 
         hemiParameters.setPixelNumber(Integer.parseInt(textfieldPixelNumber.getText()));
-        hemiParameters.setAzimutsNumber(Integer.parseInt(textfieldAzimutsNumber.getText()));
-        hemiParameters.setZenithsNumber(Integer.parseInt(textfieldZenithsNumber.getText()));
+        hemiParameters.setAzimutsNumber(Integer.parseInt(textfieldAzimuthNumber.getText()));
+        hemiParameters.setZenithsNumber(Integer.parseInt(textfieldZenithNumber.getText()));
 
         hemiParameters.setVoxelFile(voxelFileCanopyController.getVoxelFile());
         hemiParameters.setPADVariable(voxelFileCanopyController.getPADVariable());
@@ -218,11 +225,9 @@ public class HemiPhotoFrameController extends ConfigurationController {
         hemiParameters.setLeafAngleDistributionParameters(voxelFileCanopyController.getLeafAngleDistributionParameters());
         hemiParameters.setSensorPositions(listViewHemiPhotoSensorPositions.getItems());
 
-        File outputBitmapFile = new File(textfieldHemiPhotoOutputBitmapFile.getText());
-        hemiParameters.setOutputBitmapFile(outputBitmapFile);
-
-        File outputTextFile = new File(textfieldHemiPhotoOutputTextFile.getText());
-        hemiParameters.setOutputTextFile(outputTextFile);
+        File outputDirectory = new File(textfieldHemiPhotoOutputDirectory.getText());
+        hemiParameters.setOutputDirectory(outputDirectory);
+        hemiParameters.setOutputPrefix(textfieldHemiPhotoOutputPrefix.getText());
 
         HemiPhotoCfg hemiPhotoCfg = new HemiPhotoCfg();
         hemiPhotoCfg.setParameters(hemiParameters);

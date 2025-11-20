@@ -24,6 +24,7 @@ import org.amapvox.canopy.LeafAngleDistribution;
 import org.amapvox.commons.AVoxTask;
 import org.amapvox.commons.Release;
 import org.amapvox.voxelisation.output.OutputVariable;
+import org.jdom2.Attribute;
 import org.jdom2.Element;
 
 /**
@@ -128,23 +129,14 @@ public class HemiPhotoCfg extends Configuration {
         }
 
         //outputs
-        Element outputFilesElement = processElement.getChild("output_files");
-        Element outputTextFileElement = outputFilesElement.getChild("output_text_file");
-
-        if (outputTextFileElement != null) {
-            String outputTextFileSrc = resolve(outputTextFileElement.getAttributeValue("src"));
-            if (outputTextFileSrc != null) {
-                parameters.setOutputTextFile(new File(outputTextFileSrc));
-            }
-        }
-
-        Element outputBitmapFileElement = outputFilesElement.getChild("output_bitmap_file");
-
-        if (outputBitmapFileElement != null) {
-            String outputBitmapFileSrc = resolve(outputBitmapFileElement.getAttributeValue("src"));
-            if (outputBitmapFileSrc != null) {
-                parameters.setOutputBitmapFile(new File(outputBitmapFileSrc));
-            }
+        Element outputElement = processElement.getChild("output");
+        if (null != outputElement) {
+            // output directory
+            File outputDir = new File(resolve(outputElement.getAttributeValue("src")));
+            parameters.setOutputDirectory(outputDir);
+            // output prefix
+            String prefix = outputElement.getAttributeValue("prefix");
+            parameters.setOutputPrefix(prefix);
         }
 
     }
@@ -200,17 +192,12 @@ public class HemiPhotoCfg extends Configuration {
         processElement.addContent(zenithNumberElement);
 
         //outputs
-        Element outputFilesElement = new Element("output_files");
-        
-        Element outputTextFileElement = new Element("output_text_file");
-        outputTextFileElement.setAttribute("src", parameters.getOutputTextFile().getAbsolutePath());
-        outputFilesElement.addContent(outputTextFileElement);
-
-        Element outputBitmapFileElement = new Element("output_bitmap_file");
-        outputBitmapFileElement.setAttribute("src", parameters.getOutputBitmapFile().getAbsolutePath());
-        outputFilesElement.addContent(outputBitmapFileElement);
-
-        processElement.addContent(outputFilesElement);
+        Element outputElement = new Element("output");
+        // output path
+        outputElement.setAttribute(new Attribute("src", parameters.getOutputDirectory().getAbsolutePath()));
+        // output prefix
+        outputElement.setAttribute(new Attribute("prefix", parameters.getOutputPrefix()));
+        processElement.addContent(outputElement);
     }
 
     public HemiParameters getParameters() {

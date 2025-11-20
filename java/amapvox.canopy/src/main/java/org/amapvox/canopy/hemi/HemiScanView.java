@@ -201,7 +201,8 @@ public class HemiScanView extends AVoxTask {
                 return null;
             }
 
-            File hemiphotoFile = new File(parameters.getOutputBitmapFile(), "position_" + positionID + ".png");
+            File hemiphotoFile = new File(parameters.getOutputDirectory(),
+                    parameters.getOutputPrefix() + "_pos" + positionID + ".png");
             writeHemiPhoto(hemiphotoFile);
             outputFiles.add(hemiphotoFile);
 
@@ -209,7 +210,8 @@ public class HemiScanView extends AVoxTask {
                 return null;
             }
 
-            File hemiPhotoTextFile = new File(parameters.getOutputTextFile(), "position_" + positionID + ".txt");
+            File hemiPhotoTextFile = new File(parameters.getOutputDirectory(),
+                    parameters.getOutputPrefix() + "_pos" + positionID + ".txt");
             writeHemiPhotoAsText(hemiPhotoTextFile);
             outputFiles.add(hemiPhotoTextFile);
         }

@@ -189,30 +189,15 @@ public class HemiPhotoCfg extends Configuration {
         }
 
         List<Point3d> positions = new ArrayList<>();
-
-        Element sensorPositionElement = processElement.getChild("sensor-position");
-
-        if (sensorPositionElement != null) { //work around for old config
-
-            positions.add(new Point3d(Double.parseDouble(sensorPositionElement.getAttributeValue("x")),
-                    Double.parseDouble(sensorPositionElement.getAttributeValue("y")),
-                    Double.parseDouble(sensorPositionElement.getAttributeValue("z"))));
-
-            setSensorPositions(positions);
-
-        } else {
-
-            Element sensorPositionsElement = processElement.getChild("sensor-positions");
-            List<Element> children = sensorPositionsElement.getChildren("position");
-            children.forEach((element) -> {
-                positions.add(new Point3d(
-                        Double.parseDouble(element.getAttributeValue("x")),
-                        Double.parseDouble(element.getAttributeValue("y")),
-                        Double.parseDouble(element.getAttributeValue("z"))));
-            });
-
-            setSensorPositions(positions);
-        }
+        Element sensorPositionsElement = processElement.getChild("sensor-positions");
+        List<Element> children = sensorPositionsElement.getChildren("position");
+        children.forEach((element) -> {
+            positions.add(new Point3d(
+                    Double.parseDouble(element.getAttributeValue("x")),
+                    Double.parseDouble(element.getAttributeValue("y")),
+                    Double.parseDouble(element.getAttributeValue("z"))));
+        });
+        setSensorPositions(positions);
 
         //output
         Element outputElement = processElement.getChild("output");
@@ -305,7 +290,7 @@ public class HemiPhotoCfg extends Configuration {
         parametersElement.setAttribute("meridian-number", String.valueOf(getMeridianNumber()));
         // number of parallels
         parametersElement.setAttribute("parallel-number", String.valueOf(getParallelNumber()));
-        
+
         // add elements
         outputElement.addContent(parametersElement);
         processElement.addContent(outputElement);
@@ -360,7 +345,20 @@ public class HemiPhotoCfg extends Configuration {
                     if (Integer.parseInt(processElement.getAttributeValue("type")) == 0) {
                         throw new UnsupportedOperationException("Hemispherical photographs from RSP/RXP scans is deprecated since v2.5.0");
                     }
-                    
+
+                    // rename sensor-position element into sensor-positions
+                    if (null != processElement.getChild("sensor-position")) {
+                        Element sensorPositionElement = processElement.getChild("sensor-position");
+                        Element sensorPositionsElement = new Element("sensor-positions");
+                        Element positionElement = new Element("position");
+                        positionElement.setAttribute("x", sensorPositionElement.getAttributeValue("x"));
+                        positionElement.setAttribute("y", sensorPositionElement.getAttributeValue("y"));
+                        positionElement.setAttribute("z", sensorPositionElement.getAttributeValue("z"));
+                        sensorPositionsElement.addContent(positionElement);
+                        processElement.addContent(sensorPositionsElement);
+                        processElement.removeContent(sensorPositionElement);
+                    }
+
                     // remove process element mode attribute
                     processElement.removeAttribute("mode");
 
@@ -397,7 +395,6 @@ public class HemiPhotoCfg extends Configuration {
                         Element pixelNumberElement = processElement.getChild("pixel-number");
                         parametersElement.setAttribute("pixel-number", pixelNumberElement.getAttributeValue("value"));
                     }
-                    
 
                     // add azimut-number to output/paremters attribute
                     // rename it to meridian-number
@@ -405,7 +402,6 @@ public class HemiPhotoCfg extends Configuration {
                         Element azimutNumberElement = processElement.getChild("azimut-number");
                         parametersElement.setAttribute("meridian-number", azimutNumberElement.getAttributeValue("value"));
                     }
-                    
 
                     // add zenith-number to output/paremters attribute
                     // rename it to parallel-number
@@ -413,22 +409,22 @@ public class HemiPhotoCfg extends Configuration {
                         Element zenithNumberElement = processElement.getChild("zenith-number");
                         parametersElement.setAttribute("parallel-number", zenithNumberElement.getAttributeValue("value"));
                     }
-                    
+
                     // add paremeters element to output element
                     outputElement.addContent(parametersElement);
-                    
+
                     // add output element to process element
                     processElement.addContent(outputElement);
-                    
+
                     // remove pixel-number element
                     processElement.removeChild("pixel-number");
-                    
+
                     // remove pixel-number element
                     processElement.removeChild("azimut-number");
-                    
+
                     // remove zenith-number element
                     processElement.removeChild("zenith-number");
-                    
+
                     // remove output files element
                     processElement.removeChild("output_files");
                 }

@@ -57,6 +57,10 @@ public class HemiPhotoFrameController extends ConfigurationController {
     private TextField textfieldHemiPhotoOutputDirectory;
     @FXML
     private TextField textfieldHemiPhotoOutputPrefix;
+     @FXML
+    private Button buttonHelpOutputPrefix;
+    @FXML
+    private HelpButtonController buttonHelpOutputPrefixController;
     @FXML
     private ListView<Point3d> listViewHemiPhotoSensorPositions;
     @FXML
@@ -68,24 +72,24 @@ public class HemiPhotoFrameController extends ConfigurationController {
     @FXML
     private HelpButtonController buttonHelpPixelNumberController;
     @FXML
-    private TextField textfieldAzimuthNumber;
+    private TextField textfieldMeridianNumber;
     @FXML
-    private Button buttonHelpAzimuthNumber;
+    private Button buttonHelpMeridianNumber;
     @FXML
-    private HelpButtonController buttonHelpAzimuthNumberController;
+    private HelpButtonController buttonHelpMeridianNumberController;
     @FXML
-    private TextField textfieldZenithNumber;
+    private TextField textfieldParallelNumber;
     @FXML
-    private Button buttonHelpZenithNumber;
+    private Button buttonHelpParallelNumber;
     @FXML
-    private HelpButtonController buttonHelpZenithNumberController;
+    private HelpButtonController buttonHelpParallelNumberController;
 
     @Override
     public void initComponents(ResourceBundle rb) {
 
         textfieldPixelNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(800, TextFieldUtil.Sign.POSITIVE));
-        textfieldAzimuthNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(36, TextFieldUtil.Sign.POSITIVE));
-        textfieldZenithNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(9, TextFieldUtil.Sign.POSITIVE));
+        textfieldMeridianNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(36, TextFieldUtil.Sign.POSITIVE));
+        textfieldParallelNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(9, TextFieldUtil.Sign.POSITIVE));
 
         listViewHemiPhotoSensorPositions.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         Util.linkSelectorToList(selectorHemiPhotoSensor, listViewHemiPhotoSensorPositions);
@@ -94,17 +98,21 @@ public class HemiPhotoFrameController extends ConfigurationController {
         directoryChooserHemiPhotoOutputDirectory.setTitle("Choose output directory");
 
         positionImporterFrameController = PositionImporterFrameController.newInstance();
+        
+        buttonHelpOutputPrefix.setOnAction((ActionEvent event) -> {
+            buttonHelpOutputPrefixController.showHelpDialog(rb.getString("help_hemiphoto_output_prefix"));
+        });
 
         buttonHelpPixelNumber.setOnAction((ActionEvent event) -> {
             buttonHelpPixelNumberController.showHelpDialog(rb.getString("help_hemiphoto_pixel_number"));
         });
         
-        buttonHelpAzimuthNumber.setOnAction((ActionEvent event) -> {
-            buttonHelpAzimuthNumberController.showHelpDialog(rb.getString("help_hemiphoto_azimuth_number"));
+        buttonHelpMeridianNumber.setOnAction((ActionEvent event) -> {
+            buttonHelpMeridianNumberController.showHelpDialog(rb.getString("help_hemiphoto_meridian_number"));
         });
         
-        buttonHelpZenithNumber.setOnAction((ActionEvent event) -> {
-            buttonHelpZenithNumberController.showHelpDialog(rb.getString("help_hemiphoto_zenith_number"));
+        buttonHelpParallelNumber.setOnAction((ActionEvent event) -> {
+            buttonHelpParallelNumberController.showHelpDialog(rb.getString("help_hemiphoto_parallel_number"));
         });
     }
 
@@ -119,8 +127,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
                     textfieldHemiPhotoOutputDirectory.textProperty(),
                     textfieldHemiPhotoOutputPrefix.textProperty(),
                     textfieldPixelNumber.textProperty(),
-                    textfieldAzimuthNumber.textProperty(),
-                    textfieldZenithNumber.textProperty()
+                    textfieldMeridianNumber.textProperty(),
+                    textfieldParallelNumber.textProperty()
                 }));
 
         properties.addAll(Arrays.asList(voxelFileCanopyController.getListenedProperties()));
@@ -133,8 +141,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
 
         hemiPhotoSimValidationSupport = new ValidationSupport();
         hemiPhotoSimValidationSupport.registerValidator(textfieldPixelNumber, true, Validators.fieldIntegerValidator);
-        hemiPhotoSimValidationSupport.registerValidator(textfieldAzimuthNumber, true, Validators.fieldIntegerValidator);
-        hemiPhotoSimValidationSupport.registerValidator(textfieldZenithNumber, true, Validators.fieldIntegerValidator);
+        hemiPhotoSimValidationSupport.registerValidator(textfieldMeridianNumber, true, Validators.fieldIntegerValidator);
+        hemiPhotoSimValidationSupport.registerValidator(textfieldParallelNumber, true, Validators.fieldIntegerValidator);
         voxelFileCanopyController.registerValidators();
     }
 
@@ -150,8 +158,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
         listViewHemiPhotoSensorPositions.getItems().setAll(hemiPhotoCfg.getSensorPositions());
 
         textfieldPixelNumber.setText(String.valueOf(hemiPhotoCfg.getPixelNumber()));
-        textfieldAzimuthNumber.setText(String.valueOf(hemiPhotoCfg.getMeridianNumber()));
-        textfieldZenithNumber.setText(String.valueOf(hemiPhotoCfg.getParallelNumber()));
+        textfieldMeridianNumber.setText(String.valueOf(hemiPhotoCfg.getMeridianNumber()));
+        textfieldParallelNumber.setText(String.valueOf(hemiPhotoCfg.getParallelNumber()));
         textfieldHemiPhotoOutputDirectory.setText(hemiPhotoCfg.getOutputDirectory().getAbsolutePath());
         textfieldHemiPhotoOutputPrefix.setText(hemiPhotoCfg.getOutputPrefix());
 
@@ -214,8 +222,8 @@ public class HemiPhotoFrameController extends ConfigurationController {
         HemiPhotoCfg hemiPhotoCfg = new HemiPhotoCfg();
 
         hemiPhotoCfg.setPixelNumber(Integer.parseInt(textfieldPixelNumber.getText()));
-        hemiPhotoCfg.setMeridianNumber(Integer.parseInt(textfieldAzimuthNumber.getText()));
-        hemiPhotoCfg.setParallelNumber(Integer.parseInt(textfieldZenithNumber.getText()));
+        hemiPhotoCfg.setMeridianNumber(Integer.parseInt(textfieldMeridianNumber.getText()));
+        hemiPhotoCfg.setParallelNumber(Integer.parseInt(textfieldParallelNumber.getText()));
 
         hemiPhotoCfg.setVoxelFile(voxelFileCanopyController.getVoxelFile());
         hemiPhotoCfg.setPADVariable(voxelFileCanopyController.getPADVariable());

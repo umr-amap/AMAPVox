@@ -33,7 +33,113 @@ import org.jdom2.Element;
  */
 public class HemiPhotoCfg extends Configuration {
 
-    private HemiParameters parameters = new HemiParameters();
+    //PAD mode
+    private File voxelFile;
+    private String padVariable;
+    private LeafAngleDistribution.Type leafAngleDistribution;
+    private double[] leafAngleDistributionParameters = new double[2];
+    private List<Point3d> sensorPositions;
+    
+    //common parameters
+    private int pixelNumber;
+    private int azimutsNumber = 36;
+    private int zenithsNumber = 9;
+    
+    //output
+    private File outputDir;
+    private String outputPrefix;
+
+    public File getVoxelFile() {
+        return voxelFile;
+    }
+
+    public void setVoxelFile(File voxelFile) {
+        this.voxelFile = voxelFile;
+    }
+    
+    public String getPADVariable() {
+        return padVariable;
+    }
+    
+    public void setPADVariable(String padVariable) {
+        this.padVariable = padVariable;
+    }
+
+    public List<Point3d> getSensorPositions() {
+        return sensorPositions;
+    }
+
+    public void setSensorPositions(List<Point3d> sensorPositions) {
+        this.sensorPositions = sensorPositions;
+    }
+
+    public int getPixelNumber() {
+        return pixelNumber;
+    }
+
+    public void setPixelNumber(int pixelNumber) {
+        this.pixelNumber = pixelNumber;
+    }
+
+    public int getAzimutsNumber() {
+        return azimutsNumber;
+    }
+
+    public void setAzimutsNumber(int azimutsNumber) {
+        this.azimutsNumber = azimutsNumber;
+    }
+
+    public int getZenithsNumber() {
+        return zenithsNumber;
+    }
+
+    public void setZenithsNumber(int zenithsNumber) {
+        this.zenithsNumber = zenithsNumber;
+    }
+
+    public File getOutputDirectory() {
+        return outputDir;
+    }
+
+    public void setOutputDirectory(File directory) {
+        this.outputDir = directory;
+    }
+    
+    public String getOutputPrefix() {
+        return outputPrefix;
+    }
+    
+    public void setOutputPrefix(String prefix) {
+        this.outputPrefix = prefix;
+    }
+    
+    /**
+     * @return the leafAngleDistribution
+     */
+    public LeafAngleDistribution.Type getLeafAngleDistribution() {
+        return leafAngleDistribution;
+    }
+
+    /**
+     * @param leafAngleDistribution the leafAngleDistribution to set
+     */
+    public void setLeafAngleDistribution(LeafAngleDistribution.Type leafAngleDistribution) {
+        this.leafAngleDistribution = leafAngleDistribution;
+    }
+    
+    /**
+     * @return the leafAngleDistribution parameters
+     */
+    public double[] getLeafAngleDistributionParameters() {
+        return leafAngleDistributionParameters;
+    }
+
+    /**
+     * @param leafAngleDistributionParameters
+     */
+    public void setLeafAngleDistributionParameters(double[] leafAngleDistributionParameters) {
+        this.leafAngleDistributionParameters = leafAngleDistributionParameters;
+    }
 
     public HemiPhotoCfg() {
         super("HEMI_PHOTO", "Hemispheral Photograph",
@@ -45,10 +151,6 @@ public class HemiPhotoCfg extends Configuration {
         return HemiPhotoTask.class;
     }
 
-    public void setParameters(HemiParameters parameters) {
-        this.parameters = parameters;
-    }
-
     @Override
     public void readProcessElements(Element processElement) throws IOException {
 
@@ -56,16 +158,16 @@ public class HemiPhotoCfg extends Configuration {
         String inputFileSrc = resolve(inputFileElement.getAttributeValue("src"));
 
         if (inputFileSrc != null) {
-            parameters.setVoxelFile(new File(inputFileSrc));
+            setVoxelFile(new File(inputFileSrc));
         }
 
         if (null != inputFileElement.getAttribute("variable")) {
-            parameters.setPADVariable(inputFileElement.getAttributeValue("variable"));
+            setPADVariable(inputFileElement.getAttributeValue("variable"));
         }
 
         Element ladElement = processElement.getChild("leaf-angle-distribution");
         if (ladElement != null) {
-            parameters.setLeafAngleDistribution(LeafAngleDistribution.Type.fromString(ladElement.getAttributeValue("type")));
+            setLeafAngleDistribution(LeafAngleDistribution.Type.fromString(ladElement.getAttributeValue("type")));
             double[] ladParams = new double[2];
             String alphaValue = ladElement.getAttributeValue("alpha");
             if (alphaValue != null) {
@@ -75,7 +177,7 @@ public class HemiPhotoCfg extends Configuration {
             if (betaValue != null) {
                 ladParams[0] = Double.parseDouble(betaValue);
             }
-            parameters.setLeafAngleDistributionParameters(ladParams);
+            setLeafAngleDistributionParameters(ladParams);
         } else {
             throw new IOException("Cannot find leaf-angle-distribution element");
         }
@@ -90,7 +192,7 @@ public class HemiPhotoCfg extends Configuration {
                     Double.parseDouble(sensorPositionElement.getAttributeValue("y")),
                     Double.parseDouble(sensorPositionElement.getAttributeValue("z"))));
 
-            parameters.setSensorPositions(positions);
+            setSensorPositions(positions);
 
         } else {
 
@@ -103,27 +205,27 @@ public class HemiPhotoCfg extends Configuration {
                         Double.parseDouble(element.getAttributeValue("z"))));
             });
 
-            parameters.setSensorPositions(positions);
+            setSensorPositions(positions);
         }
 
         //common parameters
         Element pixelNumberElement = processElement.getChild("pixel-number");
         if (null != pixelNumberElement) {
-            parameters.setPixelNumber(Integer.parseInt(pixelNumberElement.getAttributeValue("value")));
+            setPixelNumber(Integer.parseInt(pixelNumberElement.getAttributeValue("value")));
         } else {
             throw new IOException("Cannot find pixel-number element");
         }
 
         Element azimutsNumberElement = processElement.getChild("azimut-number");
         if (null != azimutsNumberElement) {
-            parameters.setAzimutsNumber(Integer.parseInt(azimutsNumberElement.getAttributeValue("value")));
+            setAzimutsNumber(Integer.parseInt(azimutsNumberElement.getAttributeValue("value")));
         } else {
             throw new IOException("Cannot find azimut-number element");
         }
 
         Element zenithNumberElement = processElement.getChild("zenith-number");
         if (null != zenithNumberElement) {
-            parameters.setZenithsNumber(Integer.parseInt(zenithNumberElement.getAttributeValue("value")));
+            setZenithsNumber(Integer.parseInt(zenithNumberElement.getAttributeValue("value")));
         } else {
             throw new IOException("Cannot find zenith-number element");
         }
@@ -133,10 +235,10 @@ public class HemiPhotoCfg extends Configuration {
         if (null != outputElement) {
             // output directory
             File outputDir = new File(resolve(outputElement.getAttributeValue("src")));
-            parameters.setOutputDirectory(outputDir);
+            setOutputDirectory(outputDir);
             // output prefix
             String prefix = outputElement.getAttributeValue("prefix");
-            parameters.setOutputPrefix(prefix);
+            setOutputPrefix(prefix);
         }
 
     }
@@ -147,28 +249,28 @@ public class HemiPhotoCfg extends Configuration {
         //input
         Element inputFileElement = new Element("input_file");
         inputFileElement.setAttribute("type", "VOX");
-        inputFileElement.setAttribute("src", parameters.getVoxelFile().getAbsolutePath());
-        inputFileElement.setAttribute("variable", parameters.getPADVariable());
+        inputFileElement.setAttribute("src", getVoxelFile().getAbsolutePath());
+        inputFileElement.setAttribute("variable", getPADVariable());
         processElement.addContent(inputFileElement);
 
         // leaf angle distribution
         Element ladElement = new Element("leaf-angle-distribution");
-        ladElement.setAttribute("type", parameters.getLeafAngleDistribution().toString());
+        ladElement.setAttribute("type", getLeafAngleDistribution().toString());
         processElement.addContent(ladElement);
 
-        if (parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA
-                || parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.ELLIPSOIDAL) {
-            ladElement.setAttribute("alpha", String.valueOf(parameters.getLeafAngleDistributionParameters()[0]));
+        if (getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA
+                || getLeafAngleDistribution() == LeafAngleDistribution.Type.ELLIPSOIDAL) {
+            ladElement.setAttribute("alpha", String.valueOf(getLeafAngleDistributionParameters()[0]));
 
-            if (parameters.getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA) {
-                ladElement.setAttribute("beta", String.valueOf(parameters.getLeafAngleDistributionParameters()[1]));
+            if (getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA) {
+                ladElement.setAttribute("beta", String.valueOf(getLeafAngleDistributionParameters()[1]));
             }
         }
 
         // sensor positions
         Element sensorPositionsElement = new Element("sensor-positions");
 
-        parameters.getSensorPositions().forEach(position -> {
+        getSensorPositions().forEach(position -> {
             Element positionElement = new Element("position");
             positionElement.setAttribute("x", String.valueOf(position.x));
             positionElement.setAttribute("y", String.valueOf(position.y));
@@ -180,29 +282,25 @@ public class HemiPhotoCfg extends Configuration {
 
         //common parameters
         Element pixelNumberElement = new Element("pixel-number");
-        pixelNumberElement.setAttribute("value", String.valueOf(parameters.getPixelNumber()));
+        pixelNumberElement.setAttribute("value", String.valueOf(getPixelNumber()));
         processElement.addContent(pixelNumberElement);
 
         Element azimutsNumberElement = new Element("azimut-number");
-        azimutsNumberElement.setAttribute("value", String.valueOf(parameters.getAzimutsNumber()));
+        azimutsNumberElement.setAttribute("value", String.valueOf(getAzimutsNumber()));
         processElement.addContent(azimutsNumberElement);
 
         Element zenithNumberElement = new Element("zenith-number");
-        zenithNumberElement.setAttribute("value", String.valueOf(parameters.getZenithsNumber()));
+        zenithNumberElement.setAttribute("value", String.valueOf(getZenithsNumber()));
         processElement.addContent(zenithNumberElement);
 
         //outputs
         Element outputElement = new Element("output");
         // output path
-        outputElement.setAttribute(new Attribute("src", parameters.getOutputDirectory().getAbsolutePath()));
+        outputElement.setAttribute(new Attribute("src", getOutputDirectory().getAbsolutePath()));
         // output prefix
-        outputElement.setAttribute(new Attribute("prefix", parameters.getOutputPrefix()));
+        outputElement.setAttribute(new Attribute("prefix", getOutputPrefix()));
         processElement.addContent(outputElement);
-    }
-
-    public HemiParameters getParameters() {
-        return parameters;
-    }
+    } 
 
     @Override
     public Release[] getReleases() {

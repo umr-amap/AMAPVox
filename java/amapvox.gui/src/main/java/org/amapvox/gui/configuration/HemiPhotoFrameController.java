@@ -10,7 +10,6 @@ import org.amapvox.gui.PositionImporterFrameController;
 import org.amapvox.gui.TextFieldUtil;
 import org.amapvox.gui.Util;
 import org.amapvox.gui.Validators;
-import org.amapvox.canopy.hemiphoto.HemiParameters;
 import org.amapvox.canopy.hemiphoto.HemiPhotoCfg;
 import java.io.File;
 import java.io.IOException;
@@ -142,20 +141,19 @@ public class HemiPhotoFrameController extends ConfigurationController {
     @Override
     public void loadConfiguration(File file) throws Exception {
 
-        HemiPhotoCfg hemiCfg = new HemiPhotoCfg();
-        hemiCfg.read(file);
-        HemiParameters hemiParameters = hemiCfg.getParameters();
+        HemiPhotoCfg hemiPhotoCfg = new HemiPhotoCfg();
+        hemiPhotoCfg.read(file);
 
-        voxelFileCanopyController.setVoxelFile(hemiParameters.getVoxelFile(), hemiParameters.getPADVariable());
-        voxelFileCanopyController.setLeafAngleDistribution(hemiParameters.getLeafAngleDistribution());
-        voxelFileCanopyController.setLeafAngleDistributionParameters(hemiParameters.getLeafAngleDistributionParameters());
-        listViewHemiPhotoSensorPositions.getItems().setAll(hemiParameters.getSensorPositions());
+        voxelFileCanopyController.setVoxelFile(hemiPhotoCfg.getVoxelFile(), hemiPhotoCfg.getPADVariable());
+        voxelFileCanopyController.setLeafAngleDistribution(hemiPhotoCfg.getLeafAngleDistribution());
+        voxelFileCanopyController.setLeafAngleDistributionParameters(hemiPhotoCfg.getLeafAngleDistributionParameters());
+        listViewHemiPhotoSensorPositions.getItems().setAll(hemiPhotoCfg.getSensorPositions());
 
-        textfieldPixelNumber.setText(String.valueOf(hemiParameters.getPixelNumber()));
-        textfieldAzimuthNumber.setText(String.valueOf(hemiParameters.getAzimutsNumber()));
-        textfieldZenithNumber.setText(String.valueOf(hemiParameters.getZenithsNumber()));
-        textfieldHemiPhotoOutputDirectory.setText(hemiParameters.getOutputDirectory().getAbsolutePath());
-        textfieldHemiPhotoOutputPrefix.setText(hemiParameters.getOutputPrefix());
+        textfieldPixelNumber.setText(String.valueOf(hemiPhotoCfg.getPixelNumber()));
+        textfieldAzimuthNumber.setText(String.valueOf(hemiPhotoCfg.getAzimutsNumber()));
+        textfieldZenithNumber.setText(String.valueOf(hemiPhotoCfg.getZenithsNumber()));
+        textfieldHemiPhotoOutputDirectory.setText(hemiPhotoCfg.getOutputDirectory().getAbsolutePath());
+        textfieldHemiPhotoOutputPrefix.setText(hemiPhotoCfg.getOutputPrefix());
 
     }
 
@@ -213,24 +211,22 @@ public class HemiPhotoFrameController extends ConfigurationController {
             throw new IOException(sb.toString());
         }
 
-        HemiParameters hemiParameters = new HemiParameters();
+        HemiPhotoCfg hemiPhotoCfg = new HemiPhotoCfg();
 
-        hemiParameters.setPixelNumber(Integer.parseInt(textfieldPixelNumber.getText()));
-        hemiParameters.setAzimutsNumber(Integer.parseInt(textfieldAzimuthNumber.getText()));
-        hemiParameters.setZenithsNumber(Integer.parseInt(textfieldZenithNumber.getText()));
+        hemiPhotoCfg.setPixelNumber(Integer.parseInt(textfieldPixelNumber.getText()));
+        hemiPhotoCfg.setAzimutsNumber(Integer.parseInt(textfieldAzimuthNumber.getText()));
+        hemiPhotoCfg.setZenithsNumber(Integer.parseInt(textfieldZenithNumber.getText()));
 
-        hemiParameters.setVoxelFile(voxelFileCanopyController.getVoxelFile());
-        hemiParameters.setPADVariable(voxelFileCanopyController.getPADVariable());
-        hemiParameters.setLeafAngleDistribution(voxelFileCanopyController.getLeafAngleDistribution());
-        hemiParameters.setLeafAngleDistributionParameters(voxelFileCanopyController.getLeafAngleDistributionParameters());
-        hemiParameters.setSensorPositions(listViewHemiPhotoSensorPositions.getItems());
+        hemiPhotoCfg.setVoxelFile(voxelFileCanopyController.getVoxelFile());
+        hemiPhotoCfg.setPADVariable(voxelFileCanopyController.getPADVariable());
+        hemiPhotoCfg.setLeafAngleDistribution(voxelFileCanopyController.getLeafAngleDistribution());
+        hemiPhotoCfg.setLeafAngleDistributionParameters(voxelFileCanopyController.getLeafAngleDistributionParameters());
+        hemiPhotoCfg.setSensorPositions(listViewHemiPhotoSensorPositions.getItems());
 
         File outputDirectory = new File(textfieldHemiPhotoOutputDirectory.getText());
-        hemiParameters.setOutputDirectory(outputDirectory);
-        hemiParameters.setOutputPrefix(textfieldHemiPhotoOutputPrefix.getText());
+        hemiPhotoCfg.setOutputDirectory(outputDirectory);
+        hemiPhotoCfg.setOutputPrefix(textfieldHemiPhotoOutputPrefix.getText());
 
-        HemiPhotoCfg hemiPhotoCfg = new HemiPhotoCfg();
-        hemiPhotoCfg.setParameters(hemiParameters);
         hemiPhotoCfg.write(file);
     }
 }

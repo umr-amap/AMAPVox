@@ -73,7 +73,7 @@ public class HemiPhotoTask extends AVoxTask {
     /**
      * Parameters of the hemispherical photograph.
      */
-    private HemiParameters parameters;
+    private HemiPhotoCfg cfg;
 
     public HemiPhotoTask(File file, int ncpu) {
         super(file, ncpu);
@@ -87,11 +87,11 @@ public class HemiPhotoTask extends AVoxTask {
     @Override
     protected void doInit() throws Exception {
 
-        parameters = ((HemiPhotoCfg) getConfiguration()).getParameters();
+        cfg = ((HemiPhotoCfg) getConfiguration());
 
-        npixel = parameters.getPixelNumber();
-        nparallel = parameters.getZenithsNumber();
-        nmeridian = parameters.getAzimutsNumber();
+        npixel = cfg.getPixelNumber();
+        nparallel = cfg.getZenithsNumber();
+        nmeridian = cfg.getAzimutsNumber();
     }
 
     @Override
@@ -140,11 +140,11 @@ public class HemiPhotoTask extends AVoxTask {
         LOGGER.info(logHeader + " started...");
 
         DirectionalTransmittance dt = new DirectionalTransmittance(
-                parameters.getVoxelFile(),
-                parameters.getPADVariable(),
-                parameters.getLeafAngleDistribution(),
-                parameters.getLeafAngleDistributionParameters());
-        List<Point3d> positions = parameters.getSensorPositions();
+                cfg.getVoxelFile(),
+                cfg.getPADVariable(),
+                cfg.getLeafAngleDistribution(),
+                cfg.getLeafAngleDistributionParameters());
+        List<Point3d> positions = cfg.getSensorPositions();
 
         int positionID = 0;
 
@@ -211,8 +211,8 @@ public class HemiPhotoTask extends AVoxTask {
                 return null;
             }
 
-            File hemiphotoFile = new File(parameters.getOutputDirectory(),
-                    parameters.getOutputPrefix() + "_pos" + positionID + ".png");
+            File hemiphotoFile = new File(cfg.getOutputDirectory(),
+                    cfg.getOutputPrefix() + "_pos" + positionID + ".png");
             writeHemiPhoto(hemiphotoFile);
             outputFiles.add(hemiphotoFile);
 
@@ -220,8 +220,8 @@ public class HemiPhotoTask extends AVoxTask {
                 return null;
             }
 
-            File hemiPhotoTextFile = new File(parameters.getOutputDirectory(),
-                    parameters.getOutputPrefix() + "_pos" + positionID + ".txt");
+            File hemiPhotoTextFile = new File(cfg.getOutputDirectory(),
+                    cfg.getOutputPrefix() + "_pos" + positionID + ".txt");
             writeHemiPhotoAsText(hemiPhotoTextFile);
             outputFiles.add(hemiPhotoTextFile);
         }

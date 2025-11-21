@@ -191,16 +191,14 @@ public class PositionImporterFrameController implements Initializable {
 
                         if (item != null) {
                             switch (item) {
-                                case "X":
+                                case "X" ->
                                     xIndex = i;
-                                    break;
-                                case "Y":
+                                case "Y" ->
                                     yIndex = i;
-                                    break;
-                                case "Z":
+                                case "Z" ->
                                     zIndex = i;
-                                    break;
-                                default:
+                                default -> {
+                                }
                             }
                         }
                     }
@@ -246,13 +244,13 @@ public class PositionImporterFrameController implements Initializable {
                                             try {
 
                                                 if (finalXIndex != -1) {
-                                                    x = Double.valueOf(lineSplitted[finalXIndex]);
+                                                    x = Double.parseDouble(lineSplitted[finalXIndex]);
                                                 }
                                                 if (finalYIndex != -1) {
-                                                    y = Double.valueOf(lineSplitted[finalYIndex]);
+                                                    y = Double.parseDouble(lineSplitted[finalYIndex]);
                                                 }
                                                 if (finalZIndex != -1) {
-                                                    z = Double.valueOf(lineSplitted[finalZIndex]);
+                                                    z = Double.parseDouble(lineSplitted[finalZIndex]);
                                                 }
 
                                                 positions.add(new Point3d(x, y, z));
@@ -316,8 +314,8 @@ public class PositionImporterFrameController implements Initializable {
 
     private List<Point3d> generateGridPositions() throws Exception {
 
-        float step = Float.valueOf(textfieldScannerSeedPosition.getText());
-        float zOffset = Float.valueOf(textfieldScannerHeightOffset.getText());
+        float step = Float.parseFloat(textfieldScannerSeedPosition.getText());
+        float zOffset = Float.parseFloat(textfieldScannerHeightOffset.getText());
 
         final List<Point3d> positions = new ArrayList<>();
 
@@ -346,7 +344,7 @@ public class PositionImporterFrameController implements Initializable {
         }
         while (iterator.hasNext()) {
             VoxelFileVoxel voxel = iterator.next();
-            groudDistances[voxel.i][voxel.j][voxel.k] = Float.valueOf(voxel.variables[groundDistanceColumn]);
+            groudDistances[voxel.i][voxel.j][voxel.k] = Float.parseFloat(voxel.variables[groundDistanceColumn]);
         }
 
         for (int i = 0; i < header.getDimension().x; i++) {
@@ -456,15 +454,23 @@ public class PositionImporterFrameController implements Initializable {
     private void onActionButtonAddSinglePosition(ActionEvent event) {
 
         try {
-            Point3d position = new Point3d(Double.valueOf(textFieldXPosition.getText()),
-                    Double.valueOf(textFieldYPosition.getText()),
-                    Double.valueOf(textFieldZPosition.getText()));
+            Point3d position = new Point3d(
+                    Double.parseDouble(textFieldXPosition.getText()),
+                    Double.parseDouble(textFieldYPosition.getText()),
+                    Double.parseDouble(textFieldZPosition.getText()));
 
             listViewCanopyAnalyzerSensorPositions.getItems().add(position);
 
         } catch (NumberFormatException e) {
             ErrorDialog.show(e);
         }
+    }
+
+    @FXML
+    private void onActionButtonClearSinglePosition(ActionEvent event) {
+        textFieldXPosition.clear();
+        textFieldYPosition.clear();
+        textFieldZPosition.clear();
     }
 
     public void setInitialVoxelFile(File file) {

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import org.amapvox.commons.javafx.*?>
+
+<AnchorPane id="AnchorPane" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.SensorPositionsController" >
+    <children>
+        <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <HBox spacing="5.0" alignment="CENTER_LEFT">
+                    <children>
+                        <fx:define> 
+                            <Region fx:id="usePrefSize" fx:constant="USE_PREF_SIZE" /> 
+                        </fx:define> 
+                        <Label fx:id="labelSensorPositions" minWidth="$usePrefSize" text="Sensor positions" />
+                        <fx:include fx:id="helpButtonSensorPositions" source="HelpButton.fxml" />
+                    </children>
+                </HBox>
+                <ListView fx:id="listViewSensorPositions" prefHeight="250.0" />
+                <HBox spacing="10.0"  alignment="CENTER_LEFT" >
+                    <children>
+                        <SelectableMenuButton fx:id="selectorSensorPositions" />
+                        <HBox spacing="5.0" alignment="CENTER_LEFT" >
+                            <children>
+                                <Button fx:id="buttonRemovePosition" mnemonicParsing="false" onAction="#onActionButtonRemovePosition">
+                                    <graphic>
+                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@icons/remove.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                                <Button fx:id="buttonAddPosition" mnemonicParsing="false" onAction="#onActionButtonAddPosition">
+                                    <graphic>
+                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                            <image>
+                                                <Image url="@icons/add.png" />
+                                            </image>
+                                        </ImageView>
+                                    </graphic>
+                                </Button>
+                            </children>
+                        </HBox>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

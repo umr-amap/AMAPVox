@@ -5,10 +5,7 @@
  */
 package org.amapvox.gui.configuration;
 
-import org.amapvox.commons.javafx.SelectableMenuButton;
-import org.amapvox.gui.PositionImporterFrameController;
 import org.amapvox.gui.TextFieldUtil;
-import org.amapvox.gui.Util;
 import org.amapvox.gui.Validators;
 import org.amapvox.canopy.hemiphoto.HemiPhotoCfg;
 import java.io.File;
@@ -18,18 +15,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-import javax.vecmath.Point3d;
 import org.amapvox.gui.HelpButtonController;
+import org.amapvox.gui.SensorPositionsController;
 import org.amapvox.gui.VoxelFileCanopyController;
 import org.apache.log4j.Logger;
 import org.controlsfx.validation.ValidationSupport;
@@ -47,12 +39,12 @@ public class HemiPhotoFrameController extends ConfigurationController {
     private ValidationSupport hemiPhotoSimValidationSupport;
     // directory chooser
     private DirectoryChooser directoryChooserHemiPhotoOutputDirectory;
-    // position importer
-    private PositionImporterFrameController positionImporterFrameController;
 
     // FXML imports
     @FXML
     private VoxelFileCanopyController voxelFileCanopyController;
+    @FXML
+    private SensorPositionsController sensorPositionsController;
     @FXML
     private TextField textfieldHemiPhotoOutputDirectory;
     @FXML
@@ -61,10 +53,6 @@ public class HemiPhotoFrameController extends ConfigurationController {
     private Button buttonHelpOutputPrefix;
     @FXML
     private HelpButtonController buttonHelpOutputPrefixController;
-    @FXML
-    private ListView<Point3d> listViewHemiPhotoSensorPositions;
-    @FXML
-    private SelectableMenuButton selectorHemiPhotoSensor;
     @FXML
     private TextField textfieldPixelNumber;
     @FXML
@@ -91,13 +79,11 @@ public class HemiPhotoFrameController extends ConfigurationController {
         textfieldMeridianNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(36, TextFieldUtil.Sign.POSITIVE));
         textfieldParallelNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(9, TextFieldUtil.Sign.POSITIVE));
 
-        listViewHemiPhotoSensorPositions.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        Util.linkSelectorToList(selectorHemiPhotoSensor, listViewHemiPhotoSensorPositions);
-
+        sensorPositionsController.setText("Positions:");
+        sensorPositionsController.setHelpButtonText("help_hemiphoto_sensor_positions");
+                
         directoryChooserHemiPhotoOutputDirectory = new DirectoryChooser();
         directoryChooserHemiPhotoOutputDirectory.setTitle("Choose output directory");
-
-        positionImporterFrameController = PositionImporterFrameController.newInstance();
         
         buttonHelpOutputPrefix.setOnAction((ActionEvent event) -> {
             buttonHelpOutputPrefixController.showHelpDialog(rb.getString("help_hemiphoto_output_prefix"));
@@ -123,7 +109,6 @@ public class HemiPhotoFrameController extends ConfigurationController {
 
         properties.addAll(Arrays.asList(
                 new ObservableValue[]{
-                    listViewHemiPhotoSensorPositions.itemsProperty(),
                     textfieldHemiPhotoOutputDirectory.textProperty(),
                     textfieldHemiPhotoOutputPrefix.textProperty(),
                     textfieldPixelNumber.textProperty(),
@@ -132,6 +117,7 @@ public class HemiPhotoFrameController extends ConfigurationController {
                 }));
 
         properties.addAll(Arrays.asList(voxelFileCanopyController.getListenedProperties()));
+         properties.addAll(Arrays.asList(sensorPositionsController.getListenedProperties()));
 
         return properties.toArray(ObservableValue[]::new);
     }
@@ -155,7 +141,7 @@ public class HemiPhotoFrameController extends ConfigurationController {
         voxelFileCanopyController.setVoxelFile(hemiPhotoCfg.getVoxelFile(), hemiPhotoCfg.getPADVariable());
         voxelFileCanopyController.setLeafAngleDistribution(hemiPhotoCfg.getLeafAngleDistribution());
         voxelFileCanopyController.setLeafAngleDistributionParameters(hemiPhotoCfg.getLeafAngleDistributionParameters());
-        listViewHemiPhotoSensorPositions.getItems().setAll(hemiPhotoCfg.getSensorPositions());
+        sensorPositionsController.setPositions(hemiPhotoCfg.getSensorPositions());
 
         textfieldPixelNumber.setText(String.valueOf(hemiPhotoCfg.getPixelNumber()));
         textfieldMeridianNumber.setText(String.valueOf(hemiPhotoCfg.getMeridianNumber()));
@@ -174,31 +160,6 @@ public class HemiPhotoFrameController extends ConfigurationController {
             textfieldHemiPhotoOutputDirectory.setText(selectedFile.getAbsolutePath());
             LOGGER.debug("Hemispherical Photo output directory choosed");
         }
-    }
-
-    @FXML
-    private void onActionButtonRemovePositionHemiPhoto(ActionEvent event) {
-
-        ObservableList selectedItems = listViewHemiPhotoSensorPositions.getSelectionModel().getSelectedItems();
-        listViewHemiPhotoSensorPositions.getItems().removeAll(selectedItems);
-        LOGGER.debug("All view hemispherical photo sensor selected.");
-    }
-
-    @FXML
-    private void onActionButtonAddPositionHemiPhoto(ActionEvent event) {
-
-        File voxelFile = voxelFileCanopyController.getVoxelFile();
-        if (null != voxelFile && voxelFile.exists()) {
-            positionImporterFrameController.setInitialVoxelFile(voxelFile);
-        }
-
-        Stage positionImporterFrame = positionImporterFrameController.getStage();
-        positionImporterFrame.show();
-        positionImporterFrame.setOnHidden((WindowEvent event1)
-                -> {
-            listViewHemiPhotoSensorPositions.getItems().addAll(positionImporterFrameController.getPositions());
-            LOGGER.debug("Hemispherical photo position(s) added.");
-        });
     }
 
     @Override
@@ -229,7 +190,7 @@ public class HemiPhotoFrameController extends ConfigurationController {
         hemiPhotoCfg.setPADVariable(voxelFileCanopyController.getPADVariable());
         hemiPhotoCfg.setLeafAngleDistribution(voxelFileCanopyController.getLeafAngleDistribution());
         hemiPhotoCfg.setLeafAngleDistributionParameters(voxelFileCanopyController.getLeafAngleDistributionParameters());
-        hemiPhotoCfg.setSensorPositions(listViewHemiPhotoSensorPositions.getItems());
+        hemiPhotoCfg.setSensorPositions(sensorPositionsController.getPositions());
 
         File outputDirectory = new File(textfieldHemiPhotoOutputDirectory.getText());
         hemiPhotoCfg.setOutputDirectory(outputDirectory);

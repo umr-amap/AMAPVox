@@ -34,34 +34,7 @@
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
                                             <children>
-                                                <ListView fx:id="listViewHemiPhotoSensorPositions" prefHeight="250.0" />
-                                                <HBox spacing="10.0">
-                                                    <children>
-                                                        <SelectableMenuButton fx:id="selectorHemiPhotoSensor" />
-                                                        <HBox spacing="5.0">
-                                                            <children>
-                                                                <Button mnemonicParsing="false" onAction="#onActionButtonRemovePositionHemiPhoto">
-                                                                    <graphic>
-                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                                                                            <image>
-                                                                                <Image url="@../icons/remove.png" />
-                                                                            </image>
-                                                                        </ImageView>
-                                                                    </graphic>
-                                                                </Button>
-                                                                <Button mnemonicParsing="false" onAction="#onActionButtonAddPositionHemiPhoto">
-                                                                    <graphic>
-                                                                        <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                                                                            <image>
-                                                                                <Image url="@../icons/add.png" />
-                                                                            </image>
-                                                                        </ImageView>
-                                                                    </graphic>
-                                                                </Button>
-                                                            </children>
-                                                        </HBox>
-                                                    </children>
-                                                </HBox>
+                                                <fx:include fx:id="sensorPositions" source="../SensorPositions.fxml" /> 
                                             </children>
                                         </VBox>
                                     </children>

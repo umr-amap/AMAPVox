@@ -59,7 +59,7 @@ of the \code{run} function.
 \section{Java 8 64-Bit}{
  AMAPVox versions equal or prior to 1.10 rely on
 Java/JavaFX 64-Bit. It must be installed on the Operating System before
-running AMAPVox. In practice it requires either \href{https://java.com/download/}{Java 8 64-Bit Oracle} or \href{https://aws.amazon.com/fr/corretto/}{Java 8 64-Bit Corretto}. Mind that OpenJDK 8 will
+running AMAPVox. In practice it requires either \href{https://www.java.com/en/download/manual.jsp}{Java 8 64-Bit Oracle} or \href{https://aws.amazon.com/fr/corretto/}{Java 8 64-Bit Corretto}. Mind that OpenJDK 8 will
 not work for AMAPVox GUI since JavaFX is not included in this distribution.
 Nonetheless for AMAPVox in batch mode, any version of Java 64-bit >= 8
 should work.

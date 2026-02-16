@@ -29,7 +29,7 @@ the download of the JARs and manages multiple versions for the end user.
 
 **Java**: For AMAPVox v2 or above, Java is embedded with AMAPVox binaries. For
 AMAPVox v1 the system requires Java 1.8 64-Bit with JavaFX. In practice either
-[Java 1.8 64-Bit Oracle](https://java.com/download/) or
+[Java 1.8 64-Bit Oracle](https://www.java.com/en/download/manual.jsp) or
 [Java 1.8 64-Bit Corretto](https://aws.amazon.com/fr/corretto/).
 
 **CPU**: one required but multi-core CPU recommended for multithreading execution.

@@ -58,7 +58,7 @@ the voxel exiting point, whether or not the pulse has been intercepted.
 - [LAS](https://en.wikipedia.org/wiki/LAS_file_format) file format;
 - LAZ file format (compressed LAS);
 
-*LAS/LAZ* files can be manipulated by the [LAStools](http://lastools.org/)
+*LAS/LAZ* files can be manipulated by the [LAStools](https://lastools.github.io/)
 software or the [LidR](https://CRAN.R-project.org/package=lidR) R package.
 
 AMAPVox rebuilds shots geometry from LAS/LAZ point clouds.
@@ -153,7 +153,7 @@ distance to ground. Required if DTM filter (section Filter > DTM filter) or
 Ground energy output (section Output > Post-processing) are enabled.
 
 Expected format: [AAIGrid – Arc/Info ASCII
-Grid](https://gdal.org/drivers/raster/aaigrid.html#raster-aaigrid) No data
+Grid](https://gdal.org/en/stable/drivers/raster/aaigrid.html#raster-aaigrid) No data
 values must be a numeric.
 
 ## Output parameters

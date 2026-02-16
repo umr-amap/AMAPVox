@@ -2,9 +2,10 @@
 
 *2026-02-16*
 
-Bugdfix: add `offline` option in R package AMAPVox::run function [#73](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/73)
+Bugfix: add `offline` option in R package AMAPVox::run function [#73](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/73)
+Bugfix: grant native access to javafx/graphics [#74](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/74)
 
-Not release on CRAN
+Released on CRAN
 
 # AMAPVox 2.4.1
 

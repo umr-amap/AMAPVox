@@ -12,8 +12,8 @@ a \code{data.frame} with 2 variables: \verb{$version} that stores
 the version number and \verb{$url} the URL of the associated ZIP file.
 }
 \description{
-List AMAPVox versions available for download from AMAPVox Gitlab
-package registry \url{https://forge.ird.fr/groups/amap/amapvox/-/packages}
+List AMAPVox versions available for download from AMAPVox
+repository \url{https://forge.ird.fr/groups/amap/amapvox/-/packages}
 }
 \seealso{
 \code{\link[=getLocalVersions]{getLocalVersions()}}

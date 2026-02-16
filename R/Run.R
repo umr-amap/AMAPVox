@@ -123,6 +123,7 @@ run <- function(version="latest",
                   paste(jvm.options, "-jar", jar.path),
                   paste(jvm.options,
                         "--add-opens javafx.graphics/javafx.scene=ALL-UNNAMED",
+                        "--enable-native-access=javafx.graphics",
                         "-jar", jar.path))
   } else {
     # AMAPVox batch mode

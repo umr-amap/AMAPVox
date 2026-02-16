@@ -8,10 +8,11 @@
 ## remotely and install if available. If not returns best match, remote if
 ## online, local otherwise.
 ## Throws an error if no approaching version can be found.
-versionManager <- function(version="latest") {
+## `offline` option ignores internet connection.
+versionManager <- function(version="latest", offline = FALSE) {
 
   # check internet connection
-  is.offline <- inherits(
+  is.offline <- offline || inherits(
     try(curl::nslookup("forge.ird.fr"), silent = TRUE),
     "try-error")
 
@@ -235,7 +236,7 @@ expandVersion <- function(version) {
 ## if not it returns the latest version number from versions with matching
 ## major and minor numbers.
 ## at last throws error if none matches.
-resolveVersion <- function(version, versions, silent) {
+resolveVersion <- function(version, versions, silent, msg = "available") {
 
   # expand version number l.m.n
   version.exp <- expandVersion(version)
@@ -258,7 +259,7 @@ resolveVersion <- function(version, versions, silent) {
   }
   # short version does not match any available version
   stop(paste("Version", version,
-             "does not match any available versions",
+             "does not match any", msg, "versions",
              "(", paste(versions, collapse = ", "), ")"))
 }
 
@@ -266,14 +267,14 @@ resolveVersion <- function(version, versions, silent) {
 ## otherwise.
 resolveRemoteVersion <- function(version, silent = FALSE) {
   versions <- getRemoteVersions()
-  resolveVersion(version, versions$version, silent)
+  resolveVersion(version, versions$version, silent, "remote")
 }
 
 ## check if local version is available, or suggest approaching version
 ## otherwise.
 resolveLocalVersion <- function(version, silent = FALSE) {
   versions <- getLocalVersions()
-  resolveVersion(version, versions$version, silent)
+  resolveVersion(version, versions$version, silent, "local")
 }
 
 #' Install specific AMAPVox version on local computer.

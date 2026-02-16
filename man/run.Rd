@@ -13,7 +13,8 @@ run(
   jvm.options = "-Xms2048m",
   nt = 1,
   ntt = 1,
-  stdout = ""
+  stdout = "",
+  offline = FALSE
 )
 
 gui(version = "latest", java = "java", jvm.options = "-Xms2048m", stdout = "")
@@ -41,6 +42,8 @@ as available.}
 
 \item{stdout}{where output from both stdout/stderr should be sent. Same as
 stdout & stderr options from function \code{\link[=system2]{system2()}}.}
+
+\item{offline}{ignore online versions.}
 }
 \description{
 Run AMAPVox either in batch mode or with Graphical User

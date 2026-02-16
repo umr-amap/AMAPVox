@@ -1,3 +1,11 @@
+# AMAPVox 2.4.2
+
+*2026-02-16*
+
+Bugdfix: add `offline` option in R package AMAPVox::run function [#73](https://forge.ird.fr/amap/amapvox/AMAPVox/-/issues/73)
+
+Not release on CRAN
+
 # AMAPVox 2.4.1
 
 *2025-11-17*

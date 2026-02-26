@@ -188,7 +188,7 @@
         
         <repository>
             <id>loca-maven-repository</id>
-            <url>file:./maven-repository</url>
+	    <url>file:${maven.multiModuleProjectDirectory}/maven-repository</url>
         </repository>
         <repository>
             <id>jogamp-repository</id>

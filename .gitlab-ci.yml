@@ -1,0 +1,13 @@
+stages:
+  - trigger
+
+# Trigger Java child pipeline only if java/ files change
+trigger-java:
+  stage: trigger
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event"'
+      changes:
+        - java/**/*  # Only run if files in java/ change
+  trigger:
+    include: java/.gitlab-ci.yml  # Child pipeline
+    strategy: depend  # Wait for child pipeline to finish

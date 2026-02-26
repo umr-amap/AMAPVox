@@ -14,9 +14,9 @@
             <children>
                 <VBox spacing="5.0" >
                     <children>
-                        <Label text="Voxel file (.vox)" />
-                        <HBox alignment="CENTER">
+                        <HBox spacing="5.0" alignment="CENTER_LEFT">
                             <children>
+                                <Label text="Voxel file (.vox)" prefWidth="150.0" />
                                 <TextField fx:id="textfieldVoxelFileCanopyPath" prefHeight="25.0" prefWidth="240.0" HBox.hgrow="ALWAYS" />
                                 <Button mnemonicParsing="false" onAction="#onActionButtonOpenVoxelFile" text="..." />
                             </children>
@@ -24,17 +24,17 @@
                         <fx:include fx:id="checkMissingVoxelCanopy" source="CheckMissingVoxel.fxml"/>
                     </children>
                 </VBox>
-                <HBox spacing="15.0" alignment="CENTER_LEFT">
+                <HBox spacing="5.0" alignment="CENTER_LEFT">
                     <children>
-                        <Label text="PAD variable name" />
+                        <Label text="PAD variable name" prefWidth="150.0" />
                         <ComboBox fx:id="comboboxPADVariable" disable="true" prefHeight="25.0" prefWidth="250.0" />
                         <fx:include fx:id="helpButtonPADVariable" source="HelpButton.fxml" />
                     </children>
                 </HBox>
-                <HBox spacing="15.0" alignment="CENTER_LEFT" >
+                <HBox spacing="5.0" alignment="CENTER_LEFT" >
                     <children>
-                        <Label text="Leaf angle distribution" />
-                        <ComboBox fx:id="comboboxLeafAngleDistribution" />
+                        <Label text="Leaf angle distribution" prefWidth="150.0" />
+                        <ComboBox fx:id="comboboxLeafAngleDistribution" prefHeight="25.0" prefWidth="250.0" />
                         <fx:include fx:id="helpButtonLeafAngleDistribution" source="HelpButton.fxml" />
                         <HBox fx:id="hboxTwoBetaParameters" spacing="10.0" visible="false" alignment="CENTER_LEFT" >
                             <children>

@@ -571,7 +571,8 @@
                                                                                                 </ImageView>
                                                                                             </graphic>
                                                                                         </Button>
-                                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonGetBoundingBox" text="Get bounding-box" />
+                                                                                        <Button fx:id="buttonPointcloudFilterBoundingbox"  mnemonicParsing="false" onAction="#onActionButtonPointcloudBoundingBox" text="Extract bounding box" />
+                                                                                        <fx:include fx:id="buttonHelpPointcloudFilterBoundingbox" source="../HelpButton.fxml" />
                                                                                     </children>
                                                                                 </HBox>
                                                                             </children>

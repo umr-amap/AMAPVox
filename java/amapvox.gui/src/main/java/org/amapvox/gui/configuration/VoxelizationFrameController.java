@@ -51,9 +51,12 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
@@ -501,6 +504,13 @@ public class VoxelizationFrameController extends ConfigurationController {
         buttonHelpEmptyShotsFilter.setOnAction((ActionEvent event)
                 -> {
             buttonHelpEmptyShotsFilterController.showHelpDialog(resourceBundle.getString("help_empty_shots_filter"));
+        });
+        
+        buttonPointcloudFilterBoundingbox.disableProperty().bind(Bindings.isEmpty(vBoxPointCloudFiltering.getChildren()));
+        
+        buttonHelpPointcloudFilterBoundingbox.setOnAction((ActionEvent event)
+                -> {
+            buttonHelpPointcloudFilterBoundingboxController.showHelpDialog(resourceBundle.getString("help_filter_pointcloud_boundingbox"));
         });
 
         // sub voxel division
@@ -1736,7 +1746,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         labelLidarType.setText(extension);
     }
 
-////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
 // FXML / FXML / FXML / FXML / FXML / FXML / FXML / FXML / FXML / FXML / FXML //
 ////////////////////////////////////////////////////////////////////////////////    
 //////////////////
@@ -2059,6 +2069,12 @@ public class VoxelizationFrameController extends ConfigurationController {
     // Point cloud filter
     @FXML
     private VBox vBoxPointCloudFiltering;
+    @FXML
+    private Button buttonPointcloudFilterBoundingbox;
+    @FXML
+    private Button buttonHelpPointcloudFilterBoundingbox;
+    @FXML
+    private HelpButtonController buttonHelpPointcloudFilterBoundingboxController;
 
     // Echo filter by attribute
     @FXML
@@ -2157,7 +2173,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     @FXML
     private HelpButtonController helpButtonLeafAreaController;
 
-//////////////////////////////////////////
+    //////////////////////////////////////////
 // FXML functions (alphabetically sorted)   
 /////////////////////////////////////////
 //
@@ -2260,7 +2276,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     }
 
     @FXML
-    private void onActionButtonGetBoundingBox(ActionEvent event) {
+    private void onActionButtonPointcloudBoundingBox(ActionEvent event) {
 
         Matrix4d identity = new Matrix4d();
         identity.setIdentity();
@@ -2321,9 +2337,16 @@ public class VoxelizationFrameController extends ConfigurationController {
                             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                             alert.setTitle("Information");
                             alert.setHeaderText("Bounding box:");
-                            alert.setContentText("Minimum: " + "x: " + boundingBox.min.x + " y: " + boundingBox.min.y + " z: " + boundingBox.min.z + "\n"
-                                    + "Maximum: " + "x: " + boundingBox.max.x + " y: " + boundingBox.max.y + " z: " + boundingBox.max.z + "\n\n"
-                                    + "Use for voxel space bounding-box?");
+                            StringBuilder sb = new StringBuilder();
+                            DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
+                            decimalFormat.applyPattern("#0.##");
+                            decimalFormat.setGroupingUsed(false);
+                            sb.append("xmin: ").append(decimalFormat.format(boundingBox.min.x)).append('\n');
+                            sb.append("xmax: ").append(decimalFormat.format(boundingBox.max.x)).append('\n');
+                            sb.append("ymin: ").append(decimalFormat.format(boundingBox.min.y)).append('\n');
+                            sb.append("ymax: ").append(decimalFormat.format(boundingBox.max.y)).append('\n');
+                            sb.append("Update voxelspace bouding box with these values?");
+                            alert.setContentText(sb.toString());
 
                             alert.initModality(Modality.NONE);
                             Optional<ButtonType> answer = alert.showAndWait();

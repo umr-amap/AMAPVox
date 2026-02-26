@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
@@ -136,8 +137,8 @@ public class PositionImporterFrameController implements Initializable {
 
         listViewCanopyAnalyzerSensorPositions.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
+        buttonValidatePosition.disableProperty().bind(Bindings.isEmpty(listViewCanopyAnalyzerSensorPositions.getItems()));
         BooleanBinding noItemSelected = listViewCanopyAnalyzerSensorPositions.getSelectionModel().selectedItemProperty().isNull();
-        buttonValidatePosition.disableProperty().bind(noItemSelected);
         buttonRemovePosition.disableProperty().bind(noItemSelected);
 
         textFileParserFrameController = TextFileParserFrameController.newInstance();
@@ -295,6 +296,12 @@ public class PositionImporterFrameController implements Initializable {
 
         ObservableList<Point3d> selectedItems = listViewCanopyAnalyzerSensorPositions.getSelectionModel().getSelectedItems();
         listViewCanopyAnalyzerSensorPositions.getItems().removeAll(selectedItems);
+    }
+    
+    @FXML
+    private void onActionCancel(ActionEvent event) {
+        listViewCanopyAnalyzerSensorPositions.getItems().clear();
+        stage.hide();
     }
 
     @FXML

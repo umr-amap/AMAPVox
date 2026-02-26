@@ -28,7 +28,7 @@
             <content>
                 <VBox>
                     <children>
-                        <TitledPane animated="false" expanded="true" text="Single position">
+                        <TitledPane animated="false" expanded="true" text="Add single position">
                             <content>
                                 <AnchorPane>
                                     <children>
@@ -52,7 +52,7 @@
                                 </AnchorPane>
                             </content>
                         </TitledPane>
-                        <TitledPane animated="false" expanded="false" text="Positions from Voxel Space">
+                        <TitledPane animated="false" expanded="false" text="Add positions from Voxel Space">
                             <content>
                                 <AnchorPane>
                                     <children>
@@ -89,7 +89,7 @@
                                 </AnchorPane>
                             </content>
                         </TitledPane>
-                        <TitledPane animated="false" expanded="false" text="Positions from text file">
+                        <TitledPane animated="false" expanded="false" text="Add positions from text file">
                             <content>
                                 <VBox spacing="10.0">
                                     <children>
@@ -98,10 +98,11 @@
                                 </VBox>
                             </content>
                         </TitledPane>
-                        <TitledPane animated="false" expanded="true" text="Positions">
-                            <content>
-                                <VBox spacing="10.0">
+                        <AnchorPane>
+                            <children>
+                                <VBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
                                     <children>
+                                        <Label text="Positions:" />
                                         <ListView fx:id="listViewCanopyAnalyzerSensorPositions" prefWidth="315.0" />
                                         <HBox spacing="10.0">
                                             <children>
@@ -137,14 +138,19 @@
                                                                 <Tooltip text="Validate selected position(s)" />
                                                             </tooltip>
                                                         </Button>
+                                                        <Button fx:id="buttonCancel" text="Cancel" onAction="#onActionCancel">
+                                                            <tooltip>
+                                                                <Tooltip text="Cancel importing position" />
+                                                            </tooltip>
+                                                        </Button>
                                                     </children>
                                                 </HBox>
                                             </children>
                                         </HBox>
                                     </children>
                                 </VBox>
-                            </content>
-                        </TitledPane>
+                            </children>
+                        </AnchorPane>
                     </children>
                 </VBox>
             </content>

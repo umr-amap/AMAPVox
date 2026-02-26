@@ -26,7 +26,8 @@
                     <mainClass>${mainClass}</mainClass>
                     <options> 
                         <option>--add-opens</option> 
-                        <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option> 
+			<option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
+			<option>--enable-native-access=javafx.graphics</option>
                     </options>
                 </configuration>
             </plugin>

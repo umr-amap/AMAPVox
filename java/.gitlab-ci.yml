@@ -1,0 +1,213 @@
+stages:
+  - test
+  - build
+  - runtime
+  - deploy
+
+variables:
+  JAR_FOLDER: "jar"
+  JRE_FOLDER: "jre"
+
+# test job that launches amapvox junit tests with maven
+# cache the maven local repository
+# runs for every commit on any branch
+test:
+  stage: test
+  image: maven:3.9-eclipse-temurin-25
+  script:
+    - mvn -f java clean test
+  cache:
+    paths:
+      - ~/.m2/repository
+
+# compile amapvox java application with maven
+# check if there is a change in the jdk version since last time amapvox has been built in the CI and updates CI/CD variables :
+#   - LAST_JDK_VERSION: the JDK version from previous pipeline. The variable is updated if it has changed.
+#   - JDK_VERSION_CHANGED: {true|false} whether the JDK version from previous pipeline has changed.
+# Runs on dev & main branch
+compile:
+  stage: build
+  image: maven:3.9-eclipse-temurin-25
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'  # Run on dev branch commits
+  script:
+    # compile
+    - mvn -f java clean install -DskipTests
+    # move jar and dependencies to jar folder for artifacts
+    - mkdir -p $JAR_FOLDER && cp -r java/amapvox.main/target/dependency ./$JAR_FOLDER && cp java/amapvox.main/target/AMAPVox*.jar ./$JAR_FOLDER
+    # export current amapvox version to build.env
+    - CURRENT_APP_VERSION=$(mvn -f java -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+    - echo "CURRENT_APP_VERSION=$CURRENT_APP_VERSION" >> build.env
+    # export current jdk version to build.env
+    - export CURRENT_JDK_VERSION="$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')"
+    - echo "CURRENT_JDK_VERSION=$CURRENT_JDK_VERSION" >> build.env
+    # echo current jdk version and last jdk version 
+    - echo "Current JDK $CURRENT_JDK_VERSION" && echo "Last JDK $LAST_JDK_VERSION"
+    - |
+      if [ "$CURRENT_JDK_VERSION" != "$LAST_JDK_VERSION" ]; then
+        echo "JDK version changed since last build. Triggering runtime rebuilds..."
+        # Update JDK_VERSION_CHANGED to TRUE via GitLab API
+        curl --request PUT \
+             --header "PRIVATE-TOKEN: $API_TOKEN" \
+             --form "value=true" \
+             "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables/JDK_VERSION_CHANGED"
+        # Update LAST_JDK_VERSION via GitLab API (for next pipeline)
+        curl --request PUT \
+             --header "PRIVATE-TOKEN: $API_TOKEN" \
+             --form "value=$CURRENT_JDK_VERSION" \
+             "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables/LAST_JDK_VERSION"
+      else
+        echo "JDK version has not changed since last build."
+        # Update JDK_VERSION_CHANGED to FALSE via GitLab API
+        curl --request PUT \
+             --header "PRIVATE-TOKEN: $API_TOKEN" \
+             --form "value=false" \
+             "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables/JDK_VERSION_CHANGED"
+      fi
+  artifacts:
+    reports:
+      dotenv: build.env
+    paths:
+      - $JAR_FOLDER
+  cache:
+    paths:
+      - ~/.m2/repository
+
+# build java runtime environment with jlink and upload it in package registry
+# triggered if CI variable JDK_VERSION_CHANGED is true
+# runs on main branch only
+linux/runtime/build:
+  stage: runtime
+  image: ubuntu:latest
+  rules:
+    - if: '$JDK_VERSION_CHANGED == "true" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+  before_script:
+    # install SDKMAN for managing Java SDK
+    - apt-get update -y && apt-get install -y curl zip unzip binutils
+    - curl -s "https://get.sdkman.io?ci=true" | bash
+    - source "$HOME/.sdkman/bin/sdkman-init.sh"  # Load SDKMAN! into the current shell
+  script:
+    # install Liberica FullJDK (java + javafx)
+    - sdk install java ${CURRENT_JDK_VERSION}.fx-librca
+    - sdk current java
+    - java -version
+    - export MAIN_JAR=$(ls ${JAR_FOLDER}/*.jar)
+    - echo "MAINJAR=$MAIN_JAR"
+    - export JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | awk -F . '{print $1}')
+    - echo "JAVA_VERSION=$JAVA_VERSION"
+    # jdeps binary lists required java modules
+    - |
+      echo "detecting required modules"
+      detected_modules=`jdeps \
+        -q \
+        --multi-release ${JAVA_VERSION} \
+        --recursive \
+        --ignore-missing-deps \
+        --print-module-deps \
+        --class-path "${JAR_FOLDER}/dependency/*" \
+        $MAIN_JAR`
+    - echo "detected modules=${detected_modules}"
+    # jlink binary builds the jre
+    - |
+      echo "creating java runtime image"
+      jlink \
+        --no-header-files \
+        --no-man-pages  \
+        --strip-debug \
+        --add-modules "${detected_modules}" \
+        --output $JRE_FOLDER
+    - export JRE_ZIP="jre-${CURRENT_JDK_VERSION}-linux.zip"
+    - zip -r $JRE_ZIP $JRE_FOLDER/*
+    # upload the jre to package registry
+    - |
+      curl --request PUT \
+           --header "PRIVATE-TOKEN: ${API_TOKEN}" \
+           --upload-file $JRE_ZIP \
+           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/jre/${CURRENT_JDK_VERSION}/${JRE_ZIP}"
+  artifacts:
+    paths:
+      - $JRE_FOLDER
+  needs:
+    - job: compile
+      artifacts: true
+  cache:
+    paths:
+      - ~/.sdkman
+
+# fetch the java runtime environment from the package registry
+# triggered if CI variable JDK_VERSION_CHANGED is false (no need to build a jre)
+# runs on main branch only
+linux/runtime/fetch:
+  stage: runtime
+  rules:
+    - if: '$JDK_VERSION_CHANGED != "true" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+  script:
+    - export JRE_ZIP="jre-${CURRENT_JDK_VERSION}-linux.zip"
+    - |
+      wget --header="PRIVATE-TOKEN: $API_TOKEN" \
+             "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/jre/${CURRENT_JDK_VERSION}/${JRE_ZIP}" \
+             -O jre.zip
+    - unzip jre.zip
+  artifacts:
+    paths:
+      - $JRE_FOLDER
+
+# creates the amapvox package and upload it to the package registry
+# the jar comes from the build job and the jre comes from either the runtime/build or runtime/fetch jobs (depending on JDK_VERSION_CHANGED triggered a rebuild of the JRE)
+# runs on main branch only
+linux/package:
+  stage: deploy
+  image: ubuntu:latest
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+  before_script:
+    # # install SDKMAN for managing Java SDK
+    - apt-get update -y && apt-get install -y curl zip unzip binutils
+    - curl -s "https://get.sdkman.io?ci=true" | bash
+    - source "$HOME/.sdkman/bin/sdkman-init.sh" 
+  script:
+    # install Liberica FullJDK (java + javafx)
+    - sdk install java ${CURRENT_JDK_VERSION}.fx-librca
+    - sdk current java
+    - java -version
+    - export MAIN_JAR=$(basename $(ls ${JAR_FOLDER}/*.jar))
+    - export DEST_FOLDER="$(basename ${MAIN_JAR} .jar)-linux"
+    - export APP_VERSION=$(echo $MAIN_JAR | grep -Po '\d\.\d\.\d')
+    # jpackage binary creates a distributable package 
+    - |
+      jpackage \
+        --type "app-image" \
+        --dest installer \
+        --input $JAR_FOLDER \
+        --name AMAPVox \
+        --main-class org.amapvox.Main \
+        --main-jar ${MAIN_JAR} \
+        --java-options -Xms2048m \
+        --java-options "--add-opens javafx.graphics/javafx.scene=ALL-UNNAMED" \
+        --runtime-image $JRE_FOLDER \
+        --icon java/amapvox.main/src/main/resources/amapvox-icon_128x128.png \
+        --app-version ${APP_VERSION} \
+        --vendor "IRD" \
+        --copyright "Copyright © $(date +%Y) ird.fr"
+    - mv installer/AMAPVox $DEST_FOLDER
+    - zip -r ${DEST_FOLDER}.zip $DEST_FOLDER/*
+    # upload the amapvox package to the package registry
+    - |
+      curl --request PUT \
+           --header "PRIVATE-TOKEN: ${API_TOKEN}" \
+           --upload-file ${DEST_FOLDER}.zip \
+           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/amapvoxtest/${APP_VERSION}/${DEST_FOLDER}.zip" 
+  needs:
+    - job: compile
+      artifacts: true
+    - job: linux/runtime/build
+      artifacts: true
+      optional: true
+    - job: linux/runtime/fetch
+      artifacts: true
+      optional: true
+  cache:
+    paths:
+      - ~/.sdkman   
+      
+

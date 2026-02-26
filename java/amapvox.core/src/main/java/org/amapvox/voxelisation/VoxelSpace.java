@@ -53,7 +53,11 @@ public class VoxelSpace {
     public Voxel getVoxel(int i, int j, int k) {
         return getVoxel(i, j, k, true);
     }
-
+    
+    public Voxel getVoxel(int index) {
+        return voxels[index];
+    }
+    
     private double computeGroundDistance(int i, int j, int k) {
 
         Point3d position = getPosition(new Point3i(i, j, k));

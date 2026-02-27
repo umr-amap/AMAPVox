@@ -81,6 +81,8 @@ public class Util {
                 new FileChooser.ExtensionFilter("All Files", "*.*"),
                 new FileChooser.ExtensionFilter("Voxel Files  (*.vox)", "*.vox"));
     }
+    
+    public final static int DEFAULT_NCPU = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
 
     public static boolean checkIfVoxelFile(File voxelFile) {
 

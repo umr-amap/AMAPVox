@@ -222,6 +222,10 @@ public class VoxelizationFrameController extends ConfigurationController {
                     rdbtnLasCollinearityWarn.selectedProperty(),
                     rdbtnLasCollinearitySilent.selectedProperty(),
                     // Output
+                    checkboxConcurrentPostProcessing.selectedProperty(),
+                    rdbtnAutomaticChunkSize.selectedProperty(),
+                    rdbtnCustomChunkSize.selectedProperty(),
+                    textFieldChunkSize.textProperty(),
                     textFieldOutputFile.textProperty(),
                     checkboxVoxelOutput.selectedProperty(),
                     checkboxSkipEmptyVoxel.selectedProperty(),
@@ -371,6 +375,21 @@ public class VoxelizationFrameController extends ConfigurationController {
     }
 
     private void initOutputPane(ResourceBundle resourceBundle) {
+        
+        helpButtonConcurrentPostProcessing.setOnAction((ActionEvent event)
+                -> {
+            helpButtonConcurrentPostProcessingController.showHelpDialog(resourceBundle.getString("help_postprocessing_concurrent"));
+        });
+        hboxChunkSize.disableProperty().bind(checkboxConcurrentPostProcessing.selectedProperty().not());
+        toggleGroupChunkSize = new ToggleGroup();
+        rdbtnAutomaticChunkSize.setToggleGroup(toggleGroupChunkSize);
+        rdbtnCustomChunkSize.setToggleGroup(toggleGroupChunkSize);
+        textFieldChunkSize.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(1000, TextFieldUtil.Sign.POSITIVE));
+        textFieldChunkSize.disableProperty().bind(rdbtnAutomaticChunkSize.selectedProperty());
+        helpButtonChunkSizePostProcessing.setOnAction((ActionEvent event)
+                -> {
+            helpButtonChunkSizePostProcessingController.showHelpDialog(resourceBundle.getString("help_postprocessing_chunksize"));
+        });  
 
         BooleanBinding voxelOutputDisabled = checkboxVoxelOutput.selectedProperty().not();
         spinnerFractionDigits.disableProperty().bind(voxelOutputDisabled);
@@ -864,6 +883,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         // output validation support
         outputValidationSupport = new ValidationSupport();
         outputValidationSupport.registerValidator(textFieldOutputFile, Validators.fileValidityValidator("Voxelspace file"));
+        outputValidationSupport.registerValidator(textFieldChunkSize, Validators.fieldIntegerValidator);
 
         // echo weight validation support
         echoWeightValidationSupport = new ValidationSupport();
@@ -955,6 +975,11 @@ public class VoxelizationFrameController extends ConfigurationController {
             case RXP, RSP -> // false empty shot filter
                 cfg.setEnableEmptyShotsFiltering(checkboxEmptyShotsFilter.isSelected());
         }
+        
+        // post-processing
+        cfg.setConcurrentPostProcessing(checkboxConcurrentPostProcessing.isSelected());
+        cfg.setAutomaticChunkSize(rdbtnAutomaticChunkSize.isSelected());
+        cfg.setChunkSize(Integer.parseInt(textFieldChunkSize.getText()));
 
         // output
         cfg.setOutputFile(new File(textFieldOutputFile.getText()));
@@ -1114,6 +1139,10 @@ public class VoxelizationFrameController extends ConfigurationController {
             checkboxDTMVOPMatrix.setSelected(cfg.isDTMUseVopMatrix());
         }
 
+        // post-processing
+        checkboxConcurrentPostProcessing.setSelected(cfg.isConcurrentPostProcessing());
+        toggleGroupChunkSize.selectToggle(cfg.isAutomaticChunkSize() ? rdbtnAutomaticChunkSize : rdbtnCustomChunkSize);
+        textFieldChunkSize.setText(String.valueOf(cfg.getChunkSize()));
         // voxel output enabled
         checkboxVoxelOutput.setSelected(cfg.isVoxelOutputEnabled());
         // voxel file output format
@@ -1847,6 +1876,26 @@ public class VoxelizationFrameController extends ConfigurationController {
     // OUTPUT PANE
     //////////////
     //
+    @FXML
+    private CheckBox checkboxConcurrentPostProcessing;
+    @FXML
+    private HelpButtonController helpButtonConcurrentPostProcessingController;
+    @FXML
+    private Button helpButtonConcurrentPostProcessing;
+    @FXML
+    private HBox hboxChunkSize;
+    @FXML
+    private RadioButton rdbtnAutomaticChunkSize;
+    @FXML
+    private RadioButton rdbtnCustomChunkSize;
+    private ToggleGroup toggleGroupChunkSize;
+    @FXML
+    private TextField textFieldChunkSize;
+    @FXML
+    private HelpButtonController helpButtonChunkSizePostProcessingController;
+    @FXML
+    private Button helpButtonChunkSizePostProcessing;
+    
     @FXML
     private TextField textFieldOutputFile;
 

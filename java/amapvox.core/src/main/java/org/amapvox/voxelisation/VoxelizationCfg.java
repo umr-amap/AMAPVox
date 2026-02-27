@@ -148,6 +148,10 @@ public class VoxelizationCfg extends Configuration {
 
     // sub voxel split (for computing exploration rate)
     private int subVoxelSplit = 4;
+    
+    private boolean concurrentPostProcessingEnabled = true;
+    private boolean automaticChunkSizeEnabled = true;
+    private int chunkSize = 1000;
 
     private boolean voxelOutputEnabled = true;
 
@@ -333,6 +337,20 @@ public class VoxelizationCfg extends Configuration {
         if (null != outputElement) {
             // output path
             outputFile = new File(resolve(outputElement.getAttributeValue("src")));
+            
+            // post-processing
+            Element postProcessingElement = outputElement.getChild("post-processing");
+            if (null != postProcessingElement) {
+                if (null != postProcessingElement.getAttribute("concurrent")) {
+                    setConcurrentPostProcessing(Boolean.parseBoolean(postProcessingElement.getAttributeValue("concurrent")));
+                }
+                if (null != postProcessingElement.getAttribute("automatic-chunksize")) {
+                    setAutomaticChunkSize(Boolean.parseBoolean(postProcessingElement.getAttributeValue("automatic-chunksize")));
+                }
+                if (null != postProcessingElement.getAttribute("chunksize")) {
+                    setChunkSize(Integer.parseInt(postProcessingElement.getAttributeValue("chunksize")));
+                }
+            }
 
             // voxel_file element
             Element voxelsElement = outputElement.getChild("voxels");
@@ -728,6 +746,13 @@ public class VoxelizationCfg extends Configuration {
         // output path
         outputElement.setAttribute(new Attribute("src", outputFile.getAbsolutePath()));
         processElement.addContent(outputElement);
+        
+        // post-processing element
+        Element postProcessingElement = new Element("post-processing");
+        postProcessingElement.setAttribute(new Attribute("concurrent", String.valueOf(isConcurrentPostProcessing())));
+        postProcessingElement.setAttribute(new Attribute("automatic-chunksize", String.valueOf(isAutomaticChunkSize())));
+        postProcessingElement.setAttribute(new Attribute("chunksize", String.valueOf(getChunkSize())));
+        outputElement.addContent(postProcessingElement);
 
         // voxel file element
         Element voxelsElement = new Element("voxels");
@@ -1458,5 +1483,47 @@ public class VoxelizationCfg extends Configuration {
                 .map(v -> v.getShortName())
                 .collect(Collectors.joining(" ")));
         return properties;
+    }
+
+    /**
+     * @return the concurrentPostProcessingEnabled
+     */
+    public boolean isConcurrentPostProcessing() {
+        return concurrentPostProcessingEnabled;
+    }
+
+    /**
+     * @param concurrentPostProcessingEnabled the concurrentPostProcessingEnabled to set
+     */
+    public void setConcurrentPostProcessing(boolean concurrentPostProcessingEnabled) {
+        this.concurrentPostProcessingEnabled = concurrentPostProcessingEnabled;
+    }
+
+    /**
+     * @return the automaticChunkSizeEnabled
+     */
+    public boolean isAutomaticChunkSize() {
+        return automaticChunkSizeEnabled;
+    }
+
+    /**
+     * @param automaticChunkSizeEnabled the automaticChunkSizeEnabled to set
+     */
+    public void setAutomaticChunkSize(boolean automaticChunkSizeEnabled) {
+        this.automaticChunkSizeEnabled = automaticChunkSizeEnabled;
+    }
+
+    /**
+     * @return the chunkSize
+     */
+    public int getChunkSize() {
+        return chunkSize;
+    }
+
+    /**
+     * @param chunkSize the chunkSize to set
+     */
+    public void setChunkSize(int chunkSize) {
+        this.chunkSize = chunkSize;
     }
 }

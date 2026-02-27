@@ -159,34 +159,73 @@
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
                                             <children>
-                                                <Label text="Output file" />
-                                                <HBox spacing="5.0">
-                                                    <children>
-                                                        <TextField fx:id="textFieldOutputFile" prefHeight="25.0" prefWidth="280.0" HBox.hgrow="ALWAYS" />
-                                                        <Button mnemonicParsing="false" onAction="#onActionButtonOpenOutputFile" text="..." />
-                                                    </children>
-                                                </HBox>
-                                                <CheckBox fx:id="checkboxVoxelOutput" disable="false" selected="true" text="Generate voxel file(s)" />                                                                                                             
-                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                                    <children>
-                                                        <CheckBox fx:id="checkboxSkipEmptyVoxel" text="Skip empty voxel" />
-                                                        <fx:include fx:id="helpButtonSkipEmptyVoxel" source="../HelpButton.fxml" />
-                                                    </children>
-                                                </HBox>
-                                                <HBox alignment="CENTER_LEFT" spacing="10.0" >
-                                                    <children>
-                                                        <Label text="Fraction digits:" />
-                                                        <Spinner fx:id="spinnerFractionDigits" prefWidth="72.0" BorderPane.alignment="CENTER" />
-                                                        <fx:include fx:id="helpButtonFractionDigits" source="../HelpButton.fxml" />
-                                                    </children>
-                                                </HBox>
-                                                <HBox fx:id="hboxOutputFormat" alignment="CENTER_LEFT" spacing="10.0" >
-                                                    <children>
-                                                        <Label text="Voxel file format" wrapText="true" />
-                                                        <ComboBox fx:id="comboboxVoxOutputFormat" promptText="Choose format" />
-                                                        <fx:include fx:id="helpButtonOutputFormat" source="../HelpButton.fxml" />
-                                                    </children>
-                                                </HBox>
+                                                <TitledPane animated="false" expanded="false" text="Post-processing">
+                                                    <content>
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0">
+                                                            <children>
+                                                                <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                    <children>
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxConcurrentPostProcessing" selected="true" text="Multi-threaded post-processing " />
+                                                                                <fx:include fx:id="helpButtonConcurrentPostProcessing" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox fx:id="hboxChunkSize" alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <Label text="Chunk size" />
+                                                                                <RadioButton fx:id="rdbtnAutomaticChunkSize" mnemonicParsing="false" selected="true" text="Automatic" />
+                                                                                <RadioButton fx:id="rdbtnCustomChunkSize" mnemonicParsing="false" selected="false" text="Custom" />
+                                                                                <TextField fx:id="textFieldChunkSize" prefHeight="26.0" prefWidth="100.0" text="5" />
+                                                                                <fx:include fx:id="helpButtonChunkSizePostProcessing" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </TitledPane>
+                                                <TitledPane animated="false" expanded="true" text="Output File">
+                                                    <content>
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0">
+                                                            <children>
+                                                                <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                    <children>
+                                                                        <CheckBox fx:id="checkboxVoxelOutput" disable="false" selected="true" text="Generate voxel file(s)" />
+                                                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                                            <children>
+                                                                                <Label text="Voxel file" />
+                                                                                <TextField fx:id="textFieldOutputFile" prefHeight="25.0" prefWidth="280.0" HBox.hgrow="ALWAYS" />
+                                                                                <Button mnemonicParsing="false" onAction="#onActionButtonOpenOutputFile" text="..." />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxSkipEmptyVoxel" text="Skip empty voxel" />
+                                                                                <fx:include fx:id="helpButtonSkipEmptyVoxel" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0" >
+                                                                            <children>
+                                                                                <Label text="Fraction digits:" />
+                                                                                <Spinner fx:id="spinnerFractionDigits" prefWidth="72.0" BorderPane.alignment="CENTER" />
+                                                                                <fx:include fx:id="helpButtonFractionDigits" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox fx:id="hboxOutputFormat" alignment="CENTER_LEFT" spacing="10.0" >
+                                                                            <children>
+                                                                                <Label text="Voxel file format" wrapText="true" />
+                                                                                <ComboBox fx:id="comboboxVoxOutputFormat" promptText="Choose format" />
+                                                                                <fx:include fx:id="helpButtonOutputFormat" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </TitledPane>    
                                                 <TitledPane animated="false" expanded="false" text="Output variables">
                                                     <content>
                                                         <AnchorPane minHeight="0.0" minWidth="0.0">

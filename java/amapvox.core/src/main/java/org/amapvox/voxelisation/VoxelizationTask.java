@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,6 +48,8 @@ public class VoxelizationTask extends AVoxTask {
     private double maxAttenuation;
     private double attenuationError;
     private final static double EPSILON = 1e-5;
+    private double subSamplingMax;
+    AtomicInteger nFallback;
     // outputs
     protected List<AbstractOutput> outputs;
     private PathLengthOutput pathLengthOutput;
@@ -77,28 +78,13 @@ public class VoxelizationTask extends AVoxTask {
         // create voxelisation class
         Class<?> voxelisationClass;
         switch (mainCfg.getLidarType()) {
-            case RXP:
-            case RSP:
-                voxelisationClass = RXPVoxelization.class;
-                break;
-            case PTG:
-                voxelisationClass = PTGVoxelization.class;
-                break;
-            case PTX:
-                voxelisationClass = PTXVoxelization.class;
-                break;
-            case XYB:
-                voxelisationClass = XYBVoxelization.class;
-                break;
-            case SHT:
-                voxelisationClass = ShotVoxelization.class;
-                break;
-            case LAS:
-            case LAZ:
-                voxelisationClass = LasVoxelization.class;
-                break;
-            default:
-                throw new IllegalArgumentException("Wrong input file type");
+            case RXP, RSP -> voxelisationClass = RXPVoxelization.class;
+            case PTG -> voxelisationClass = PTGVoxelization.class;
+            case PTX -> voxelisationClass = PTXVoxelization.class;
+            case XYB -> voxelisationClass = XYBVoxelization.class;
+            case SHT -> voxelisationClass = ShotVoxelization.class;
+            case LAS, LAZ -> voxelisationClass = LasVoxelization.class;
+            default -> throw new IllegalArgumentException("Wrong input file type");
         }
 
         // load DTM
@@ -135,6 +121,8 @@ public class VoxelizationTask extends AVoxTask {
             pathLengthOutput.init();
         }
         outputs.add(pathLengthOutput);
+        // subsampling
+        subSamplingMax = Math.pow(mainCfg.getSubVoxelSplit(), 3);
 
         // loop over single scans
         FinalCounter nDone = new FinalCounter(0);
@@ -199,7 +187,7 @@ public class VoxelizationTask extends AVoxTask {
 
                 if (isCancelled()) {
                     // returns what has been done so far
-                    return outputFiles.toArray(new File[outputFiles.size()]);
+                    return outputFiles.toArray(File[]::new);
                 }
 
                 // post processing 
@@ -207,7 +195,7 @@ public class VoxelizationTask extends AVoxTask {
 
                 if (isCancelled()) {
                     // returns what has been done so far
-                    return outputFiles.toArray(new File[outputFiles.size()]);
+                    return outputFiles.toArray(File[]::new);
                 }
 
                 // write outputs
@@ -225,7 +213,7 @@ public class VoxelizationTask extends AVoxTask {
             }
         }
 
-        return outputFiles.toArray(new File[outputFiles.size()]);
+        return outputFiles.toArray(File[]::new);
     }
 
     @Override
@@ -255,96 +243,13 @@ public class VoxelizationTask extends AVoxTask {
         boolean pathLengthStDevEnabled = cfg.isOutputVariableEnabled(OutputVariable.SD_LENGTH);
         boolean subSamplingEnabled = cfg.isOutputVariableEnabled(OutputVariable.EXPLORATION_RATE);
 
-        AtomicInteger nFallback = new AtomicInteger(0);
+        nFallback = new AtomicInteger(0);
         final int nvoxel = cfg.getDimension().x * cfg.getDimension().y * cfg.getDimension().z;
-        double subSamplingMax = Math.pow(cfg.getSubVoxelSplit(), 3);
 
         long t0 = System.currentTimeMillis();
-        boolean SEQUENTIAL = true;
-        if (SEQUENTIAL) {
-            int ivoxel = 0;
-            for (int i = 0; i < cfg.getDimension().x; i++) {
-                for (int j = 0; j < cfg.getDimension().y; j++) {
-                    for (int k = 0; k < cfg.getDimension().z; k++) {
-                        if (isCancelled()) {
-                            LOGGER.info("[Voxelization] Post-processing cancelled");
-                            return;
-                        }
-                        ivoxel++;
-                        if (ivoxel % 1000 == 0) {
-                            fireProgress("[Voxelization] Post-processing...", ivoxel, nvoxel);
-                        }
-                        Voxel voxel = vxsp.getVoxel(i, j, k);
-                        // empty voxel, no post-processing
-                        if (null == voxel) {
-                            continue;
-                        }
-                        // unsampled voxel, no post-processing
-                        // (may have a non zero potential beam surface though, so it
-                        // may not be empty)
-                        if (voxel.npulse == 0) {
-                            // set to NaN some of the variables
-                            voxel.empty();
-                            continue;
-                        }
-
-                        // mean angle
-                        if (angleEnabled) {
-                            voxel.averagedPulseAngle = voxel.averagedPulseAngle / voxel.npulse;
-                        }
-
-                        // mean path length
-                        if (meanPathLengthEnabled) {
-                            voxel.averagedPathLength = voxel.pathLength / voxel.npulse;
-                        }
-
-                        if (pathLengthStDevEnabled) {
-                            // phv 20190617 Welford’s method for computing variance (and sd)
-                            voxel.pathLengthStDev = voxel.npulse > 1
-                                    ? Math.sqrt(voxel.pathLengthStDev / (voxel.npulse - 1))
-                                    : 0.d;
-                        }
-
-                        // numerical estimation of the transmittance
-                        if (numEstimTransmEnabled) {
-                            voxel.transmittance = estimateTransmittance(voxel);
-                            if (voxel.fallbackTransm) {
-                                nFallback.incrementAndGet();
-                            }
-                        }
-
-                        // averaged distance to laser
-                        if (averagedLaserDistanceEnabled) {
-                            voxel.averagedLaserDistance = voxel.averagedLaserDistance / voxel.npulse;
-                        }
-
-                        // attenuation estimator (F. Pimont's method)
-                        if (attenuation_FPL_MLE_enabled) {
-                            if (voxel.weightedEffectiveFreepathLength > 0.d) {
-                                voxel.attenuation_FPL_biasCorrection *= (voxel.enteringBeamSection / Math.pow(voxel.weightedEffectiveFreepathLength, 2));
-                                voxel.attenuation_FPL_biasCorrection /= voxel.npulse; //FP FIX
-                                voxel.attenuation_FPL_biasedMLE = voxel.interceptedBeamSection / voxel.weightedEffectiveFreepathLength;
-                                voxel.attenuation_FPL_unbiasedMLE = voxel.attenuation_FPL_biasedMLE - voxel.attenuation_FPL_biasCorrection;
-                            } else {
-                                voxel.attenuation_FPL_biasCorrection = Double.NaN;
-                                voxel.attenuation_FPL_biasedMLE = Double.NaN;
-                            }
-                        }
-
-                        // attenuation estimator (G. Vincent's method)
-                        if (attenuation_PL_MLE_enabled) {
-                            voxel.attenuation_PPL_MLE = estimateAttenuation(voxel);
-                        }
-
-                        // sub voxel sampling
-                        if (subSamplingEnabled) {
-                            voxel.explorationRate = voxel.subSampling.bitCount() / (double) subSamplingMax;
-                        }
-                    }
-                }
-            }
-        } else {
-            int chunkSize = chunkSize(nvoxel);
+        if (cfg.isConcurrentPostProcessing()) {
+            // concurrent post-processing
+            int chunkSize = cfg.isAutomaticChunkSize() ? chunkSize(nvoxel) : cfg.getChunkSize();
             AtomicInteger ichunk = new AtomicInteger(0);
             int nchunk = nvoxel / chunkSize;
             LOGGER.debug("[Voxelization] Post-processing chunk size " + chunkSize + ". Number of chunks: " + nchunk + ". Number of CPUs: " + getNCPU());
@@ -360,71 +265,23 @@ public class VoxelizationTask extends AVoxTask {
                 executor.submit(() -> {
                     for (int index = start; index < end; index++) {
 
+                        if (isCancelled()) {
+                            return;
+                        }
+
                         Voxel voxel = vxsp.getVoxel(index);
 
                         // empty voxel, no post-processing
                         if (voxel != null) {
 
-                            // unsampled voxel, no post-processing
-                            // (may have a non zero potential beam surface though, so it
-                            // may not be empty)
-                            if (voxel.npulse == 0) {
-                                voxel.empty();
-                                continue;
-                            }
-
-                            // mean angle
-                            if (angleEnabled) {
-                                voxel.averagedPulseAngle = voxel.averagedPulseAngle / voxel.npulse;
-                            }
-
-                            // mean path length
-                            if (meanPathLengthEnabled) {
-                                voxel.averagedPathLength = voxel.pathLength / voxel.npulse;
-                            }
-
-                            if (pathLengthStDevEnabled) {
-                                // phv 20190617 Welford’s method for computing variance (and sd)
-                                voxel.pathLengthStDev = voxel.npulse > 1
-                                        ? Math.sqrt(voxel.pathLengthStDev / (voxel.npulse - 1))
-                                        : 0.d;
-                            }
-
-                            // numerical estimation of the transmittance
-                            if (numEstimTransmEnabled) {
-                                voxel.transmittance = estimateTransmittance(voxel);
-                                if (voxel.fallbackTransm) {
-                                    nFallback.incrementAndGet();
-                                }
-                            }
-
-                            // averaged distance to laser
-                            if (averagedLaserDistanceEnabled) {
-                                voxel.averagedLaserDistance = voxel.averagedLaserDistance / voxel.npulse;
-                            }
-
-                            // attenuation estimator (F. Pimont's method)
-                            if (attenuation_FPL_MLE_enabled) {
-                                if (voxel.weightedEffectiveFreepathLength > 0.d) {
-                                    voxel.attenuation_FPL_biasCorrection *= (voxel.enteringBeamSection / Math.pow(voxel.weightedEffectiveFreepathLength, 2));
-                                    voxel.attenuation_FPL_biasCorrection /= voxel.npulse; //FP FIX
-                                    voxel.attenuation_FPL_biasedMLE = voxel.interceptedBeamSection / voxel.weightedEffectiveFreepathLength;
-                                    voxel.attenuation_FPL_unbiasedMLE = voxel.attenuation_FPL_biasedMLE - voxel.attenuation_FPL_biasCorrection;
-                                } else {
-                                    voxel.attenuation_FPL_biasCorrection = Double.NaN;
-                                    voxel.attenuation_FPL_biasedMLE = Double.NaN;
-                                }
-                            }
-
-                            // attenuation estimator (G. Vincent's method)
-                            if (attenuation_PL_MLE_enabled) {
-                                voxel.attenuation_PPL_MLE = estimateAttenuation(voxel);
-                            }
-
-                            // sub voxel sampling
-                            if (subSamplingEnabled) {
-                                voxel.explorationRate = voxel.subSampling.bitCount() / (double) subSamplingMax;
-                            }
+                            processVoxel(voxel,
+                                    angleEnabled, meanPathLengthEnabled,
+                                    pathLengthStDevEnabled,
+                                    numEstimTransmEnabled,
+                                    averagedLaserDistanceEnabled,
+                                    attenuation_FPL_MLE_enabled,
+                                    attenuation_PL_MLE_enabled,
+                                    subSamplingEnabled);
                         }
 
                     }
@@ -435,6 +292,33 @@ public class VoxelizationTask extends AVoxTask {
             }
             executor.shutdown();
             executor.awaitTermination(1, TimeUnit.HOURS); // Adjust timeout
+        } else {
+            // sequential post-processing
+            for (int ivoxel = 0; ivoxel < nvoxel; ivoxel++) {
+
+                if (isCancelled()) {
+                    LOGGER.info("[Voxelization] Post-processing cancelled");
+                    return;
+                }
+                
+                if (ivoxel % 1000 == 0) {
+                    fireProgress("[Voxelization] Post-processing...", ivoxel, nvoxel);
+                }
+                Voxel voxel = vxsp.getVoxel(ivoxel);
+                // empty voxel, no post-processing
+                if (null != voxel) {
+
+                    processVoxel(voxel,
+                            angleEnabled, meanPathLengthEnabled,
+                            pathLengthStDevEnabled,
+                            numEstimTransmEnabled,
+                            averagedLaserDistanceEnabled,
+                            attenuation_FPL_MLE_enabled,
+                            attenuation_PL_MLE_enabled,
+                            subSamplingEnabled);
+
+                }
+            }
         }
         long time = (System.currentTimeMillis() - t0);
         LOGGER.debug("[Voxelization] Post-processed " + nvoxel + " voxels in " + time + " ms.");
@@ -448,6 +332,79 @@ public class VoxelizationTask extends AVoxTask {
                     .append(" (~").append(String.format("%.1f", fraction)).append("%)");
             LOGGER.warn("[Voxelization] " + sb.toString());
         }
+    }
+
+    private void processVoxel(Voxel voxel,
+            final boolean angleEnabled,
+            final boolean meanPathLengthEnabled,
+            final boolean pathLengthStDevEnabled,
+            final boolean numEstimTransmEnabled,
+            final boolean averagedLaserDistanceEnabled,
+            final boolean attenuation_FPL_MLE_enabled,
+            final boolean attenuation_PL_MLE_enabled,
+            final boolean subSamplingEnabled) {
+
+        // unsampled voxel, no post-processing
+        // (may have a non zero potential beam surface though, so it
+        // may not be empty)
+        if (voxel.npulse == 0) {
+            voxel.empty();
+            return;
+        }
+
+        // mean angle
+        if (angleEnabled) {
+            voxel.averagedPulseAngle = voxel.averagedPulseAngle / voxel.npulse;
+        }
+
+        // mean path length
+        if (meanPathLengthEnabled) {
+            voxel.averagedPathLength = voxel.pathLength / voxel.npulse;
+        }
+
+        if (pathLengthStDevEnabled) {
+            // phv 20190617 Welford’s method for computing variance (and sd)
+            voxel.pathLengthStDev = voxel.npulse > 1
+                    ? Math.sqrt(voxel.pathLengthStDev / (voxel.npulse - 1))
+                    : 0.d;
+        }
+
+        // numerical estimation of the transmittance
+        if (numEstimTransmEnabled) {
+            voxel.transmittance = estimateTransmittance(voxel);
+            if (voxel.fallbackTransm) {
+                nFallback.incrementAndGet();
+            }
+        }
+
+        // averaged distance to laser
+        if (averagedLaserDistanceEnabled) {
+            voxel.averagedLaserDistance = voxel.averagedLaserDistance / voxel.npulse;
+        }
+
+        // attenuation estimator (F. Pimont's method)
+        if (attenuation_FPL_MLE_enabled) {
+            if (voxel.weightedEffectiveFreepathLength > 0.d) {
+                voxel.attenuation_FPL_biasCorrection *= (voxel.enteringBeamSection / Math.pow(voxel.weightedEffectiveFreepathLength, 2));
+                voxel.attenuation_FPL_biasCorrection /= voxel.npulse; //FP FIX
+                voxel.attenuation_FPL_biasedMLE = voxel.interceptedBeamSection / voxel.weightedEffectiveFreepathLength;
+                voxel.attenuation_FPL_unbiasedMLE = voxel.attenuation_FPL_biasedMLE - voxel.attenuation_FPL_biasCorrection;
+            } else {
+                voxel.attenuation_FPL_biasCorrection = Double.NaN;
+                voxel.attenuation_FPL_biasedMLE = Double.NaN;
+            }
+        }
+
+        // attenuation estimator (G. Vincent's method)
+        if (attenuation_PL_MLE_enabled) {
+            voxel.attenuation_PPL_MLE = estimateAttenuation(voxel);
+        }
+
+        // sub voxel sampling
+        if (subSamplingEnabled) {
+            voxel.explorationRate = voxel.subSampling.bitCount() / (double) subSamplingMax;
+        }
+
     }
 
     private int chunkSize(int nvoxel) {

@@ -236,7 +236,7 @@ public class MainFrameController implements Initializable {
         });
 
         // initial set of recent files from preferences
-        prefs = Preferences.userRoot().node(this.getClass().getName());
+        prefs = Preferences.userNodeForPackage(this.getClass());
         recentFiles = new FifoHashMap<>(maxRecentFiles);
         reloadRecentFiles();
         updateRecentMenu();
@@ -310,7 +310,7 @@ public class MainFrameController implements Initializable {
 
         preferencesFrameController = PreferencesFrameController.newInstance();
         if (prefs.getInt("ncpu", -1) < 0) {
-            prefs.putInt("ncpu", Runtime.getRuntime().availableProcessors() - 1);
+            prefs.putInt("ncpu", Util.DEFAULT_NCPU);
         }
         preferencesFrameController.setPreferences(prefs);
         preferencesFrameController.getStage().setOnHidden(event -> {

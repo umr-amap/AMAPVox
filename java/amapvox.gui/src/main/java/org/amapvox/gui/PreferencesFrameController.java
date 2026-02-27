@@ -91,10 +91,9 @@ public class PreferencesFrameController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-        int availableCores = Runtime.getRuntime().availableProcessors();
         sliderNCPU.setMin(1);
-        sliderNCPU.setMax(availableCores);
-        sliderNCPU.setValue(availableCores - 1);
+        sliderNCPU.setMax(Runtime.getRuntime().availableProcessors());
+        sliderNCPU.setValue(Util.DEFAULT_NCPU);
         sliderNCPU.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
             if (btnCancel.isDisabled()) {
                     btnCancel.setDisable(Objects.equals(oldValue, newValue));
@@ -116,7 +115,7 @@ public class PreferencesFrameController implements Initializable {
         });
 
         // apply prefs
-        sliderNCPU.setValue(prefs.getInt("ncpu", Runtime.getRuntime().availableProcessors() - 1));
+        sliderNCPU.setValue(prefs.getInt("ncpu", Util.DEFAULT_NCPU));
     }
 
     void addTasks(TaskUI task) {
@@ -162,7 +161,7 @@ public class PreferencesFrameController implements Initializable {
         // clear preferences 
         prefs.clear();
         // default ncpu
-        sliderNCPU.setValue(Runtime.getRuntime().availableProcessors() - 1);
+        sliderNCPU.setValue(Util.DEFAULT_NCPU);
         // defaut ui task status
         uiTasks.stream().forEach(uiTask -> {
             uiTask.enabledProperty().set(uiTask.getStatus().equals(RepoStatus.ACTIVE));
@@ -174,7 +173,7 @@ public class PreferencesFrameController implements Initializable {
     private void onActionButtonCancel(ActionEvent event) {
 
         // ncpu
-        sliderNCPU.setValue(prefs.getInt("ncpu", Runtime.getRuntime().availableProcessors() - 1));
+        sliderNCPU.setValue(prefs.getInt("ncpu", Util.DEFAULT_NCPU));
         // UI tasks
         uiTasks.stream().forEach(uiTask -> {
             uiTask.enabledProperty().set(prefs.getBoolean(uiTask.getClassName(), uiTask.getStatus().equals(RepoStatus.ACTIVE)));

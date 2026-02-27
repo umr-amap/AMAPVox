@@ -174,9 +174,9 @@
                                                                         <HBox fx:id="hboxChunkSize" alignment="CENTER_LEFT" spacing="10.0">
                                                                             <children>
                                                                                 <Label text="Chunk size" />
-                                                                                <RadioButton fx:id="rdbtnShotAutomaticChunkSize" mnemonicParsing="false" selected="true" text="Automatic" />
-                                                                                <RadioButton fx:id="rdbtnShotSetChunkSize" mnemonicParsing="false" selected="false" text="Custom" />
-                                                                                <TextField fx:id="textfieldChunkSize" prefHeight="26.0" prefWidth="100.0" text="5" />
+                                                                                <RadioButton fx:id="rdbtnAutomaticChunkSize" mnemonicParsing="false" selected="true" text="Automatic" />
+                                                                                <RadioButton fx:id="rdbtnCustomChunkSize" mnemonicParsing="false" selected="false" text="Custom" />
+                                                                                <TextField fx:id="textFieldChunkSize" prefHeight="26.0" prefWidth="100.0" text="5" />
                                                                                 <fx:include fx:id="helpButtonChunkSizePostProcessing" source="../HelpButton.fxml" />
                                                                             </children>
                                                                         </HBox>

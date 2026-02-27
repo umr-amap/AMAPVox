@@ -371,6 +371,21 @@ public class VoxelizationFrameController extends ConfigurationController {
     }
 
     private void initOutputPane(ResourceBundle resourceBundle) {
+        
+        helpButtonConcurrentPostProcessing.setOnAction((ActionEvent event)
+                -> {
+            helpButtonConcurrentPostProcessingController.showHelpDialog(resourceBundle.getString("help_postprocessing_concurrent"));
+        });
+        hboxChunkSize.disableProperty().bind(checkboxConcurrentPostProcessing.selectedProperty().not());
+        toggleGroupChunkSize = new ToggleGroup();
+        rdbtnShotAutomaticChunkSize.setToggleGroup(toggleGroupChunkSize);
+        rdbtnShotSetChunkSize.setToggleGroup(toggleGroupChunkSize);
+        textfieldChunkSize.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(1000, TextFieldUtil.Sign.POSITIVE));
+        textfieldChunkSize.disableProperty().bind(rdbtnShotAutomaticChunkSize.selectedProperty());
+        helpButtonChunkSizePostProcessing.setOnAction((ActionEvent event)
+                -> {
+            helpButtonChunkSizePostProcessingController.showHelpDialog(resourceBundle.getString("help_postprocessing_chunksize"));
+        });  
 
         BooleanBinding voxelOutputDisabled = checkboxVoxelOutput.selectedProperty().not();
         spinnerFractionDigits.disableProperty().bind(voxelOutputDisabled);
@@ -1847,6 +1862,26 @@ public class VoxelizationFrameController extends ConfigurationController {
     // OUTPUT PANE
     //////////////
     //
+    @FXML
+    private CheckBox checkboxConcurrentPostProcessing;
+    @FXML
+    private HelpButtonController helpButtonConcurrentPostProcessingController;
+    @FXML
+    private Button helpButtonConcurrentPostProcessing;
+    @FXML
+    private HBox hboxChunkSize;
+    @FXML
+    private RadioButton rdbtnShotAutomaticChunkSize;
+    @FXML
+    private RadioButton rdbtnShotSetChunkSize;
+    private ToggleGroup toggleGroupChunkSize;
+    @FXML
+    private TextField textfieldChunkSize;
+    @FXML
+    private HelpButtonController helpButtonChunkSizePostProcessingController;
+    @FXML
+    private Button helpButtonChunkSizePostProcessing;
+    
     @FXML
     private TextField textFieldOutputFile;
 

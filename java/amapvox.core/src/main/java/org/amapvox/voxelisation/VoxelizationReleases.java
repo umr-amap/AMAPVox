@@ -43,7 +43,7 @@ public class VoxelizationReleases {
                 // new echo weights parameters
                 Element ponderationElement = processElement.getChild("ponderation");
                 if (null != ponderationElement && null != ponderationElement.getAttribute("mode")) {
-                    int mode = Integer.valueOf(ponderationElement.getAttributeValue("mode"));
+                    int mode = Integer.parseInt(ponderationElement.getAttributeValue("mode"));
                     ponderationElement.removeAttribute("mode");
                     ponderationElement.setAttribute(new Attribute("byrank", String.valueOf(mode > 0)));
                     ponderationElement.setAttribute(new Attribute("byfile", String.valueOf(false)));
@@ -195,7 +195,7 @@ public class VoxelizationReleases {
 
                 // renamed attribute output_variables/attenuation_biasCorr into attenuationBiasCorrection
                 if (null != outputs.getAttribute("attenuation_biasCorr")) {
-                    boolean enabled = Boolean.valueOf(outputs.getAttributeValue("attenuation_biasCorr"));
+                    boolean enabled = Boolean.parseBoolean(outputs.getAttributeValue("attenuation_biasCorr"));
                     outputs.removeAttribute(outputs.getAttribute("attenuation_biasCorr"));
                     outputs.setAttribute(new Attribute("attenuationBiasCorrection", String.valueOf(enabled)));
                 }
@@ -344,7 +344,7 @@ public class VoxelizationReleases {
                 // move point-cloud filter to echo-filters
                 Element pointcloudFilters = processElement.getChild("pointcloud-filters");
                 if (null != pointcloudFilters) {
-                    boolean pcfEnabled = Boolean.valueOf(pointcloudFilters.getAttributeValue("enabled"));
+                    boolean pcfEnabled = Boolean.parseBoolean(pointcloudFilters.getAttributeValue("enabled"));
                     List<Element> childrens = pointcloudFilters.getChildren("pointcloud-filter");
                     if (childrens != null) {
                         // make sure filters element exists
@@ -520,36 +520,29 @@ public class VoxelizationReleases {
                     if (null != mainFileElement) {
                         // add type attribute inside input element
                         // <input type=LidarType> 
-                        int inputType = Integer.valueOf(mainFileElement.getAttributeValue("type"));
+                        int inputType = Integer.parseInt(mainFileElement.getAttributeValue("type"));
                         LidarType lidarType;
                         switch (inputType) {
-                            case 0:
+                            case 0 ->
                                 lidarType = LidarType.LAS;
-                                break;
-                            case 1:
+                            case 1 ->
                                 lidarType = LidarType.LAZ;
-                                break;
-                            case 2:
+                            case 2 ->
                                 lidarType = LidarType.SHT;
-                                break;
-                            case 4:
+                            case 4 ->
                                 lidarType = LidarType.RXP;
-                                break;
-                            case 5:
+                            case 5 ->
                                 lidarType = LidarType.RSP;
-                                break;
-                            case 7:
+                            case 7 ->
                                 lidarType = LidarType.PTX;
-                                break;
-                            case 8:
+                            case 8 ->
                                 lidarType = LidarType.PTG;
-                                break;
-                            case 9:
+                            case 9 ->
                                 lidarType = LidarType.XYB;
-                                break;
-                            default:
+                            default -> {
                                 Logger.getLogger(Release.class).warn("Unsupported/deprecated voxelisation type (=" + inputType + "). AMAPVox arbitrarily sets it to LAS but the updated configuration will likely fail.");
                                 lidarType = LidarType.LAS;
+                            }
                         }
                         // add lidar type attribute to input element
                         inputElement.setAttribute("type", lidarType.name());
@@ -590,9 +583,9 @@ public class VoxelizationReleases {
 
                 // replaced xmin, xmin, zmin attributes by single min attribute
                 Point3d min = new Point3d(
-                        Double.valueOf(voxelSpaceElement.getAttributeValue("xmin")),
-                        Double.valueOf(voxelSpaceElement.getAttributeValue("ymin")),
-                        Double.valueOf(voxelSpaceElement.getAttributeValue("zmin"))
+                        Double.parseDouble(voxelSpaceElement.getAttributeValue("xmin")),
+                        Double.parseDouble(voxelSpaceElement.getAttributeValue("ymin")),
+                        Double.parseDouble(voxelSpaceElement.getAttributeValue("zmin"))
                 );
                 voxelSpaceElement.removeAttribute("xmin");
                 voxelSpaceElement.removeAttribute("ymin");
@@ -601,9 +594,9 @@ public class VoxelizationReleases {
 
                 // replaced xmax, xmax, zmax attributes by single max attribute
                 Point3d max = new Point3d(
-                        Double.valueOf(voxelSpaceElement.getAttributeValue("xmax")),
-                        Double.valueOf(voxelSpaceElement.getAttributeValue("ymax")),
-                        Double.valueOf(voxelSpaceElement.getAttributeValue("zmax"))
+                        Double.parseDouble(voxelSpaceElement.getAttributeValue("xmax")),
+                        Double.parseDouble(voxelSpaceElement.getAttributeValue("ymax")),
+                        Double.parseDouble(voxelSpaceElement.getAttributeValue("zmax"))
                 );
                 voxelSpaceElement.removeAttribute("xmax");
                 voxelSpaceElement.removeAttribute("ymax");
@@ -612,9 +605,9 @@ public class VoxelizationReleases {
 
                 // replaced splitX, splitY, splitZ attributes by single split attribute
                 Point3i split = new Point3i(
-                        Integer.valueOf(voxelSpaceElement.getAttributeValue("splitX")),
-                        Integer.valueOf(voxelSpaceElement.getAttributeValue("splitY")),
-                        Integer.valueOf(voxelSpaceElement.getAttributeValue("splitZ"))
+                        Integer.parseInt(voxelSpaceElement.getAttributeValue("splitX")),
+                        Integer.parseInt(voxelSpaceElement.getAttributeValue("splitY")),
+                        Integer.parseInt(voxelSpaceElement.getAttributeValue("splitZ"))
                 );
                 voxelSpaceElement.removeAttribute("splitX");
                 voxelSpaceElement.removeAttribute("splitY");
@@ -622,7 +615,7 @@ public class VoxelizationReleases {
                 voxelSpaceElement.setAttribute("split", split.toString());
 
                 // updated resolution attribute with 3 dimensions
-                float resolution = Float.valueOf(voxelSpaceElement.getAttributeValue("resolution"));
+                float resolution = Float.parseFloat(voxelSpaceElement.getAttributeValue("resolution"));
                 voxelSpaceElement.setAttribute("resolution", new Point3d(resolution, resolution, resolution).toString());
             }
         },
@@ -713,7 +706,7 @@ public class VoxelizationReleases {
                     for (Element variableElement : variablesElement.getChildren("variable")) {
                         OutputVariable variable = OutputVariable.valueOf(variableElement.getAttributeValue("name").toUpperCase());
                         switch (variable) {
-                            case ESTIMATED_TRANSMITTANCE:
+                            case ESTIMATED_TRANSMITTANCE -> {
                                 Element transmittanceElement = processElement.getChild("transmittance");
                                 if (null != transmittanceElement) {
                                     transmittanceElement.detach();
@@ -721,13 +714,13 @@ public class VoxelizationReleases {
                                     variableElement.addContent(transmittanceElement);
                                     processElement.removeChild(transmittanceElement.getName());
                                 }
-                                break;
-                            case PLANT_AREA_DENSITY:
+                            }
+                            case PLANT_AREA_DENSITY -> {
                                 Element limitsElement = processElement.getChild("limits");
                                 if (limitsElement != null) {
                                     List<Element> limitChildrensElement = limitsElement.getChildren("limit");
                                     if (limitChildrensElement != null) {
-                                        if (limitChildrensElement.size() > 0) {
+                                        if (!limitChildrensElement.isEmpty()) {
                                             Element padElement = new Element("parameters");
                                             padElement.setAttribute("max-pad", limitChildrensElement.get(0).getAttributeValue("max"));
                                             variableElement.addContent(padElement);
@@ -735,8 +728,8 @@ public class VoxelizationReleases {
                                     }
                                     processElement.removeContent(limitsElement);
                                 }
-                                break;
-                            case ATTENUATION_PPL_MLE:
+                            }
+                            case ATTENUATION_PPL_MLE -> {
                                 Element attenuationElement = processElement.getChild("attenuation");
                                 if (null != attenuationElement) {
                                     attenuationElement.detach();
@@ -744,8 +737,8 @@ public class VoxelizationReleases {
                                     variableElement.addContent(attenuationElement);
                                     processElement.removeChild(attenuationElement.getName());
                                 }
-                                break;
-                            case EXPLORATION_RATE:
+                            }
+                            case EXPLORATION_RATE -> {
                                 Element voxelspaceElement = processElement.getChild("voxelspace");
                                 Element subvoxelElement = new Element("parameters");
                                 if (null != voxelspaceElement.getAttribute("subvoxel")) {
@@ -756,7 +749,7 @@ public class VoxelizationReleases {
                                     subvoxelElement.setAttribute("subvoxel", "2");
                                 }
                                 variableElement.addContent(subvoxelElement);
-                                break;
+                            }
                         }
                     }
 
@@ -920,7 +913,7 @@ public class VoxelizationReleases {
                         rankEchoWeightElement.addContent(parametersElement);
                         echoWeightsElement.addContent(rankEchoWeightElement);
                     }
-                    
+
                     // shot echo weight
                     enabled = Boolean.parseBoolean(echoWeightingElement.getAttributeValue("byfile"));
                     if (enabled) {
@@ -943,16 +936,47 @@ public class VoxelizationReleases {
         },
         // 2023-01-19
         new Release("2.2.0") {
-        @Override
-        public void update(Element processElement) {
-           
-            // delete mono-echo attribute in laser-specification element
-            Element laserSpecElement = processElement.getChild("laser-specification");
-            if (null != laserSpecElement) {
-                laserSpecElement.removeAttribute("mono-echo");
+            @Override
+            public void update(Element processElement) {
+
+                // delete mono-echo attribute in laser-specification element
+                Element laserSpecElement = processElement.getChild("laser-specification");
+                if (null != laserSpecElement) {
+                    laserSpecElement.removeAttribute("mono-echo");
+                }
+            }
+        },
+        // 2026-03-##
+        new Release("2.5.0") {
+
+            @Override
+            public void update(Element processElement) {
+
+                // relative echo weight for LAS/LAZ LiDAR type
+                // replace `intensity` variable by `Intensity` (case sensitive)
+                Element inputElement = processElement.getChild("input");
+                LidarType lidarType = LidarType.valueOf(inputElement.getAttributeValue("type"));
+                switch (lidarType) {
+                    case LAS, LAZ -> {
+                        try {
+                            Element echoWeightElement = processElement.getChild("echo-weights")
+                                    .getChildren().stream()
+                                    .filter(element -> element.getAttributeValue("classname").endsWith("RelativeEchoWeight"))
+                                    .findAny().get();
+                            Element parametersElement = echoWeightElement.getChild("parameters");
+                            Attribute variableAttribute = parametersElement.getAttribute("variable");
+                            if (variableAttribute.getValue().equalsIgnoreCase("intensity")) {
+                                variableAttribute.setValue("Intensity");
+                            }
+                        } catch (NullPointerException ex) {
+                            // did not find any relative echo weight filter or
+                            // parameters element or variable attribute
+                        }
+                    }
+                }
             }
         }
-    }
+
     };
 
     // remove deprecated output variables for version >= 1.10.2

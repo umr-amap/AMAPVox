@@ -5,6 +5,8 @@
  */
 package org.amapvox.gui.configuration;
 
+import com.github.mreutegg.laszip4j.LASHeader;
+import com.github.mreutegg.laszip4j.LASReader;
 import org.amapvox.lidar.riegl.RSPReader;
 import org.amapvox.commons.javafx.SelectableMenuButton;
 import org.amapvox.commons.javafx.SelectableTitledPane;
@@ -55,6 +57,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -276,7 +279,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                     rdbtnRankEchoWeight.selectedProperty(),
                     textAreaRankEchoWeightMatrix.textProperty(),
                     rdbtnRelativeEchoWeight.selectedProperty(),
-                    textFieldRelativeEchoWeightVariable.textProperty(),
+                    comboboxRelativeEchoWeightVariable.getSelectionModel().selectedItemProperty(),
                     checkboxNormalizedEchoWeight.selectedProperty(),
                     rdbtnStrongestEchoWeight.selectedProperty(),
                     textFieldStrongestEchoWeightVariable.textProperty(),
@@ -505,9 +508,9 @@ public class VoxelizationFrameController extends ConfigurationController {
                 -> {
             buttonHelpEmptyShotsFilterController.showHelpDialog(resourceBundle.getString("help_empty_shots_filter"));
         });
-        
+
         buttonPointcloudFilterBoundingbox.disableProperty().bind(Bindings.isEmpty(vBoxPointCloudFiltering.getChildren()));
-        
+
         buttonHelpPointcloudFilterBoundingbox.setOnAction((ActionEvent event)
                 -> {
             buttonHelpPointcloudFilterBoundingboxController.showHelpDialog(resourceBundle.getString("help_filter_pointcloud_boundingbox"));
@@ -760,6 +763,15 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         // relative echo weight
         hboxRelativeEchoWeight.disableProperty().bind(rdbtnRelativeEchoWeight.selectedProperty().not());
+        rdbtnRelativeEchoWeight.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+                -> {
+            if (newValue) {
+                setRelativeEchoWeightVariables();
+            }
+        });
+        labelLidarType.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+            setRelativeEchoWeightVariables();
+        });
         helpButtonRelativeEchoWeight.setOnAction((ActionEvent event)
                 -> {
             helpButtonRelativeEchoWeightController.showHelpDialog(resourceBundle.getString("help_relative_echo_weight"));
@@ -1015,7 +1027,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         cfg.addEchoWeight(new RankEchoWeight(rdbtnRankEchoWeight.isSelected()));
         cfg.setRankEchoWeightMatrix(Matrix.valueOf(textAreaRankEchoWeightMatrix.getText()));
         cfg.addEchoWeight(new RelativeEchoWeight(rdbtnRelativeEchoWeight.isSelected()));
-        cfg.setRelativeEchoWeightVariable(textFieldRelativeEchoWeightVariable.getText());
+        cfg.setRelativeEchoWeightVariable(comboboxRelativeEchoWeightVariable.getSelectionModel().getSelectedItem());
         cfg.setEchoWeightNormalized(checkboxNormalizedEchoWeight.isSelected());
         cfg.addEchoWeight(new StrongestEchoWeight(rdbtnStrongestEchoWeight.isSelected()));
         cfg.setStrongestEchoWeightVariable(textFieldStrongestEchoWeightVariable.getText());
@@ -1107,6 +1119,15 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         VoxelizationCfg cfg = new VoxelizationCfg();
         cfg.read(file);
+        
+        // lidar scans
+        labelLidarType.setText(cfg.getLidarType().name());
+        
+         List<LidarScan> scans = cfg.getLidarScans();
+        if (scans != null) {
+            scanItems = scans;
+            listviewLidarScans.getItems().setAll(scanItems);
+        }
 
         // dtm
         if (null != cfg.getDTMFile()) {
@@ -1238,7 +1259,12 @@ public class VoxelizationFrameController extends ConfigurationController {
                 }
                 case RelativeEchoWeight relativeEchoWeight -> {
                     rdbtnRelativeEchoWeight.setSelected(relativeEchoWeight.isEnabled());
-                    textFieldRelativeEchoWeightVariable.setText(cfg.getRelativeEchoWeightVariable());
+                    if (comboboxRelativeEchoWeightVariable.getItems().contains(cfg.getRelativeEchoWeightVariable())) {
+                        comboboxRelativeEchoWeightVariable.getSelectionModel().select(cfg.getRelativeEchoWeightVariable());
+                    } else {
+                        logger.warn("Relative echo weight variable: " + cfg.getRelativeEchoWeightVariable() +". Should be one of " + Arrays.toString(comboboxRelativeEchoWeightVariable.getItems().toArray()));
+                        comboboxRelativeEchoWeightVariable.getSelectionModel().selectFirst();
+                    }
                     checkboxNormalizedEchoWeight.setSelected(cfg.isEchoWeightNormalized());
                 }
                 case StrongestEchoWeight strongestEchoWeight -> {
@@ -1256,8 +1282,6 @@ public class VoxelizationFrameController extends ConfigurationController {
         textFieldTrNumNRecordMax.setText(String.valueOf(cfg.getNTrRecordMax()));
         textFieldMaxAttenuation.setText(BigDecimal.valueOf(cfg.getMaxAttenuation()).toPlainString());
         spinnerAttenuationError.getValueFactory().setValue((int) Math.abs(Math.log10(cfg.getAttenuationError())));
-
-        labelLidarType.setText(cfg.getLidarType().name());
 
         if (cfg.getLidarType() == VoxelizationCfg.LidarType.LAS
                 || cfg.getLidarType() == VoxelizationCfg.LidarType.LAZ) {
@@ -1285,12 +1309,6 @@ public class VoxelizationFrameController extends ConfigurationController {
             textFieldLasPositionY.setText(String.valueOf(cfg.getScannerPosition().y));
             textFieldLasPositionZ.setText(String.valueOf(cfg.getScannerPosition().z));
             rdbtnLasPosition.setSelected(true);
-        }
-
-        List<LidarScan> scans = cfg.getLidarScans();
-        if (scans != null) {
-            scanItems = scans;
-            listviewLidarScans.getItems().setAll(scanItems);
         }
 
         // false empty shot filter
@@ -1746,6 +1764,32 @@ public class VoxelizationFrameController extends ConfigurationController {
         labelLidarType.setText(extension);
     }
 
+    private void setRelativeEchoWeightVariables() {
+
+        List<String> names = new LinkedList<>();
+        if (null != labelLidarType) {
+            switch (VoxelizationCfg.LidarType.valueOf(labelLidarType.getText())) {
+                case RXP, RSP ->
+                    names.addAll(Arrays.asList(new String[]{"amplitude", "deviation", "reflectance"}));
+                case LAS, LAZ -> {
+                    names.add("Intensity");
+                    if (!listviewLidarScans.getItems().isEmpty()) {
+                        File file = listviewLidarScans.getItems().getFirst().getFile();
+                        LASHeader header = new LASReader(file).getHeader();
+                        header.getExtraBytesDescriptions().
+                                forEach(extraBytesDescription -> names.add(extraBytesDescription.getName()));
+                    }
+                }
+                default ->
+                    names.add("intensity");
+            }
+
+            comboboxRelativeEchoWeightVariable.getItems().clear();
+            comboboxRelativeEchoWeightVariable.getItems().addAll(names);
+            comboboxRelativeEchoWeightVariable.getSelectionModel().selectFirst();
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
 // FXML / FXML / FXML / FXML / FXML / FXML / FXML / FXML / FXML / FXML / FXML //
 ////////////////////////////////////////////////////////////////////////////////    
@@ -2133,7 +2177,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     @FXML
     private HBox hboxRelativeEchoWeight;
     @FXML
-    private TextField textFieldRelativeEchoWeightVariable;
+    private ComboBox<String> comboboxRelativeEchoWeightVariable;
     @FXML
     private CheckBox checkboxNormalizedEchoWeight;
     // Strongest echo weight

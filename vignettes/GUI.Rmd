@@ -3,10 +3,12 @@ title: "Graphical User Interface"
 output: rmarkdown::html_vignette
 #output: rmarkdown::pdf_document
 vignette: >
-  %\VignetteIndexEntry{amapvox-gui}
+  %\VignetteIndexEntry{GUI}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+
+# Graphical User Interface
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -16,10 +18,7 @@ knitr::opts_chunk$set(
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
-<!-- AMAPVox logo -->
-![](rsc/amapvox-logo.png){width=256px}
-
-```{r setup}
+```{r setup-gui}
 library(AMAPVox)
 ```
 

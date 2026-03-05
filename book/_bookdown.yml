@@ -1,0 +1,11 @@
+book_filename: "amapvox-manual"
+delete_merged_file: true
+rmd_files: [
+  "index.Rmd",
+  "Installation.Rmd",
+  "GUI.Rmd",
+  "Voxelization.Rmd",
+  "Publications.Rmd",
+  "../NEWS.md",
+  "references.Rmd"
+]

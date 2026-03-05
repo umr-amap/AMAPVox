@@ -18,21 +18,21 @@ leafAngleDistribution = c("planophile",
 #' the lookup table for speeding up the calculation.
 #' @details Leaf Angle Distribution functions
 #' * de Wit’s leaf angle distribution functions:
-#'   * \strong{uniform}, proportion of leaf angle is the same at any angle
-#'   * \strong{spherical}, relative frequency of leaf angle is the same as for
+#'   * **uniform**, proportion of leaf angle is the same at any angle
+#'   * **spherical**, relative frequency of leaf angle is the same as for
 #'   surface elements of a sphere
-#'   * \strong{planophile}, horizontal leaves most frequent
-#'   * \strong{erectophile}, vertical leaves most frequent
-#'   * \strong{plagiophile}, oblique leaves most frequent
-#'   * \strong{extremophile}, oblique leaves least frequent
-#' * \strong{ellipsoidal} distribution function, generalization of the spherical
+#'   * **planophile**, horizontal leaves most frequent
+#'   * **erectophile**, vertical leaves most frequent
+#'   * **plagiophile**, oblique leaves most frequent
+#'   * **extremophile**, oblique leaves least frequent
+#' * **ellipsoidal** distribution function, generalization of the spherical
 #' distribution over an ellipsoid. Relative frequency of leaf angle is the same
 #' as for surface elements of an ellipsoid. Takes one parameter `chi` the ratio
 #' horizontal axis over vertical axis. For `chi = 1` the distribution becomes
 #' spherical. For `chi < 1`, the ellipsoid is a prolate spheroid (like a
 #' rugby ball). For `chi > 1` the ellipsoid is an oblate spheroid (a sphere that
 #' bulges at the equator and is somewhat squashed at the poles).
-#' * \strong{two parameters Beta} distribution. Most generic approach from Goal
+#' * **two parameters Beta** distribution. Most generic approach from Goal
 #' and Strebel (1984) to represent large variety of leaf angle distribution. Takes
 #' two parameters `mu` and `nu` that control the shape of the Beta
 #' distribution.

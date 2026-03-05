@@ -9,6 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+# Publications
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -21,7 +22,7 @@ knitr::opts_chunk$set(
 
 Your article is not listed ? Please let us know *contact at amapvox dot org*
 
-```{r, setup, echo=FALSE}
+```{r, setup-publi, echo=FALSE}
 # libraries RefManageR
 require("RefManageR", quietly = TRUE)  
 ```

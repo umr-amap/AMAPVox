@@ -1,5 +1,6 @@
 stages:
   - trigger
+  - build
 
 # Trigger Java child pipeline only if java/ files change
 trigger-java:
@@ -11,3 +12,24 @@ trigger-java:
   trigger:
     include: java/.gitlab-ci.yml  # Child pipeline
     strategy: depend  # Wait for child pipeline to finish
+
+documentation:
+  stage: build
+  image: rocker/tidyverse:4.5
+  rules:
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event"' # && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+  before_script:
+    - cp -r vignettes/* book/
+    - |
+      export VERSION=$(grep -Po 'Version: \K.*' DESCRIPTION)
+    - apt-get update && apt-get install -y texlive texlive-fonts-extra
+    - Rscript -e "install.packages(c('bookdown', 'RefManageR'))"
+    - R CMD INSTALL --preclean --no-multiarch --with-keep.source .
+  script:
+    - R CMD Rd2pdf  --output=amapvox-reference-${VERSION}.pdf --force --no-preview --quiet --title="AMAPVox Function Reference" .
+    - Rscript -e "bookdown::render_book('book', 'bookdown::pdf_book', output_dir = '..')" && mv amapvox-manual.pdf amapvox-manual-${VERSION}.pdf
+  artifacts:
+    paths:
+      - ./amapvox-reference-*.pdf
+      - ./amapvox-manual-*.pdf
+

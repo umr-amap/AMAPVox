@@ -17,7 +17,7 @@ documentation:
   stage: build
   image: rocker/tidyverse:4.5
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "merge_request_event"' # && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
   before_script:
     - cp -r vignettes/* book/
     - |

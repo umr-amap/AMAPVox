@@ -1,0 +1,17 @@
+--- 
+# this is the actual book title, references.Rdm beging the last chapter (bug)
+title: |
+  ![](../vignettes/rsc/amapvox-logo.png){width=256px}  
+  AMAPVox LiDAR Voxelization Software
+  "
+---
+
+# Function Reference
+
+The **complete function reference** for the AMAPVox R package, matching the current version of the software (**AMAPVox v`r packageVersion("AMAPVox")`**), is provided in a separate document. It is available online at the following locations:
+
+- **[AMAPVox Dataverse (Reference Document)](https://doi.org/#######)**: Download the PDF documentation with a DOI from IRD DataSuds.
+- **[AMAPVox Website (Reference Section)](https://amapvox.org/reference)**: Browse the function reference interactively.
+- **[CRAN Package Manual](https://cran.r-project.org/web/packages/AMAPVox/AMAPVox.pdf)**: Download the official CRAN PDF manual.
+
+**Note:** The function reference is automatically generated and reflects the current version of AMAPVox. For older versions, refer to [AMAPVox Dataverse](https://dataverse.ird.fr/dataverse/amapvox) 

@@ -8,15 +8,14 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+# Installation
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
-
-<!-- AMAPVox logo -->
-![](rsc/amapvox-logo.png){width=256px}
 
 AMAPVox is an R package that embeds a Java Desktop Application. The Java part
 of AMAPVox is distributed as a set of JAR files (Java Archives) and is not 
@@ -50,7 +49,7 @@ if (!any(grepl("remotes", rownames(installed.packages())))) install.packages("re
 remotes::install_github('umr-amap/AMAPVox')
 ```
 
-```{r setup}
+```{r setup-install}
 # load AMAPVox package
 library(AMAPVox)
 ```

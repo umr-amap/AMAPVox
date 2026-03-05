@@ -1,0 +1,21 @@
+--- 
+# no title because bookdown::render_book takes the title of the last chapter as book title (bug)
+author: "Philippe Verley"
+date: "`r Sys.Date()`"
+output: bookdown::pdf_book
+---
+
+# Welcome to AMAPVox
+
+## Documentation overview
+
+AMAPVox is a LiDAR voxelization software designed for ecological and forestry applications. This documentation provides a comprehensive guide to installing and using AMAPVox software and understanding underlying concepts. It also includes a complete function reference for the R package in a separate document.
+
+## Versioning and Documentation Policy
+
+AMAPVox follows [semantic versioning](https://semver.org) for both the Java application and the R package. Documentation is generated for every release, including patch releases (x.y.z).
+
+- Minor releases (x.y.0) typically include new features, improvements, and documentation updates.
+- Patch releases (x.y.z) primarily include bug fixes. The documentation for patch releases may remain unchanged from the previous minor release, but the version number is updated to match the software release.
+
+

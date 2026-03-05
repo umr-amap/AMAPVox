@@ -8,6 +8,8 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+# Voxelization
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -18,7 +20,7 @@ knitr::opts_chunk$set(
 <!-- AMAPVox logo -->
 ![](rsc/amapvox-logo.png){width=256px}
 
-```{r setup}
+```{r setup-voxelization}
 library(AMAPVox)
 ```
 

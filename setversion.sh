@@ -31,13 +31,4 @@ cd ..
 # update DESCRIPTION file
 sed -i "s/$CURRENT_VERSION_NONSNAPSHOT/$UPDATED_VERSION_NONSNAPSHOT/" DESCRIPTION
 
-# update NEWS.md
-RELEASE="# AMAPVox $UPDATED_VERSION_NONSNAPSHOT
-
-*yyyy-MM-dd*
-
-Released/Not release on CRAN
-
-"
-echo "$(echo -n "$RELEASE"; cat NEWS.md)" > NEWS.md
 # EOF

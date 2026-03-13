@@ -54,34 +54,34 @@ public class MainFX extends Application {
         controller.setStage(stage);
 
         // add UI tasks
-        controller.addTaskUI(HemiPhotoCfg.class,
-                "fxml/configuration/HemiPhotoFrame.fxml",
-                "fxml/icons/hemispherical.png",
-                RepoStatus.INACTIVE);
-        controller.addTaskUI(CanopyAnalyzerCfg.class,
-                "fxml/configuration/CanopyAnalyzerFrame.fxml",
-                "fxml/icons/lai2200.png",
-                RepoStatus.INACTIVE);
-        controller.addTaskUI(ObjExporterCfg.class,
-                "fxml/configuration/ObjExporterFrame.fxml",
-                "fxml/icons/obj.png",
-                RepoStatus.INACTIVE);
-        controller.addTaskUI(TransmittanceCfg.class,
-                "fxml/configuration/TransmittanceMapFrame.fxml",
-                "fxml/icons/sun.png",
-                RepoStatus.INACTIVE);
         controller.addTaskUI(VoxelizationCfg.class,
                 "fxml/configuration/VoxelizationFrame.fxml",
                 "fxml/icons/voxelization.png",
+                RepoStatus.ACTIVE);
+        controller.addTaskUI(Viewer3dConfiguration.class,
+                "fxml/configuration/Viewer3dFrame.fxml",
+                "fxml/icons/cubes.png",
+                RepoStatus.ACTIVE);
+        controller.addTaskUI(CanopyAnalyzerCfg.class,
+                "fxml/configuration/CanopyAnalyzerFrame.fxml",
+                "fxml/icons/lai2200.png",
+                RepoStatus.ACTIVE);
+        controller.addTaskUI(HemiPhotoCfg.class,
+                "fxml/configuration/HemiPhotoFrame.fxml",
+                "fxml/icons/hemispherical.png",
+                RepoStatus.ACTIVE);
+        controller.addTaskUI(TransmittanceCfg.class,
+                "fxml/configuration/TransmittanceMapFrame.fxml",
+                "fxml/icons/sun.png",
                 RepoStatus.ACTIVE);
         controller.addTaskUI(ChartConfiguration.class,
                 "fxml/configuration/ChartFrame.fxml",
                 "fxml/icons/charts.png",
                 RepoStatus.INACTIVE);
-        controller.addTaskUI(Viewer3dConfiguration.class,
-                "fxml/configuration/Viewer3dFrame.fxml",
-                "fxml/icons/cubes.png",
-                RepoStatus.ACTIVE);
+        controller.addTaskUI(ObjExporterCfg.class,
+                "fxml/configuration/ObjExporterFrame.fxml",
+                "fxml/icons/obj.png",
+                RepoStatus.INACTIVE);
         controller.addTaskUI(ButterflyCfg.class,
                 null,
                 "fxml/icons/butterfly.png",

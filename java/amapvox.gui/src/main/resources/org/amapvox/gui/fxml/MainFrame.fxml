@@ -45,15 +45,18 @@
                                 </MenuItem>
                             </items>
                         </Menu>
-                        <Menu mnemonicParsing="false" text="Edit">
+                        <Menu mnemonicParsing="false" text="Tools">
                             <items>
-                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuClearWindow" text="Clear window" />
+                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuClearWindow" text="Reset Window" />
+                                <SeparatorMenuItem />
                                 <MenuItem mnemonicParsing="false" onAction="#onActionMenuPreferences" text="Preferences" />
                             
                             </items>
                         </Menu>
                         <Menu mnemonicParsing="false" text="Help">
                             <items>
+                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuDocs" text="Online Docs" />
+                                <SeparatorMenuItem />
                                 <MenuItem mnemonicParsing="false" onAction="#onActionMenuAbout" text="About" />
                             </items>
                         </Menu>

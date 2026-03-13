@@ -34,13 +34,14 @@ public class MainFX extends Application {
         FXMLLoader loader = new FXMLLoader(MainFX.class.getResource("fxml/MainFrame.fxml"), rb);
         Parent root = loader.load();
         MainFrameController controller = loader.getController();
+        controller.setApplication(this);
         ObservableList<Screen> screens = Screen.getScreensForRectangle(0, 0, 10, 10);
 
         if (screens != null && !screens.isEmpty()) {
             stage.setWidth(screens.get(0).getBounds().getWidth());
             stage.setHeight(screens.get(0).getBounds().getHeight());
         }
-
+        
         Scene scene = new Scene(root);
         scene.getStylesheets().add(MainFX.class.getResource("styles/Styles.css").toExternalForm());
 

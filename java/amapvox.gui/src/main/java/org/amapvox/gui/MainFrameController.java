@@ -77,6 +77,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
@@ -131,6 +132,7 @@ public class MainFrameController implements Initializable {
 
     final private AtomicInteger fileIndex = new AtomicInteger(0);
 
+    private Application application;
     private ResourceBundle rb;
 
     private Preferences prefs;
@@ -433,8 +435,8 @@ public class MainFrameController implements Initializable {
     private void contextMenuTaskList() {
 
         // edit task
-        MenuItem editMenuItem = new MenuItem("Edit");
-        editMenuItem.setOnAction((ActionEvent event) -> {
+        MenuItem editContextMenuItem = new MenuItem("Edit");
+        editContextMenuItem.setOnAction((ActionEvent event) -> {
             List<CfgFile> files = listViewTaskList.getSelectionModel().getSelectedItems()
                     .stream()
                     .map(task -> task.getLinkedFile())
@@ -443,15 +445,15 @@ public class MainFrameController implements Initializable {
         });
 
         // copy path to clipboard
-        MenuItem copyPathMenuItem = new MenuItem("Copy path to clipboard");
-        copyPathMenuItem.setOnAction((ActionEvent event) -> {
+        MenuItem copyPathContextMenuItem = new MenuItem("Copy Path to Clipboard");
+        copyPathContextMenuItem.setOnAction((ActionEvent event) -> {
             StringSelection path = new StringSelection(listViewTaskList.getSelectionModel().getSelectedItem().getLinkedFile().getFile().getAbsolutePath());
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(path, null);
         });
 
         // open folder
-        MenuItem openFolderMenuItem = new MenuItem("Open folder");
-        openFolderMenuItem.setOnAction((ActionEvent event) -> {
+        MenuItem openFolderContextMenuItem = new MenuItem("Open Folder");
+        openFolderContextMenuItem.setOnAction((ActionEvent event) -> {
             final File file = listViewTaskList.getSelectionModel().getSelectedItem().getLinkedFile().getFile();
             if (null != file) {
                 if (Desktop.isDesktopSupported()) {
@@ -467,8 +469,8 @@ public class MainFrameController implements Initializable {
         });
 
         // open with text editor
-        MenuItem showSourceMenuItem = new MenuItem("Show source");
-        showSourceMenuItem.setOnAction((ActionEvent event) -> {
+        MenuItem showSourceContextMenuItem = new MenuItem("View Source");
+        showSourceContextMenuItem.setOnAction((ActionEvent event) -> {
             final File file = listViewTaskList.getSelectionModel().getSelectedItem().getLinkedFile().getFile();
             if (null != file) {
                 Stage xmlStage = new Stage();
@@ -512,7 +514,7 @@ public class MainFrameController implements Initializable {
         listViewTaskList.setOnContextMenuRequested((ContextMenuEvent event) -> {
             if (listViewTaskList.getSelectionModel().getSelectedIndices().size() == 1) {
                 ContextMenu contextMenuTaskList = new ContextMenu();
-                contextMenuTaskList.getItems().addAll(editMenuItem, copyPathMenuItem, openFolderMenuItem, showSourceMenuItem);
+                contextMenuTaskList.getItems().addAll(editContextMenuItem, copyPathContextMenuItem, openFolderContextMenuItem, showSourceContextMenuItem);
                 contextMenuTaskList.show(listViewTaskList, event.getScreenX(), event.getScreenY());
             }
         });
@@ -523,20 +525,20 @@ public class MainFrameController implements Initializable {
         ContextMenu contextMenuProductsList = new ContextMenu();
 
         // copy path to clipboard
-        MenuItem copyPathMenuItem = new MenuItem("Copy path to clipboard");
+        MenuItem copyPathMenuItem = new MenuItem("Copy Path to Clipboard");
         copyPathMenuItem.setOnAction((ActionEvent event) -> {
             StringSelection path = new StringSelection(treeViewOutput.getSelectionModel().getSelectedItem().getValue().getAbsolutePath());
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(path, null);
         });
 
         // remove output file
-        MenuItem removeMenuItem = new MenuItem("Remove");
+        MenuItem removeMenuItem = new MenuItem("Remove from List");
         removeMenuItem.setOnAction((ActionEvent event) -> {
             treeViewOutput.getSelectionModel().getSelectedItems()
                     .forEach(item -> removeOutputItem(item));
         });
 
-        MenuItem imageMenuItem = new MenuItem("Open with image viewer");
+        MenuItem imageMenuItem = new MenuItem("Open Image");
         imageMenuItem.setOnAction((ActionEvent event)
                 -> {
             File selectedFile = treeViewOutput.getSelectionModel().getSelectedItem().getValue();
@@ -544,7 +546,7 @@ public class MainFrameController implements Initializable {
             showImage(selectedFile);
         });
 
-        MenuItem voxelspaceMenuItem = new MenuItem("Show header");
+        MenuItem voxelspaceMenuItem = new MenuItem("View Header");
 
         voxelspaceMenuItem.setOnAction((ActionEvent event)
                 -> {
@@ -566,7 +568,7 @@ public class MainFrameController implements Initializable {
             }
         });
 
-        final MenuItem menuItemOpenContainingFolder = new MenuItem("Open item location");
+        final MenuItem menuItemOpenContainingFolder = new MenuItem("Open Folder");
 
         menuItemOpenContainingFolder.setOnAction((ActionEvent event)
                 -> {
@@ -766,16 +768,27 @@ public class MainFrameController implements Initializable {
 
     @FXML
     private void onActionMenuClearWindow(ActionEvent event) {
-        try {
-            resetComponents();
-        } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(MainFrameController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
+        
+        resetComponents();
+
     }
 
     @FXML
     private void onActionMenuPreferences(ActionEvent event) {
         preferencesFrameController.getStage().show();
+    }
+
+    @FXML
+    private void onActionMenuDocs(ActionEvent event) {
+
+        if (null != application) {
+            application.getHostServices().showDocument("https://amapvox.org/articles/AMAPVox.html");
+            LOGGER.info("Default system browser opened https://amapvox.org/articles/AMAPVox.html");
+        } else {
+            LOGGER.warn("Failed to open default system browser.");
+            LOGGER.info("Visit https://amapvox.org/articles/AMAPVox.html");
+        }
     }
 
     @FXML
@@ -903,6 +916,10 @@ public class MainFrameController implements Initializable {
 
     }
 
+    public void setApplication(Application application) {
+        this.application = application;
+    }
+
     public void setStage(final Stage stage) {
 
         this.stage = stage;
@@ -938,19 +955,15 @@ public class MainFrameController implements Initializable {
 
     }
 
-    private void resetComponents() throws Exception {
+    private void resetComponents() {
 
         Platform.runLater(()
                 -> {
             try {
                 FXMLLoader loader = new FXMLLoader(MainFrameController.class.getResource("fxml/MainFrame.fxml"));
                 Parent root = loader.load();
-
                 Scene scene = new Scene(root);
-
                 scene.getStylesheets().add(MainFX.class.getResource("styles/Styles.css").toExternalForm());
-
-                //stage.setTitle("AMAPVox");
                 stage = new Stage();
                 stage.setTitle("AMAPVox " + org.amapvox.commons.Util.getVersion());
                 stage.setScene(scene);

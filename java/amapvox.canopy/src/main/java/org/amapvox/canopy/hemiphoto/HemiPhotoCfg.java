@@ -148,7 +148,7 @@ public class HemiPhotoCfg extends Configuration {
     }
 
     public HemiPhotoCfg() {
-        super("HEMI_PHOTO", "Hemispheral Photograph",
+        super("HEMI_PHOTO", "Hemispheral Photography",
                 "Generates hemispherical photography from a voxel file or a single lidar scan.");
     }
 

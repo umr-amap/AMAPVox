@@ -46,7 +46,7 @@ public class TransmittanceCfg extends Configuration {
     }
 
     public TransmittanceCfg() {
-        super("TRANSMITTANCE", "Transmittance Map",
+        super("TRANSMITTANCE", "Canopy Light Availability Map",
                 "Generates a bitmap/text file of the transmittance light out of a voxel file, sensors and sun parameters.");
         parameters = new TransmittanceParameters();
     }

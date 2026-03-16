@@ -28,7 +28,7 @@ public class Viewer3dConfiguration extends Configuration {
     private int dtmMargin = 0;
 
     public Viewer3dConfiguration() {
-        super("VIEWER3D", "Viewer 3D",
+        super("VIEWER3D", "Voxel File Viewer",
                 "3D visualization of a voxel file with OpenGL");
         vopMatrix = new Matrix4d();
         vopMatrix.setIdentity();

@@ -19,7 +19,7 @@ module amapvox.core {
     requires log4j;
     
     // automatic modules
-    requires commons.math3; 
+    requires org.apache.commons.lang3;
     requires sis.jhdf5;
     requires cdm;
     requires laszip4j;

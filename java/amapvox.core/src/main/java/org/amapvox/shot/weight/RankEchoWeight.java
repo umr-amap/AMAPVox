@@ -14,9 +14,14 @@ import org.apache.log4j.Logger;
  * Using intensity in pre-processing stage to estimate the mean target size
  * given the number of returns and the rank of the return.
  *
- * User provides an array with estimated weights https://forge.ird.fr/amap/amapvox/-/issues/5
+ * User provides an array with estimated weights
+ * https://forge.ird.fr/amap/amapvox/amapvox-legacy/-/work_items/5
+ *
+ * Supernumerary echoes are discarded
+ * https://forge.ird.fr/amap/amapvox/amapvox-legacy/-/work_items/12
  * 
- * Supernumerary echoes are discarded https://forge.ird.fr/amap/amapvox/-/issues/12
+ * Echo weight as fraction
+ * https://forge.ird.fr/amap/amapvox/AMAPVox/-/work_items/83
  *
  * @author Philippe Verley
  */
@@ -29,13 +34,13 @@ public class RankEchoWeight extends EchoWeight {
      */
     public final static Matrix DEFAULT_WEIGHT = new Matrix(
             new double[][]{
-                {1.d, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
-                {0.5d, 0.5d, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
-                {1 / 3.d, 1 / 3.d, 1 / 3.d, Double.NaN, Double.NaN, Double.NaN, Double.NaN},
-                {0.25d, 0.25d, 0.25d, 0.25d, Double.NaN, Double.NaN, Double.NaN},
-                {0.2d, 0.2d, 0.2d, 0.2d, 0.2d, Double.NaN, Double.NaN},
-                {1 / 6.d, 1 / 6.d, 1 / 6.d, 1 / 6.d, 1 / 6.d, 1 / 6.d, Double.NaN},
-                {1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d, 1 / 7.d}}
+                {1d, 0d, 0d, 0d, 0d, 0d, 0d},
+                {1 / 2d, 1 / 2d, 0d, 0d, 0d, 0d, 0d},
+                {1 / 3d, 1 / 3d, 1 / 3d, 0d, 0d, 0d, 0d},
+                {1 / 4d, 1 / 4d, 1 / 4d, 1 / 4d, 0d, 0d, 0d},
+                {1 / 5d, 1 / 5d, 1 / 5d, 1 / 5d, 1 / 5d, 0d, 0d},
+                {1 / 6d, 1 / 6d, 1 / 6d, 1 / 6d, 1 / 6d, 1 / 6d, 0d},
+                {1 / 7d, 1 / 7d, 1 / 7d, 1 / 7d, 1 / 7d, 1 / 7d, 1 / 7d}}
     );
 
     private double[][] weightTable;
@@ -114,7 +119,7 @@ public class RankEchoWeight extends EchoWeight {
             if (rank >= weightTable.length) {
                 return 0.d;
             }
-            
+
             // top number of returns and return number to the length of the weight matrix
             nEcho = weightTable.length;
         }

@@ -1,6 +1,7 @@
 package org.amapvox.commons;
 
 import javax.vecmath.Matrix4d;
+import org.apache.commons.lang3.math.Fraction;
 import org.jdom2.Element;
 
 /**
@@ -55,7 +56,7 @@ public class Matrix {
             }
             // every row must have same number of columns
             if (nc != row.length) {
-                throw new IllegalArgumentException("every matrix row must have length");
+                throw new IllegalArgumentException("every matrix row must have same length");
             }
             nc = row.length;
         }
@@ -110,7 +111,13 @@ public class Matrix {
         int index = 0;
         for (int r = 0; r < nrow; r++) {
             for (int c = 0; c < ncol; c++) {
-                mat[r][c] = Double.valueOf(values[index]);
+                // look for fraction slash character
+                int slashLoc = values[index].indexOf('/');
+                if (slashLoc == -1) {
+                    mat[r][c] = Double.parseDouble(values[index]);
+                } else {
+                    mat[r][c] = Fraction.getFraction(values[index]).doubleValue();
+                }
                 index++;
             }
         }
@@ -171,12 +178,12 @@ public class Matrix {
 
         int nrow = -1;
         if (null != element.getAttribute(NROW)) {
-            nrow = Integer.valueOf(element.getAttributeValue(NROW));
+            nrow = Integer.parseInt(element.getAttributeValue(NROW));
         }
 
         int ncol = -1;
         if (null != element.getAttribute(NCOL)) {
-            nrow = Integer.valueOf(element.getAttributeValue(NCOL));
+            nrow = Integer.parseInt(element.getAttributeValue(NCOL));
         }
 
         String s = element.getText();
@@ -273,15 +280,19 @@ public class Matrix {
     public String toExternalString() {
 
         StringBuilder sb = new StringBuilder();
-        for (int r = 0; r < nrow - 1; r++) {
+        for (int r = 0; r < nrow; r++) {
             for (int c = 0; c < ncol; c++) {
-                sb.append(data[r][c]).append(" ");
+                sb.append(
+                        Double.isNaN(data[r][c])
+                        ? data[r][c]
+                        : Fraction.getFraction(data[r][c]).toProperString()
+                ).append(" ");
+            }
+            // add line break but on last row
+            if (r == nrow - 1) {
+                break;
             }
             sb.append("\n");
-        }
-        // last row
-        for (int c = 0; c < ncol; c++) {
-            sb.append(data[nrow - 1][c]).append(" ");
         }
         return sb.toString();
     }

@@ -301,9 +301,15 @@ public abstract class Configuration {
         if (null != processElement.getAttribute("classname")) {
             String classname = processElement.getAttributeValue("classname");
             return switch (classname) {
-                // hemiphoto packages renamed since v2.5.0
+                // hemiphoto package renamed since v2.5.0
                 case "org.amapvox.canopy.hemi.HemiPhotoCfg" ->
                     "org.amapvox.canopy.hemiphoto.HemiPhotoCfg";
+                // canopy analyzer package renamed since v2.5.0
+                case "org.amapvox.canopy.lai2xxx.CanopyAnalyzerCfg" ->
+                    "org.amapvox.canopy.analyzer.CanopyAnalyzerCfg";
+                // lightmap package and configuration renamed
+                case "org.amapvox.canopy.transmittance.TransmittanceCfg" ->
+                    "org.amapvox.canopy.lightmap.LightMapCfg";
                 default ->
                     classname;
             };   
@@ -315,11 +321,11 @@ public abstract class Configuration {
                 case "VOXELIZATION", "VOXELISATION" ->
                     "org.amapvox.voxelisation.VoxelizationCfg";
                 case "HEMI_PHOTO" ->
-                    "org.amapvox.canopy.hemi.HemiPhotoCfg";
+                    "org.amapvox.canopy.hemiphoto.HemiPhotoCfg";
                 case "TRANSMITTANCE" ->
-                    "org.amapvox.canopy.transmittance.TransmittanceCfg";
+                    "org.amapvox.canopy.lightmap.LightMapCfg";
                 case "CANOPY_ANALYZER" ->
-                    "org.amapvox.canopy.lai2xxx.CanopyAnalyzerCfg";
+                    "org.amapvox.canopy.analyzer.CanopyAnalyzerCfg";
                 case "OBJ_EXPORT" ->
                     "org.amapvox.voxelisation.postproc.ObjExporterCfg";
                 case "MERGING" ->

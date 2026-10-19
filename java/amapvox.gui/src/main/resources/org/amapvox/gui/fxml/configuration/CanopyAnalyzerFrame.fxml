@@ -14,52 +14,25 @@
             <content>
                 <VBox>
                     <children>
-                        <TitledPane animated="false" text="Files">
-                            <content>
-                                <AnchorPane>
-                                    <children>
-                                        <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                            <children>
-                                                <fx:include fx:id="voxelFileCanopy" source="../VoxelFileCanopy.fxml" />
-                                                <VBox spacing="5.0">                                                                                                                            
-                                                    <children>
-                                                        <Label text="Output" />
-                                                        <HBox spacing="10.0">
-                                                            <children>
-                                                                <CheckBox fx:id="checkboxGenerateCanopyAnalyzerTextFile" disable="true" mnemonicParsing="false" selected="true" text="Generate text file" />
-                                                                <CheckBox fx:id="checkboxGenerateLAI2xxxFormat" mnemonicParsing="false" selected="true" text="LAI2xxx format" />
-                                                            </children>
-                                                        </HBox>
-                                                        <HBox>
-                                                            <children>
-                                                                <TextField fx:id="textfieldOutputCanopyAnalyzerTextFile" prefHeight="26.0" prefWidth="291.0" HBox.hgrow="ALWAYS" />
-                                                                <Button maxWidth="-Infinity" mnemonicParsing="false" onAction="#onActionButtonOpenOutputCanopyAnalyzerTextFile" text="..." />
-                                                            </children>
-                                                        </HBox>
-                                                    </children>
-                                                </VBox>
-                                                <HBox spacing="10.0">
-                                                    <children>
-                                                        <ToggleButton fx:id="toggleButtonLAI2000Choice" mnemonicParsing="false" selected="true" text="LAI2000" />
-                                                        <ToggleButton fx:id="toggleButtonLAI2200Choice" mnemonicParsing="false" text="LAI2200" />
-                                                    </children>
-                                                </HBox>
-                                            </children>
-                                        </VBox>
-                                    </children>
-                                </AnchorPane>
-                            </content>
-                        </TitledPane>
-                         <TitledPane animated="false" expanded="false" text="Options">
+                        <fx:include fx:id="canopyToolsIOFrame" source="../CanopyToolsIOFrame.fxml" />   
+                        <fx:include fx:id="sensorPositions" source="../SensorPositions.fxml" /> 
+                        <TitledPane animated="false" expanded="true" text="Canopy analyzer parameters">
                             <content>
                                 <AnchorPane minHeight="0.0" minWidth="0.0">
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                             <children>
-                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
                                                     <children>
-                                                        <Label fx:id="labelDirectionsNumber1" text="Directions number" />
-                                                        <ComboBox fx:id="comboboxChooseCanopyAnalyzerSampling" prefHeight="26.0" />
+                                                        <Label text="Sensor model" />
+                                                        <ComboBox fx:id="comboboxCanopyAnalyzerSensor" prefHeight="26.0" />
+                                                        <fx:include fx:id="helpButtonCanopyAnalzerDevice" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                    <children>
+                                                        <Label fx:id="labelDirectionsNumber1" text="Directions count" />
+                                                        <ComboBox fx:id="comboboxCanopyAnalyzerDirectionCount" prefHeight="26.0" />
                                                         <Button mnemonicParsing="false" onAction="#onActionButtonSaveCanopyAnalyzerDirections">
                                                             <graphic>
                                                                 <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
@@ -69,15 +42,10 @@
                                                                 </ImageView>
                                                             </graphic>
                                                         </Button>
+                                                        <fx:include fx:id="helpButtonCanopyAnalzerDirections" source="../HelpButton.fxml" />
                                                     </children>
                                                 </HBox>
-                                                <HBox spacing="5.0">
-                                                    <children>
-                                                        <Button disable="true" mnemonicParsing="false" onAction="#onActionButtonSetupViewCap" prefHeight="16.0" text="View cap" />
-                                                        <TextField fx:id="textFieldViewCapAngleCanopyAnalyzer" disable="true" editable="false" prefHeight="26.0" promptText="360" />
-                                                    </children>
-                                                </HBox>
-                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
                                                     <children>
                                                         <Label text="Rings masks" />
                                                         <GridPane alignment="CENTER" prefHeight="29.0" prefWidth="177.0">
@@ -99,41 +67,9 @@
                                                                 <ToggleButton fx:id="toggleButtonCanopyAnalyzerRingMask5" mnemonicParsing="false" text="5" GridPane.columnIndex="4" GridPane.halignment="CENTER" />
                                                             </children>
                                                         </GridPane>
+                                                        <fx:include fx:id="helpButtonRingMask" source="../HelpButton.fxml" />
                                                     </children>
                                                 </HBox>
-                                                <VBox prefHeight="174.0" prefWidth="315.0">
-                                                    <children>
-                                                        <Label text="Sensor positions" />
-                                                        <ListView fx:id="listViewCanopyAnalyzerSensorPositions" prefWidth="315.0" />
-                                                        <HBox spacing="10.0">
-                                                            <children>
-                                                                <SelectableMenuButton fx:id="selectorCanopy" />
-                                                                <HBox spacing="5.0">
-                                                                    <children>
-                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonRemovePositionCanopyAnalyzer">
-                                                                            <graphic>
-                                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                                                                                    <image>
-                                                                                        <Image url="@../icons/remove.png" />
-                                                                                    </image>
-                                                                                </ImageView>
-                                                                            </graphic>
-                                                                        </Button>
-                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonAddPositionCanopyAnalyzer">
-                                                                            <graphic>
-                                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
-                                                                                    <image>
-                                                                                        <Image url="@../icons/add.png" />
-                                                                                    </image>
-                                                                                </ImageView>
-                                                                            </graphic>
-                                                                        </Button>
-                                                                    </children>
-                                                                </HBox>
-                                                            </children>
-                                                        </HBox>
-                                                    </children>
-                                                </VBox>
                                             </children>
                                         </VBox>
                                     </children>

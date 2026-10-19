@@ -11,7 +11,7 @@ Authors:
 
 For further information, please contact Gregoire Vincent.
  */
-package org.amapvox.canopy.lai2xxx;
+package org.amapvox.canopy.analyzer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,11 +25,12 @@ import java.util.Calendar;
  *
  * @author calcul
  */
-public class LAI2000 extends LAI2xxx {
+public class LAI2000 extends CanopyAnalyzerSensor {
 
-    public LAI2000(int shotNumber, ViewCap viewCap, boolean[] masked) {
+    public LAI2000(boolean[] masked) {
 
-        super(shotNumber, viewCap, new Ring(13, 0, 7, masked[0], 0.034f, 0.033f),
+        super(
+                new Ring(13, 0, 7, masked[0], 0.034f, 0.033f),
                 new Ring(28, 16, 23, masked[1], 0.104f, 0.097f),
                 new Ring(43, 32, 38, masked[2], 0.160f, 0.127f),
                 new Ring(58, 47, 53, masked[3], 0.218f, 0.141f),
@@ -57,8 +58,6 @@ public class LAI2000 extends LAI2xxx {
             float mta = Float.NaN;
             float sem = Float.NaN;
             float smp = Float.NaN;
-
-            computeValues();
 
             writer.write(file + "\t" + dateAndTime + "\t" + crop + "\t" + plot + "\t" + LAI + "\t" + sel + "\t" + difn + "\t" + mta + "\t" + sem + "\t" + smp + "\n");
 
@@ -90,7 +89,7 @@ public class LAI2000 extends LAI2xxx {
 
             //write observations
         } catch (IOException ex) {
-            //logger.error("Cannot write LAI2200 output file", ex);
+            logger.error("Cannot write LAI2000 output file", ex);
         }
     }
 

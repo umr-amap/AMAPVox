@@ -13,12 +13,8 @@ Authors:
 
 For further information, please contact Gregoire Vincent.
  */
-
-
-
 import java.io.IOException;
-import org.amapvox.canopy.transmittance.SimulationPeriod;
-import org.amapvox.canopy.transmittance.Period;
+import org.amapvox.canopy.lightmap.SimulationPeriod;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -29,7 +25,6 @@ import java.util.ResourceBundle;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -52,10 +47,8 @@ import org.controlsfx.validation.Validator;
  *
  * @author calcul
  */
-
-
 public class DateChooserFrameController implements Initializable {
-    
+
     private boolean confirmed;
     private Stage stage;
     private Parent root;
@@ -63,14 +56,14 @@ public class DateChooserFrameController implements Initializable {
     private int currentStartMinute;
     private int currentEndHour;
     private int currentEndMinute;
-    
+
     private Validator<LocalDate> startDateValidator;
     private Validator<LocalDate> endDateValidator;
     private Validator<String> numberValidator;
     private ValidationSupport validationSupport;
-    
+
     private NumberFormat numberFormat;
-    
+
     @FXML
     private DatePicker datepickerStartDate;
     @FXML
@@ -87,7 +80,7 @@ public class DateChooserFrameController implements Initializable {
     private TextField textfieldStartMinute;
     @FXML
     private Button buttonAccept;
-    
+
     public static DateChooserFrameController newInstance() {
 
         DateChooserFrameController controller = null;
@@ -106,96 +99,81 @@ public class DateChooserFrameController implements Initializable {
         return controller;
     }
 
-
     /**
      * Initializes the controller class.
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        
+
         confirmed = false;
-        
-        currentStartHour = Integer.valueOf(textfieldStartHour.getText());
-        currentStartMinute = Integer.valueOf(textfieldStartMinute.getText());
-        currentEndHour = Integer.valueOf(textfieldEndHour.getText());
-        currentEndMinute = Integer.valueOf(textfieldEndMinute.getText());
-        
+
+        currentStartHour = Integer.parseInt(textfieldStartHour.getText());
+        currentStartMinute = Integer.parseInt(textfieldStartMinute.getText());
+        currentEndHour = Integer.parseInt(textfieldEndHour.getText());
+        currentEndMinute = Integer.parseInt(textfieldEndMinute.getText());
+
         numberFormat = NumberFormat.getInstance();
         numberFormat.setMinimumIntegerDigits(2);
-        
-        datepickerStartDate.valueProperty().addListener(new ChangeListener<LocalDate>() {
-            @Override
-            public void changed(ObservableValue<? extends LocalDate> observable, LocalDate oldValue, LocalDate newValue) {
-                if(datepickerEndDate.getValue() == null){
-                    datepickerEndDate.setValue(newValue);
-                }
-            }
-        });
-        
-        startDateValidator = new Validator<LocalDate>() {
-            @Override
-            public ValidationResult apply(Control t, LocalDate s) {
-                
-                if(datepickerEndDate.getValue() != null && s != null){
-                    return ValidationResult.fromErrorIf(t, "The start period should be before the end period",
-                            (datepickerEndDate.getValue().compareTo(s) < 0));
-                }
-                
-                return ValidationResult.fromErrorIf(t, "A value is required", s == null);
-            }
-        };
-        
-        endDateValidator = new Validator<LocalDate>() {
-            @Override
-            public ValidationResult apply(Control t, LocalDate u) {
-                
-                if(datepickerStartDate.getValue() != null && u != null){
-                    
-                    int compare = datepickerStartDate.getValue().compareTo(u);
-                    return ValidationResult.fromErrorIf(t, "The end period should be after the start period",compare > 0);
-                }
-                
-                return ValidationResult.fromErrorIf(t, "A value is required", u == null);
-            }
-        };
-        
-        numberValidator = new Validator<String>() {
-            @Override
-            public ValidationResult apply(Control t, String s) {
-                
-                if(s == null || s.isEmpty()){
-                    return ValidationResult.fromErrorIf(t, "A value is required", true);
-                }else{
-                    boolean valid;
-                    try{
-                        Float value = Float.valueOf(s);
-                        valid = value >= 0;
-                    }catch(Exception e){
-                        valid = false;
+
+        datepickerStartDate.valueProperty().addListener(
+                (ObservableValue<? extends LocalDate> observable, LocalDate oldValue, LocalDate newValue) -> {
+                    if (datepickerEndDate.getValue() == null) {
+                        datepickerEndDate.setValue(newValue);
                     }
-                
-                    return ValidationResult.fromErrorIf(t, "A number is required", !valid);
+                });
+
+        startDateValidator = (Control t, LocalDate s) -> {
+            if (datepickerEndDate.getValue() != null && s != null) {
+                return ValidationResult.fromErrorIf(t, "The start period should be before the end period",
+                        (datepickerEndDate.getValue().compareTo(s) < 0));
+            }
+
+            return ValidationResult.fromErrorIf(t, "A value is required", s == null);
+        };
+
+        endDateValidator = (Control t, LocalDate u) -> {
+            if (datepickerStartDate.getValue() != null && u != null) {
+
+                int compare = datepickerStartDate.getValue().compareTo(u);
+                return ValidationResult.fromErrorIf(t, "The end period should be after the start period", compare > 0);
+            }
+
+            return ValidationResult.fromErrorIf(t, "A value is required", u == null);
+        };
+
+        numberValidator = (Control t, String s) -> {
+            if (s == null || s.isEmpty()) {
+                return ValidationResult.fromErrorIf(t, "A value is required", true);
+            } else {
+                boolean valid;
+                try {
+                    Float value = Float.valueOf(s);
+                    valid = value >= 0;
+                } catch (NumberFormatException e) {
+                    valid = false;
                 }
+
+                return ValidationResult.fromErrorIf(t, "A number is required", !valid);
             }
         };
-        
+
         validationSupport = new ValidationSupport();
-        
+
         validationSupport.registerValidator(datepickerStartDate, startDateValidator);
         validationSupport.registerValidator(datepickerEndDate, endDateValidator);
         validationSupport.registerValidator(textfieldClearnessCoefficient, numberValidator);
-        
-        validationSupport.validationResultProperty().addListener(new ChangeListener<ValidationResult>() {
-            @Override
-            public void changed(ObservableValue<? extends ValidationResult> observable, ValidationResult oldValue, ValidationResult newValue) {
-                if(newValue.getErrors().isEmpty() && newValue.getMessages().isEmpty() && newValue.getWarnings().isEmpty()){
-                    buttonAccept.setDisable(false);
-                }else{
-                    buttonAccept.setDisable(true);
-                }
-            }
-        });
-    }    
+
+        validationSupport.validationResultProperty().addListener(
+                (ObservableValue<? extends ValidationResult> observable, ValidationResult oldValue, ValidationResult newValue) -> {
+                    if (newValue.getErrors().isEmpty() && newValue.getMessages().isEmpty() && newValue.getWarnings().isEmpty()) {
+                        buttonAccept.setDisable(false);
+                    } else {
+                        buttonAccept.setDisable(true);
+                    }
+                });
+    }
 
     @FXML
     private void onActionButtonAcceptDate(ActionEvent event) {
@@ -203,22 +181,20 @@ public class DateChooserFrameController implements Initializable {
         stage.close();
     }
 
-    
-    public void reset(){
+    public void reset() {
         confirmed = false;
     }
 
     public boolean isConfirmed() {
         return confirmed;
     }
-    
-    public SimulationPeriod getDateRange(){
-        
-        try{
+
+    public SimulationPeriod getDateRange() {
+
+        try {
             LocalDate startDate = datepickerStartDate.getValue();
             LocalDate endDate = datepickerEndDate.getValue();
 
-            Period period = new Period();
             Date date1 = Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
             Date date2 = Date.from(endDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
@@ -228,25 +204,23 @@ public class DateChooserFrameController implements Initializable {
             startTime.setTime(date1);
             startTime.set(Calendar.HOUR, currentStartHour);
             startTime.set(Calendar.MINUTE, currentStartMinute);
-            period.startDate = startTime;
 
             //end time
             Calendar endTime = Calendar.getInstance(TimeZone.getDefault());
             endTime.setTime(date2);
             endTime.set(Calendar.HOUR, currentEndHour);
             endTime.set(Calendar.MINUTE, currentEndMinute);
-            period.endDate = endTime;
 
-            return new SimulationPeriod(period, Float.valueOf(textfieldClearnessCoefficient.getText()));
-            
-        }catch(Exception e){
+            return new SimulationPeriod(startTime, endTime, Float.parseFloat(textfieldClearnessCoefficient.getText()));
+
+        } catch (Exception e) {
             return null;
         }
-        
+
     }
-    
+
     public Stage getStage() {
-         if (null == stage) {
+        if (null == stage) {
             stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Calendar");
@@ -257,100 +231,98 @@ public class DateChooserFrameController implements Initializable {
 
     @FXML
     private void onActionButtonIncreaseEndHour(ActionEvent event) {
-        
-        if(currentEndHour < 23){
+
+        if (currentEndHour < 23) {
             currentEndHour++;
-        }else{
+        } else {
             currentEndHour = 0;
         }
-        
+
         textfieldEndHour.setText(numberFormat.format(currentEndHour));
     }
 
     @FXML
     private void onActionButtonDecreaseEndHour(ActionEvent event) {
-        
-        if(currentEndHour > 0){
+
+        if (currentEndHour > 0) {
             currentEndHour--;
-        }else{
+        } else {
             currentEndHour = 23;
         }
-        
+
         textfieldEndHour.setText(numberFormat.format(currentEndHour));
     }
 
     @FXML
     private void onActionButtonIncreaseEndMinute(ActionEvent event) {
-        
-        if(currentEndMinute < 59){
+
+        if (currentEndMinute < 59) {
             currentEndMinute++;
-        }else{
+        } else {
             currentEndMinute = 0;
         }
-        
+
         textfieldEndMinute.setText(numberFormat.format(currentEndMinute));
     }
 
     @FXML
     private void onActionButtonDecreaseEndMinute(ActionEvent event) {
-        
-        if(currentEndMinute > 0){
+
+        if (currentEndMinute > 0) {
             currentEndMinute--;
-        }else{
+        } else {
             currentEndMinute = 59;
         }
-        
+
         textfieldEndMinute.setText(numberFormat.format(currentEndMinute));
     }
 
     @FXML
     private void onActionButtonIncreaseStartHour(ActionEvent event) {
-        
-        if(currentStartHour < 23){
+
+        if (currentStartHour < 23) {
             currentStartHour++;
-        }else{
+        } else {
             currentStartHour = 0;
         }
-        
+
         textfieldStartHour.setText(numberFormat.format(currentStartHour));
     }
 
     @FXML
     private void onActionButtonDecreaseStartHour(ActionEvent event) {
-        
-        if(currentStartHour > 0){
+
+        if (currentStartHour > 0) {
             currentStartHour--;
-        }else{
+        } else {
             currentStartHour = 23;
         }
-        
+
         textfieldStartHour.setText(numberFormat.format(currentStartHour));
     }
 
     @FXML
     private void onActionButtonIncreaseStartMinute(ActionEvent event) {
-        
-        if(currentStartMinute < 59){
+
+        if (currentStartMinute < 59) {
             currentStartMinute++;
-        }else{
+        } else {
             currentStartMinute = 0;
         }
-        
+
         textfieldStartMinute.setText(numberFormat.format(currentStartMinute));
     }
 
     @FXML
     private void onActionButtonDecreaseStartMinute(ActionEvent event) {
-        
-        if(currentStartMinute > 0){
+
+        if (currentStartMinute > 0) {
             currentStartMinute--;
-        }else{
+        } else {
             currentStartMinute = 59;
         }
-        
+
         textfieldStartMinute.setText(numberFormat.format(currentStartMinute));
     }
 
-    
-    
 }

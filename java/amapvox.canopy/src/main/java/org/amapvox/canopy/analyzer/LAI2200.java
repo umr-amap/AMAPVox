@@ -11,7 +11,7 @@ Authors:
 
 For further information, please contact Gregoire Vincent.
  */
-package org.amapvox.canopy.lai2xxx;
+package org.amapvox.canopy.analyzer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,17 +25,16 @@ import java.util.Calendar;
  *
  * @author calcul
  */
-public class LAI2200 extends LAI2xxx {
+public class LAI2200 extends CanopyAnalyzerSensor {
 
-    public LAI2200(int shotNumber, ViewCap viewCap, boolean[] masked) {
+    public LAI2200(boolean[] masked) {
 
-        super(shotNumber, viewCap, new Ring(12.3f, 0, 7, masked[0], 0.041f, 0.033f),
+        super(
+                new Ring(12.3f, 0, 7, masked[0], 0.041f, 0.033f),
                 new Ring(28.6f, 16.7f, 23, masked[1], 0.131f, 0.097f),
                 new Ring(43.4f, 32.4f, 38, masked[2], 0.201f, 0.127f),
                 new Ring(58.1f, 47.3f, 53, masked[3], 0.290f, 0.141f),
                 new Ring(74.1f, 62.3f, 68, masked[4], 0.337f, 0.102f));
-
-        //le lai2200 a 5 plages angulaires
     }
 
     @Override
@@ -51,8 +50,6 @@ public class LAI2200 extends LAI2xxx {
 
             DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
             writer.write("Date\t" + dateFormat.format(Calendar.getInstance().getTime()) + "\n");
-
-            computeValues();
 
             //leaf area index
             writer.write("LAI\t" + LAI + "\n");
@@ -119,7 +116,7 @@ public class LAI2200 extends LAI2xxx {
             writer.write("### Data\n");
 
         } catch (IOException ex) {
-            //logger.error("Cannot write LAI2200 output file", ex);
+            logger.error("Cannot write LAI2200 output file", ex);
         }
     }
 

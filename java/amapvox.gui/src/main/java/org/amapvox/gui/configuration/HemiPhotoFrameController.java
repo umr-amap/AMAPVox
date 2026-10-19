@@ -22,7 +22,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import org.amapvox.gui.HelpButtonController;
 import org.amapvox.gui.SensorPositionsController;
-import org.amapvox.gui.VoxelFileCanopyController;
+import org.amapvox.gui.CanopyToolsIOFrameController;
 import org.apache.log4j.Logger;
 import org.controlsfx.validation.ValidationSupport;
 
@@ -36,69 +36,57 @@ public class HemiPhotoFrameController extends ConfigurationController {
     // logger
     private final Logger LOGGER = Logger.getLogger(HemiPhotoFrameController.class);
     // validation support
-    private ValidationSupport hemiPhotoSimValidationSupport;
+    private ValidationSupport hemiPhotoValidationSupport;
     // directory chooser
     private DirectoryChooser directoryChooserHemiPhotoOutputDirectory;
 
     // FXML imports
     @FXML
-    private VoxelFileCanopyController voxelFileCanopyController;
+    private CanopyToolsIOFrameController canopyToolsIOFrameController;
     @FXML
     private SensorPositionsController sensorPositionsController;
     @FXML
-    private TextField textfieldHemiPhotoOutputDirectory;
+    private TextField textfieldPixelCount;
     @FXML
-    private TextField textfieldHemiPhotoOutputPrefix;
-     @FXML
-    private Button buttonHelpOutputPrefix;
+    private Button buttonHelpPixelCount;
     @FXML
-    private HelpButtonController buttonHelpOutputPrefixController;
+    private HelpButtonController buttonHelpPixelCountController;
     @FXML
-    private TextField textfieldPixelNumber;
+    private TextField textfieldMeridianCount;
     @FXML
-    private Button buttonHelpPixelNumber;
+    private Button buttonHelpMeridianCount;
     @FXML
-    private HelpButtonController buttonHelpPixelNumberController;
+    private HelpButtonController buttonHelpMeridianCountController;
     @FXML
-    private TextField textfieldMeridianNumber;
+    private TextField textfieldParallelCount;
     @FXML
-    private Button buttonHelpMeridianNumber;
+    private Button buttonHelpParallelCount;
     @FXML
-    private HelpButtonController buttonHelpMeridianNumberController;
-    @FXML
-    private TextField textfieldParallelNumber;
-    @FXML
-    private Button buttonHelpParallelNumber;
-    @FXML
-    private HelpButtonController buttonHelpParallelNumberController;
+    private HelpButtonController buttonHelpParallelCountController;
 
     @Override
     public void initComponents(ResourceBundle rb) {
 
-        textfieldPixelNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(800, TextFieldUtil.Sign.POSITIVE));
-        textfieldMeridianNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(36, TextFieldUtil.Sign.POSITIVE));
-        textfieldParallelNumber.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(9, TextFieldUtil.Sign.POSITIVE));
+        textfieldPixelCount.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(800, TextFieldUtil.Sign.POSITIVE));
+        textfieldMeridianCount.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(36, TextFieldUtil.Sign.POSITIVE));
+        textfieldParallelCount.setTextFormatter(TextFieldUtil.createIntegerTextFormatter(9, TextFieldUtil.Sign.POSITIVE));
 
         sensorPositionsController.setText("Positions:");
         sensorPositionsController.setHelpButtonText("help_hemiphoto_sensor_positions");
-                
+
         directoryChooserHemiPhotoOutputDirectory = new DirectoryChooser();
         directoryChooserHemiPhotoOutputDirectory.setTitle("Choose output directory");
-        
-        buttonHelpOutputPrefix.setOnAction((ActionEvent event) -> {
-            buttonHelpOutputPrefixController.showHelpDialog(rb.getString("help_hemiphoto_output_prefix"));
+
+        buttonHelpPixelCount.setOnAction((ActionEvent event) -> {
+            buttonHelpPixelCountController.showHelpDialog(rb.getString("help_hemiphoto_pixel_count"));
         });
 
-        buttonHelpPixelNumber.setOnAction((ActionEvent event) -> {
-            buttonHelpPixelNumberController.showHelpDialog(rb.getString("help_hemiphoto_pixel_number"));
+        buttonHelpMeridianCount.setOnAction((ActionEvent event) -> {
+            buttonHelpMeridianCountController.showHelpDialog(rb.getString("help_hemiphoto_meridian_count"));
         });
-        
-        buttonHelpMeridianNumber.setOnAction((ActionEvent event) -> {
-            buttonHelpMeridianNumberController.showHelpDialog(rb.getString("help_hemiphoto_meridian_number"));
-        });
-        
-        buttonHelpParallelNumber.setOnAction((ActionEvent event) -> {
-            buttonHelpParallelNumberController.showHelpDialog(rb.getString("help_hemiphoto_parallel_number"));
+
+        buttonHelpParallelCount.setOnAction((ActionEvent event) -> {
+            buttonHelpParallelCountController.showHelpDialog(rb.getString("help_hemiphoto_parallel_count"));
         });
     }
 
@@ -109,15 +97,13 @@ public class HemiPhotoFrameController extends ConfigurationController {
 
         properties.addAll(Arrays.asList(
                 new ObservableValue[]{
-                    textfieldHemiPhotoOutputDirectory.textProperty(),
-                    textfieldHemiPhotoOutputPrefix.textProperty(),
-                    textfieldPixelNumber.textProperty(),
-                    textfieldMeridianNumber.textProperty(),
-                    textfieldParallelNumber.textProperty()
+                    textfieldPixelCount.textProperty(),
+                    textfieldMeridianCount.textProperty(),
+                    textfieldParallelCount.textProperty()
                 }));
 
-        properties.addAll(Arrays.asList(voxelFileCanopyController.getListenedProperties()));
-         properties.addAll(Arrays.asList(sensorPositionsController.getListenedProperties()));
+        properties.addAll(Arrays.asList(canopyToolsIOFrameController.getListenedProperties()));
+        properties.addAll(Arrays.asList(sensorPositionsController.getListenedProperties()));
 
         return properties.toArray(ObservableValue[]::new);
     }
@@ -125,41 +111,31 @@ public class HemiPhotoFrameController extends ConfigurationController {
     @Override
     void initValidationSupport() {
 
-        hemiPhotoSimValidationSupport = new ValidationSupport();
-        hemiPhotoSimValidationSupport.registerValidator(textfieldPixelNumber, true, Validators.fieldIntegerValidator);
-        hemiPhotoSimValidationSupport.registerValidator(textfieldMeridianNumber, true, Validators.fieldIntegerValidator);
-        hemiPhotoSimValidationSupport.registerValidator(textfieldParallelNumber, true, Validators.fieldIntegerValidator);
-        voxelFileCanopyController.registerValidators();
+        hemiPhotoValidationSupport = new ValidationSupport();
+        hemiPhotoValidationSupport.registerValidator(textfieldPixelCount, true, Validators.fieldIntegerValidator);
+        hemiPhotoValidationSupport.registerValidator(textfieldMeridianCount, true, Validators.fieldIntegerValidator);
+        hemiPhotoValidationSupport.registerValidator(textfieldParallelCount, true, Validators.fieldIntegerValidator);
+        canopyToolsIOFrameController.registerValidators();
     }
 
     @Override
     public void loadConfiguration(File file) throws Exception {
 
-        HemiPhotoCfg hemiPhotoCfg = new HemiPhotoCfg();
-        hemiPhotoCfg.read(file);
+        HemiPhotoCfg cfg = new HemiPhotoCfg();
+        cfg.read(file);
 
-        voxelFileCanopyController.setVoxelFile(hemiPhotoCfg.getVoxelFile(), hemiPhotoCfg.getPADVariable());
-        voxelFileCanopyController.setLeafAngleDistribution(hemiPhotoCfg.getLeafAngleDistribution());
-        voxelFileCanopyController.setLeafAngleDistributionParameters(hemiPhotoCfg.getLeafAngleDistributionParameters());
-        sensorPositionsController.setPositions(hemiPhotoCfg.getSensorPositions());
+        canopyToolsIOFrameController.setVoxelFile(cfg.getVoxelFile(), cfg.getPADVariable());
+        canopyToolsIOFrameController.setLeafAngleDistribution(cfg.getLeafAngleDistribution());
+        canopyToolsIOFrameController.setLeafAngleDistributionParameters(cfg.getLeafAngleDistributionParameters());
+        canopyToolsIOFrameController.setOutputDir(cfg.getOutputDirectory());
+        canopyToolsIOFrameController.setOutputPrefix(cfg.getOutputPrefix());
+        
+        sensorPositionsController.setPositions(cfg.getSensorPositions());
 
-        textfieldPixelNumber.setText(String.valueOf(hemiPhotoCfg.getPixelNumber()));
-        textfieldMeridianNumber.setText(String.valueOf(hemiPhotoCfg.getMeridianNumber()));
-        textfieldParallelNumber.setText(String.valueOf(hemiPhotoCfg.getParallelNumber()));
-        textfieldHemiPhotoOutputDirectory.setText(hemiPhotoCfg.getOutputDirectory().getAbsolutePath());
-        textfieldHemiPhotoOutputPrefix.setText(hemiPhotoCfg.getOutputPrefix());
+        textfieldPixelCount.setText(String.valueOf(cfg.getPixelCount()));
+        textfieldMeridianCount.setText(String.valueOf(cfg.getMeridianCount()));
+        textfieldParallelCount.setText(String.valueOf(cfg.getParallelCount()));
 
-    }
-
-    @FXML
-    private void onActionButtonOpenHemiPhotoOutputDirectory(ActionEvent event) {
-
-        File selectedFile = directoryChooserHemiPhotoOutputDirectory.showDialog(null);
-
-        if (selectedFile != null) {
-            textfieldHemiPhotoOutputDirectory.setText(selectedFile.getAbsolutePath());
-            LOGGER.debug("Hemispherical Photo output directory choosed");
-        }
     }
 
     @Override
@@ -167,35 +143,36 @@ public class HemiPhotoFrameController extends ConfigurationController {
 
         // validation support
         StringBuilder sb = new StringBuilder();
-        if (hemiPhotoSimValidationSupport.isInvalid()) {
-            hemiPhotoSimValidationSupport.initInitialDecoration();
-            hemiPhotoSimValidationSupport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
+        if (hemiPhotoValidationSupport.isInvalid()) {
+            hemiPhotoValidationSupport.initInitialDecoration();
+            hemiPhotoValidationSupport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
         }
-        ValidationSupport voxelFileValidationSuuport = voxelFileCanopyController.getValidationSupport();
-        if (voxelFileValidationSuuport.isInvalid()) {
-            voxelFileValidationSuuport.initInitialDecoration();
-            voxelFileValidationSuuport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
+        ValidationSupport ioValidationSupport = canopyToolsIOFrameController.getValidationSupport();
+        if (ioValidationSupport.isInvalid()) {
+            ioValidationSupport.initInitialDecoration();
+            ioValidationSupport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
         }
         if (!sb.toString().isEmpty()) {
             throw new IOException(sb.toString());
         }
 
-        HemiPhotoCfg hemiPhotoCfg = new HemiPhotoCfg();
+        HemiPhotoCfg cfg = new HemiPhotoCfg();
 
-        hemiPhotoCfg.setPixelNumber(Integer.parseInt(textfieldPixelNumber.getText()));
-        hemiPhotoCfg.setMeridianNumber(Integer.parseInt(textfieldMeridianNumber.getText()));
-        hemiPhotoCfg.setParallelNumber(Integer.parseInt(textfieldParallelNumber.getText()));
+        cfg.setPixelCount(Integer.parseInt(textfieldPixelCount.getText()));
+        cfg.setMeridianCount(Integer.parseInt(textfieldMeridianCount.getText()));
+        cfg.setParallelCount(Integer.parseInt(textfieldParallelCount.getText()));
 
-        hemiPhotoCfg.setVoxelFile(voxelFileCanopyController.getVoxelFile());
-        hemiPhotoCfg.setPADVariable(voxelFileCanopyController.getPADVariable());
-        hemiPhotoCfg.setLeafAngleDistribution(voxelFileCanopyController.getLeafAngleDistribution());
-        hemiPhotoCfg.setLeafAngleDistributionParameters(voxelFileCanopyController.getLeafAngleDistributionParameters());
-        hemiPhotoCfg.setSensorPositions(sensorPositionsController.getPositions());
+        cfg.setVoxelFile(canopyToolsIOFrameController.getVoxelFile());
+        cfg.setPADVariable(canopyToolsIOFrameController.getPADVariable());
+        cfg.setLeafAngleDistribution(canopyToolsIOFrameController.getLeafAngleDistribution());
+        cfg.setLeafAngleDistributionParameters(canopyToolsIOFrameController.getLeafAngleDistributionParameters());
+        
 
-        File outputDirectory = new File(textfieldHemiPhotoOutputDirectory.getText());
-        hemiPhotoCfg.setOutputDirectory(outputDirectory);
-        hemiPhotoCfg.setOutputPrefix(textfieldHemiPhotoOutputPrefix.getText());
+        cfg.setOutputDirectory(canopyToolsIOFrameController.getOutputDir());
+        cfg.setOutputPrefix(canopyToolsIOFrameController.getOutputPrefix());
+        
+        cfg.setSensorPositions(sensorPositionsController.getPositions());
 
-        hemiPhotoCfg.write(file);
+        cfg.write(file);
     }
 }

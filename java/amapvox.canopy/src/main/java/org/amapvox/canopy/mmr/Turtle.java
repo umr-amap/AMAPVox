@@ -5,98 +5,81 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import javax.vecmath.Vector2f;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
-import org.apache.log4j.Logger;
+import org.amapvox.commons.raytracing.geometry.Transformations;
 
 public class Turtle {
 
-    private final static Logger logger = Logger.getLogger(Turtle.class);
-    
     public Vector3f[] directions;
     private float[] elevation;
     private float[] azimuth;
-    
-    
-    
-    public Turtle(){
-         
-    }
-    
-    static{
-        
-    }
 
-    public Turtle(int nbDirections, float rotation) throws IOException {
-        
+    public Turtle(int directionCount, float rotation) throws IOException {
+
         InputStream resource = Turtle.class.getResource("directions").openStream();
-        
-        if(resource == null){
+
+        if (resource == null) {
             throw new IOException("Cannot load resource file directions");
         }
-        
+
         InputStreamReader pointsStream = new InputStreamReader(resource);
-        
-        directions = new Vector3f[nbDirections];
-        
+
+        directions = new Vector3f[directionCount];
+
         try (BufferedReader reader = new BufferedReader(pointsStream)) {
 
             String line;
-            int count = 0;
+            int directionIndex = 0;
 
             while ((line = reader.readLine()) != null) {
-                
-                if(count < nbDirections){
+
+                if (directionIndex < directionCount) {
                     String[] split = line.split("\t");
-                    directions[count] = new Vector3f(Float.valueOf(split[0]), Float.valueOf(split[1]), Float.valueOf(split[2]));
-                    count++;
-                }else{
+                    directions[directionIndex] = new Vector3f(Float.parseFloat(split[0]), Float.parseFloat(split[1]), Float.parseFloat(split[2]));
+                    directionIndex++;
+                } else {
                     break;
                 }
             }
-            
-//            if(rotation != 0){
-//            
-//                Transformations transform = new Transformations();
-//                transform.setRotationAroundZ(rotation);
-//                
-//                for(int i=0;i<directions.length;i++){
-//
-//                    Vector3f direction = directions[i];
-//                    transform.apply(new Vector3d(direction));
-//                    directions[i] = direction;
-//                }
-//            }
-            
-            int nbSectors = nbDirections;
-            
-            elevation = new float[nbSectors];
-            azimuth = new float[nbSectors];
 
-            for (int p = 0, sector = 0; p < nbDirections; p++) {
-                    
-                elevation[sector] = (float) Math.asin(directions[p].z);
-                Vector2f proj = new Vector2f(directions[p].x, directions[p].y);
-                proj.normalize();
-                azimuth[sector] = (float) Math.acos(proj.x);
-                if (proj.y > 0) {
-                    azimuth[sector] = (float) (Math.PI * 2.) - azimuth[sector];
+            if (rotation != 0) {
+
+                Transformations transform = new Transformations();
+                transform.setRotationAroundZ(rotation);
+
+                for (directionIndex = 0; directionIndex < directions.length; directionIndex++) {
+                    Vector3d direction = new Vector3d(directions[directionIndex]);
+                    transform.apply(direction);
+                    directions[directionIndex] = new Vector3f(direction);
                 }
-
-                azimuth[sector] -= Math.PI / 2;
-                if (azimuth[sector] < 0) {
-                    azimuth[sector] += 2 * Math.PI;
-                }
-
-                sector++;
             }
 
-        } catch (IOException ex) {
-            
-            throw ex;
+            elevation = new float[directionCount];
+            azimuth = new float[directionCount];
+
+            for (directionIndex = 0; directionIndex < directionCount; directionIndex++) {
+
+                elevation[directionIndex] = (float) Math.asin(directions[directionIndex].z);
+                Vector2f proj = new Vector2f(directions[directionIndex].x, directions[directionIndex].y);
+                proj.normalize();
+                azimuth[directionIndex] = (float) Math.acos(proj.x);
+                if (proj.y > 0) {
+                    azimuth[directionIndex] = (float) (Math.PI * 2.) - azimuth[directionIndex];
+                }
+
+                azimuth[directionIndex] -= Math.PI / 2;
+                if (azimuth[directionIndex] < 0) {
+                    azimuth[directionIndex] += 2 * Math.PI;
+                }
+            }
         }
-        
     }
-   
+    
+    public Turtle(int directionCount) throws IOException {
+        this(directionCount, 0.f);
+    }
+
     public float getElevationAngle(int d) {
         return elevation[d];
     }
@@ -109,33 +92,7 @@ public class Turtle {
         return azimuth[d];
     }
 
-
-    public int getNbDirections() {
+    public int getDirectionCount() {
         return directions.length;
-    }
-
-    public void setDirections(Vector3f[] directions) {
-        this.directions = directions;
-    }
-
-    public void setElevation(float[] elevation) {
-        this.elevation = elevation;
-    }
-
-    public void setAzimuth(float[] azimuth) {
-        this.azimuth = azimuth;
-    }
-
-    /**
-     * TODO: compute the radius of sectors; either individually or on average
-     */
-    public void edgeLength() {
-
-		// edges length
-        // for (int sp=0; sp<sPath.size()-1; sp++) {
-        // Vector3f edge = new Vector3f(pts2[sPath.get(sp)]);
-        // edge.sub(pts2[sPath.get(sp+1)]);
-        // System.out.println(edge.length());
-        // }
     }
 }

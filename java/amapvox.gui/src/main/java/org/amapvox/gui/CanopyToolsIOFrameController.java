@@ -13,6 +13,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.stage.DirectoryChooser;
 import org.amapvox.canopy.LeafAngleDistribution;
 import org.amapvox.voxelfile.VoxelFileHeader;
 import org.amapvox.voxelfile.VoxelFileReader;
@@ -20,15 +21,16 @@ import org.apache.log4j.Logger;
 import org.controlsfx.validation.ValidationSupport;
 
 /**
- * FXML Controller class for voxel input file component with PAD variable
- * selector and leaf angle distribution selector.
+ * FXML Controller class for Canopy Tools input and output parameters: - voxel
+ * input file component - PAD variable selector - leaf angle distribution
+ * selector - output directory - output prefix
  *
  * @author Philippe Verley
  */
-public class VoxelFileCanopyController implements Initializable {
+public class CanopyToolsIOFrameController implements Initializable {
 
     // logger
-    private final Logger LOGGER = Logger.getLogger(VoxelFileCanopyController.class);
+    private final Logger LOGGER = Logger.getLogger(CanopyToolsIOFrameController.class);
 
     @FXML
     private TextField textfieldVoxelFileCanopyPath;
@@ -55,12 +57,23 @@ public class VoxelFileCanopyController implements Initializable {
     private Button helpButtonLeafAngleDistribution;
     @FXML
     private HelpButtonController helpButtonLeafAngleDistributionController;
+    @FXML
+    private TextField textfieldOutputDir;
+    @FXML
+    private TextField textfieldOutputPrefix;
+    @FXML
+    private Button buttonHelpOutputPrefix;
+    @FXML
+    private HelpButtonController buttonHelpOutputPrefixController;
 
     // validation support
     private ValidationSupport validationSupport;
-    
+
     // last opened voxel file
     private File lastOpenedVoxelFile;
+
+    // last opened output dir
+    private File lastOpenedOutputDir;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -99,6 +112,10 @@ public class VoxelFileCanopyController implements Initializable {
             helpButtonLeafAngleDistributionController.showHelpDialog(resources.getString("help_leaf_angle_distribution"));
         });
 
+        buttonHelpOutputPrefix.setOnAction((ActionEvent event) -> {
+            buttonHelpOutputPrefixController.showHelpDialog(resources.getString("help_hemiphoto_output_prefix"));
+        });
+
         validationSupport = new ValidationSupport();
     }
 
@@ -117,6 +134,7 @@ public class VoxelFileCanopyController implements Initializable {
     public void setVoxelFile(File voxelFile, String padVariable) {
 
         textfieldVoxelFileCanopyPath.setText(voxelFile.getAbsolutePath());
+        lastOpenedVoxelFile = voxelFile;
         updateVoxVariables(voxelFile);
         if (comboboxPADVariable.getItems().contains(padVariable)) {
             comboboxPADVariable.getSelectionModel().select(padVariable);
@@ -133,6 +151,25 @@ public class VoxelFileCanopyController implements Initializable {
 
     public String getPADVariable() {
         return comboboxPADVariable.getSelectionModel().getSelectedItem();
+    }
+
+    public File getOutputDir() {
+        return textfieldOutputDir.getText().isBlank()
+                ? null
+                : new File(textfieldOutputDir.getText());
+    }
+
+    public void setOutputDir(File outputDir) {
+        textfieldOutputDir.setText(outputDir.getAbsolutePath());
+        lastOpenedOutputDir = outputDir;
+    }
+
+    public String getOutputPrefix() {
+        return textfieldOutputPrefix.getText();
+    }
+
+    public void setOutputPrefix(String prefix) {
+        textfieldOutputPrefix.setText(prefix);
     }
 
     private void updateVoxVariables(File voxelFile) {
@@ -169,8 +206,9 @@ public class VoxelFileCanopyController implements Initializable {
 
     @FXML
     private void onActionButtonOpenVoxelFile(ActionEvent event) {
-        
-        if (lastOpenedVoxelFile != null) {
+
+        if (lastOpenedOutputDir != null) {
+
             Util.FILE_CHOOSER_VOXELFILE.setInitialDirectory(lastOpenedVoxelFile.getParentFile());
         }
 
@@ -182,6 +220,21 @@ public class VoxelFileCanopyController implements Initializable {
             lastOpenedVoxelFile = selectedFile;
             LOGGER.debug("[Canopy analyzer] Opened voxel file " + selectedFile.getName());
         }
+    }
+
+    @FXML
+    private void onActionButtonOpenOutputDir(ActionEvent event) {
+
+        DirectoryChooser outputDirectoryChooser = new DirectoryChooser();
+        outputDirectoryChooser.setTitle("Choose output directory");
+
+        if (lastOpenedOutputDir != null) {
+            outputDirectoryChooser.setInitialDirectory(lastOpenedOutputDir);
+        }
+
+        File outputDir = outputDirectoryChooser.showDialog(null);
+        textfieldOutputDir.setText(outputDir.getAbsolutePath());
+        lastOpenedOutputDir = outputDir;
     }
 
     /**
@@ -222,7 +275,9 @@ public class VoxelFileCanopyController implements Initializable {
             comboboxLeafAngleDistribution.getSelectionModel().selectedIndexProperty(),
             textFieldTwoBetaAlphaParameter.textProperty(),
             textFieldTwoBetaBetaParameter.textProperty(),
-            textfieldVoxelFileCanopyPath.textProperty()};
+            textfieldVoxelFileCanopyPath.textProperty(),
+            textfieldOutputDir.textProperty(),
+            textfieldOutputPrefix.textProperty()};
     }
 
 }

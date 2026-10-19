@@ -111,7 +111,7 @@ public class DirectionalTransmittance {
         }
     }
 
-    private List<Double> distToVoxelWallsV2(Point3d origin, Vector3d direction) {
+    private List<Double> distToVoxelWalls(Point3d origin, Vector3d direction) {
 
         // point where the ray exits from the top of the bounding box
         double distToTop = (max.z - origin.z) / direction.z;
@@ -185,62 +185,9 @@ public class DirectionalTransmittance {
         return distances;
     }
 
-    private List<Double> distToVoxelWalls(Point3d origin, Vector3d direction) {
+    public double computeTransmittance(Point3d origin, Vector3d direction) {
 
-        // point where the ray exits from the top of the bounding box
-        Point3d exit = new Point3d(direction);
-        double dist = (max.z - origin.z) / direction.z;
-        exit.scale(dist);
-        exit.add(origin);
-
-        Point3i originVoxel = new Point3i((int) ((origin.x - min.x) / voxelSize.x), (int) ((origin.y - min.y) / voxelSize.y), (int) ((origin.z - min.z) / voxelSize.z));
-        Point3i exitVoxel = new Point3i((int) ((exit.x - min.x) / voxelSize.x), (int) ((exit.y - min.y) / voxelSize.y), (int) ((exit.z - min.z) / voxelSize.z));
-
-        List<Double> distances = new ArrayList<>();
-
-        Vector3d oe = new Vector3d(exit);
-        oe.sub(origin);
-        distances.add(0.0);
-        distances.add(oe.length());
-
-        // voxel walls in X
-        int minX = Math.min(originVoxel.x, exitVoxel.x);
-        int maxX = Math.max(originVoxel.x, exitVoxel.x);
-        for (int m = minX; m < maxX; m++) {
-            double dx = (m + 1) * voxelSize.x;
-            dx += min.x - origin.x;
-            dx /= direction.x;
-            distances.add(dx);
-        }
-
-        // voxel walls in Y
-        int minY = Math.min(originVoxel.y, exitVoxel.y);
-        int maxY = Math.max(originVoxel.y, exitVoxel.y);
-        for (int m = minY; m < maxY; m++) {
-            double dy = (m + 1) * voxelSize.y;
-            dy += min.y - origin.y;
-            dy /= direction.y;
-            distances.add(dy);
-        }
-
-        // voxel walls in Z
-        int minZ = Math.min(originVoxel.z, exitVoxel.z);
-        int maxZ = Math.max(originVoxel.z, exitVoxel.z);
-        for (int m = minZ; m < maxZ; m++) {
-            double dz = (m + 1) * voxelSize.z;
-            dz += min.z - origin.z;
-            dz /= direction.z;
-            distances.add(dz);
-        }
-
-        Collections.sort(distances);
-
-        return distances;
-    }
-
-    public double directionalTransmittance(Point3d origin, Vector3d direction) {
-
-        List<Double> distances = distToVoxelWallsV2(origin, direction);
+        List<Double> distances = distToVoxelWalls(origin, direction);
 
         //we can optimize this by storing the angle value to avoid repeating this for each position
         double directionAngle = FastMath.toDegrees(FastMath.acos(direction.z));

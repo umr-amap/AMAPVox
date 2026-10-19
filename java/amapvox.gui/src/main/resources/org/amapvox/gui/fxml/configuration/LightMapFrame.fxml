@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import org.amapvox.commons.javafx.SelectableMenuButton?>
+
+<AnchorPane id="AnchorPane" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.amapvox.gui.configuration.LightMapFrameController">
+    <children>
+        <ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <content>
+                <VBox>
+                    <children>
+                        <fx:include fx:id="canopyToolsIOFrame" source="../CanopyToolsIOFrame.fxml" />   
+                        <fx:include fx:id="sensorPositions" source="../SensorPositions.fxml" /> 
+                        <TitledPane animated="false" expanded="false" text="Light map parameters">
+                            <content>
+                                <VBox spacing="10.0">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                            <children>
+                                                <Label text="Directions number" />
+                                                <ComboBox fx:id="comboboxDirectionCount" prefHeight="26.0" prefWidth="100.0" />
+                                                <fx:include fx:id="buttonHelpDirectionCount" source="../HelpButton.fxml"  />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                            <children>
+                                                <Label text="Plot rotation" />
+                                                <TextField fx:id="textfieldDirectionRotation" prefHeight="26.0" prefWidth="66.0" text="0" />
+                                                <Label text="degrees (anticlockwise)" />
+                                                <fx:include fx:id="buttonHelpDirectionRotation" source="../HelpButton.fxml"  />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                            <children>
+                                                <CheckBox fx:id="checkboxToricity" mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Repetitive scene" />
+                                                <fx:include fx:id="buttonHelpToricity" source="../HelpButton.fxml"  />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                            <children>
+                                                <Label text="Latitude (degrees)" />
+                                                <TextField fx:id="textfieldLatitudeRadians" prefHeight="26.0" prefWidth="66.0" />
+                                                <fx:include fx:id="buttonHelpLatitude" source="../HelpButton.fxml"  />
+                                            </children>
+                                        </HBox>
+                                        <VBox spacing="10.0">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                    <children>
+                                                        <Label text="Simulation periods" />
+                                                        <fx:include fx:id="buttonHelpSimulationPeriods" source="../HelpButton.fxml"  />
+                                                    </children>
+                                                </HBox>
+                                                <TableView fx:id="tableViewSimulationPeriods" editable="true" prefHeight="200.0">
+                                                    <columns>
+                                                        <TableColumn fx:id="tableColumnPeriod" prefWidth="248.0" text="Period" />
+                                                        <TableColumn fx:id="tableColumnClearness" minWidth="0.0" prefWidth="113.0" text="Clearness" />
+                                                    </columns>
+                                                </TableView>
+                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                    <children>
+                                                        <MenuButton fx:id="menuButtonSelectionPeriodsList" mnemonicParsing="false" text="Selection">
+                                                            <items>
+                                                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuItemSelectAllPeriods" text="All" />
+                                                                <MenuItem mnemonicParsing="false" onAction="#onActionMenuItemUnselectAllPeriods" text="None" />
+                                                            </items>
+                                                        </MenuButton>
+                                                        <Button mnemonicParsing="false" onAction="#onActionButtonRemovePeriodFromPeriodList">
+                                                            <graphic>
+                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                    <image>
+                                                                        <Image url="@../icons/remove.png" />
+                                                                    </image>
+                                                                </ImageView>
+                                                            </graphic>
+                                                        </Button>
+                                                        <Button mnemonicParsing="false" onAction="#onActionButtonAddPeriodToPeriodList">
+                                                            <graphic>
+                                                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                                                    <image>
+                                                                        <Image url="@../icons/add.png" />
+                                                                    </image>
+                                                                </ImageView>
+                                                            </graphic>
+                                                        </Button>
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </children>
+</AnchorPane>

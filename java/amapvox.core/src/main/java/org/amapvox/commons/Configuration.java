@@ -221,6 +221,9 @@ public abstract class Configuration {
                     }
                 }
             }
+            // Update header
+            processElement.setAttribute(new Attribute("mode", getType()));
+            processElement.setAttribute(new Attribute("classname", getClass().getCanonicalName()));
         }
 
         // update cfg number to jar version in case last release is anterior to jar version
@@ -312,7 +315,7 @@ public abstract class Configuration {
                     "org.amapvox.canopy.lightmap.LightMapCfg";
                 default ->
                     classname;
-            };   
+            };
         } else {
             // prior to version 2, classname attribute does not exist
             // must infer it from mode attribute

@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
@@ -968,7 +969,7 @@ public class VoxelizationReleases {
                             if (variableAttribute.getValue().equalsIgnoreCase("intensity")) {
                                 variableAttribute.setValue("Intensity");
                             }
-                        } catch (NullPointerException ex) {
+                        } catch (NoSuchElementException | NullPointerException ex) {
                             // did not find any relative echo weight filter or
                             // parameters element or variable attribute
                         }

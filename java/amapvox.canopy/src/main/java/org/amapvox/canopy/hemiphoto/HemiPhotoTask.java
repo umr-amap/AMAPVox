@@ -55,17 +55,17 @@ public class HemiPhotoTask extends AVoxTask {
     /**
      * Number of pixels of the hemispherical photograph.
      */
-    private int npixel;
+    private int pixelCount;
     /**
      * Number of meridians drawn on the hemispherical photograph. Number of
      * azimuthal sectors.
      */
-    private int nmeridian;
+    private int meridianCount;
     /**
      * Number of parallels drawn on the hemispherical photograph. Number of
      * zenithal sectors.
      */
-    private int nparallel;
+    private int parallelCount;
     /**
      * Array of pixels of the hemispherical photograph.
      */
@@ -89,9 +89,9 @@ public class HemiPhotoTask extends AVoxTask {
 
         cfg = ((HemiPhotoCfg) getConfiguration());
 
-        npixel = cfg.getPixelNumber();
-        nparallel = cfg.getParallelNumber();
-        nmeridian = cfg.getMeridianNumber();
+        pixelCount = cfg.getPixelCount();
+        parallelCount = cfg.getParallelCount();
+        meridianCount = cfg.getMeridianCount();
     }
 
     @Override
@@ -101,34 +101,34 @@ public class HemiPhotoTask extends AVoxTask {
 
     private class Pixel {
 
-        int nshot;
+        int directionCount;
         float brightness;
         float azimut;
         float zenith;
 
         Pixel() {
 
-            this.nshot = 0;
+            this.directionCount = 0;
             this.brightness = Float.NaN;
         }
 
         void updatePixel(float luminance) {
-            if (nshot == 0 || Float.isNaN(brightness)) {
+            if (directionCount == 0 || Float.isNaN(brightness)) {
                 brightness = luminance;
-                nshot++;
+                directionCount++;
             } else {
-                float newBrightness = (brightness * nshot) + (luminance);
-                nshot++;
-                brightness = newBrightness / (float) nshot;
+                float updatedBrightness = brightness * directionCount + luminance;
+                directionCount++;
+                brightness = updatedBrightness / (float) directionCount;
             }
         }
     }
 
     private void initPixels() {
 
-        pixels = new Pixel[npixel][npixel];
-        for (int i = 0; i < npixel; i++) {
-            for (int j = 0; j < npixel; j++) {
+        pixels = new Pixel[pixelCount][pixelCount];
+        for (int i = 0; i < pixelCount; i++) {
+            for (int j = 0; j < pixelCount; j++) {
                 pixels[i][j] = new Pixel();
             }
         }
@@ -137,29 +137,28 @@ public class HemiPhotoTask extends AVoxTask {
     @Override
     public File[] call() throws Exception {
 
-        LOGGER.info(logHeader + " started...");
+        LOGGER.info(logHeader + " Generating photographs...");
 
-        DirectionalTransmittance dt = new DirectionalTransmittance(
+        DirectionalTransmittance directionalTransmittance = new DirectionalTransmittance(
                 cfg.getVoxelFile(),
                 cfg.getPADVariable(),
                 cfg.getLeafAngleDistribution(),
                 cfg.getLeafAngleDistributionParameters());
-        List<Point3d> positions = cfg.getSensorPositions();
-
-        int positionID = 0;
 
         List<File> outputFiles = new ArrayList();
 
-        for (Point3d position : positions) {
+        int positionIndex = 1;
+        int positionCount = cfg.getSensorPositions().size();
+        for (Point3d position : cfg.getSensorPositions()) {
 
-            LOGGER.info(logHeader + " from position " + position);
+            LOGGER.info(logHeader + " Position " + positionIndex + "/" + positionCount);
 
             initPixels();
 
-            float center = npixel / 2;
+            float center = pixelCount / 2;
 
-            for (int i = 0; i < npixel; i++) {
-                for (int j = 0; j < npixel; j++) {
+            for (int i = 0; i < pixelCount; i++) {
+                for (int j = 0; j < pixelCount; j++) {
 
                     if (isCancelled()) {
                         return null;
@@ -185,21 +184,11 @@ public class HemiPhotoTask extends AVoxTask {
                             azimuthAngle = Math.PI / 2;
                         }
 
-                        Vector3f direction = new Vector3f(SphericalCoordinates.toCartesian(azimuthAngle, zenithAngle));
-
-                        /*Vector3f direction = new Vector3f(0,0,1);
-                        Transformations transform = new Transformations();
-                        transform.setRotationAroundX(zenithAngle);
-                        transform.setRotationAroundZ(azimuthAngle);
-                        transform.apply(direction);*/
-
- /*if(direction.x != rayDirection.x || direction.y != rayDirection.y || direction.z != rayDirection.z){
-                            System.out.println("test");
-                        }*/
                         pixels[i][j].azimut = (float) Math.toDegrees(azimuthAngle);
                         pixels[i][j].zenith = (float) Math.toDegrees(zenithAngle);
 
-                        double transmittance = dt.directionalTransmittance(position, new Vector3d(direction.x, direction.y, direction.z));
+                        Vector3d direction = new Vector3d(SphericalCoordinates.toCartesian(azimuthAngle, zenithAngle));
+                        double transmittance = directionalTransmittance.computeTransmittance(position, direction);
                         if (!Double.isNaN(transmittance)) {
                             pixels[i][j].updatePixel((float) transmittance);
                         }
@@ -212,7 +201,7 @@ public class HemiPhotoTask extends AVoxTask {
             }
 
             File hemiphotoFile = new File(cfg.getOutputDirectory(),
-                    cfg.getOutputPrefix() + "_pos" + positionID + ".png");
+                    cfg.getOutputPrefix() + "_pos" + positionIndex + ".png");
             writeHemiPhoto(hemiphotoFile);
             outputFiles.add(hemiphotoFile);
 
@@ -221,12 +210,12 @@ public class HemiPhotoTask extends AVoxTask {
             }
 
             File hemiPhotoTextFile = new File(cfg.getOutputDirectory(),
-                    cfg.getOutputPrefix() + "_pos" + positionID + ".txt");
+                    cfg.getOutputPrefix() + "_pos" + positionIndex + ".txt");
             writeHemiPhotoAsText(hemiPhotoTextFile);
             outputFiles.add(hemiPhotoTextFile);
+            
+            positionIndex++;
         }
-
-        positionID++;
 
         return outputFiles.toArray(File[]::new);
     }
@@ -235,7 +224,7 @@ public class HemiPhotoTask extends AVoxTask {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
 
-            LOGGER.info(logHeader + " writing image (as text) " + outputFile.getName());
+            LOGGER.info(logHeader + " Writing image (as text) " + outputFile.getName());
 
             DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
             otherSymbols.setDecimalSeparator('.');
@@ -245,7 +234,7 @@ public class HemiPhotoTask extends AVoxTask {
 
             writer.write("azimut zenith transmittance\n");
 
-            float center = npixel / 2;
+            float center = pixelCount / 2;
 
             for (int x = 0; x < pixels.length; x++) {
                 for (int y = 0; y < pixels[x].length; y++) {
@@ -275,16 +264,16 @@ public class HemiPhotoTask extends AVoxTask {
     private void writeHemiPhoto(File outputFile) throws IOException {
 
         int border = 30;
-        int nbPixImage = pixels.length + (2 * border); //= 600;
-        float center = nbPixImage / 2;
+        int imagePixelCount = pixels.length + (2 * border); //= 600;
+        float center = imagePixelCount / 2;
         float radius = center - border;
 
-        BufferedImage bimg = new BufferedImage(nbPixImage, nbPixImage, BufferedImage.TYPE_INT_RGB);
+        BufferedImage bimg = new BufferedImage(imagePixelCount, imagePixelCount, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = bimg.createGraphics();
 
         // background
         g.setColor(new Color(80, 30, 0));
-        g.fillRect(0, 0, nbPixImage, nbPixImage);
+        g.fillRect(0, 0, imagePixelCount, imagePixelCount);
 
         // black sky vault
         g.setColor(new Color(0, 0, 0));
@@ -317,13 +306,13 @@ public class HemiPhotoTask extends AVoxTask {
 
         // parallels
         g.setColor(new Color(220, 240, 255));
-        double rad = radius / nparallel;
-        for (int i = 1; i <= nparallel; i++) {
+        double rad = radius / parallelCount;
+        for (int i = 1; i <= parallelCount; i++) {
             g.drawOval((int) (center - rad * i), (int) (center - rad * i), (int) (2 * rad * i), (int) (2 * rad * i));
         }
         // meridians
-        for (int i = 1; i <= nmeridian; i++) {
-            double azimuth = i * (Math.PI * 2 / nmeridian);
+        for (int i = 1; i <= meridianCount; i++) {
+            double azimuth = i * (Math.PI * 2 / meridianCount);
             double x = radius * Math.sin(azimuth);
             double y = radius * Math.cos(azimuth);
             g.drawLine((int) (center - x), (int) (center - y), (int) (center + x), (int) (center + y));
@@ -331,11 +320,11 @@ public class HemiPhotoTask extends AVoxTask {
 
         // cardinal points
         g.drawString("N", (int) center, border / 2);
-        g.drawString("S", (int) center, nbPixImage - (border / 2));
-        g.drawString("E", nbPixImage - (border / 2), center);
+        g.drawString("S", (int) center, imagePixelCount - (border / 2));
+        g.drawString("E", imagePixelCount - (border / 2), center);
         g.drawString("W", border / 2, center);
 
-        LOGGER.info(logHeader + " writing image " + outputFile.getName());
+        LOGGER.info(logHeader + " Writing image " + outputFile.getName());
         ImageIO.write(bimg, "png", outputFile);
     }
 }

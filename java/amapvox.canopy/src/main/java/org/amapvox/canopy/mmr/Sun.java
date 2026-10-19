@@ -162,7 +162,7 @@ public class Sun {
         float weightSum = 0;
         // plane angle corresponding to sector solid angle of 2PI/nb sectors
         // Note: solid angle W = 2PI (1-cos(angle/2)) => cos(angle/2)= (46-1) / 46
-        float turtleSectorRadius = (float) Math.acos((turtle.getNbDirections() - 1) / (float) turtle.getNbDirections());
+        float turtleSectorRadius = (float) Math.acos((turtle.getDirectionCount() - 1) / (float) turtle.getDirectionCount());
         float sunHaloRadius = turtleSectorRadius; // TODO create method setsunHaloRadius
         sunHaloRadius /= 2;
         // System.out.println ("turtle radius= "+Math.toDegrees(turtleSectorRadius));

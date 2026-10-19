@@ -33,9 +33,9 @@ public class Time {
     public Time(String codedString) throws Exception {
         String[] tokens = codedString.split("/");
 
-        this.year = Integer.valueOf(tokens[0].trim());
-        this.doy = Integer.valueOf(tokens[1].trim());
-        this.hourDecimal = Float.valueOf(tokens[2].trim());
+        this.year = Integer.parseInt(tokens[0].trim());
+        this.doy = Integer.parseInt(tokens[1].trim());
+        this.hourDecimal = Float.parseFloat(tokens[2].trim());
         hourMinutes(this.hourDecimal);
     }
 
@@ -47,18 +47,7 @@ public class Time {
         return hour + (minutes / 60f) + (secunds / 3600f);
     }
 
-    @Deprecated
-    public static String hourMinute(float hourDecimal) {
-        StringBuilder hm = new StringBuilder();
-        int h = (int) hourDecimal;
-        hm.append(h + "h");
-        int m = (int) ((hourDecimal - h) * 60);
-        hm.append(m);
-
-        return hm.toString();
-    }
-
-    public void hourMinutes(float hourDecimal) {
+    private void hourMinutes(float hourDecimal) {
         hour = (int) hourDecimal;
         minutes = (int) ((hourDecimal - hour) * 60);
     }

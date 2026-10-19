@@ -5,19 +5,11 @@
  */
 package org.amapvox.gui.configuration;
 
-import org.amapvox.commons.javafx.SelectableMenuButton;
-import org.amapvox.commons.javafx.io.FileChooserContext;
 import org.amapvox.commons.math.util.SphericalCoordinates;
-import org.amapvox.commons.Configuration;
-import org.amapvox.gui.PositionImporterFrameController;
 import org.amapvox.gui.Util;
-import org.amapvox.gui.Validators;
-import org.amapvox.gui.ViewCapsSetupFrameController;
-import org.amapvox.canopy.lai2xxx.CanopyAnalyzerCfg;
-import org.amapvox.canopy.transmittance.TransmittanceCfg;
-import org.amapvox.canopy.transmittance.TransmittanceParameters;
-import org.amapvox.canopy.lai2xxx.LAI2200;
-import org.amapvox.canopy.lai2xxx.LAI2xxx;
+import org.amapvox.canopy.analyzer.CanopyAnalyzerCfg;
+import org.amapvox.canopy.analyzer.LAI2200;
+import org.amapvox.canopy.analyzer.CanopyAnalyzerSensor;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -28,23 +20,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3f;
-import org.amapvox.gui.VoxelFileCanopyController;
+import org.amapvox.canopy.analyzer.CanopyAnalyzerSensor.Direction;
+import org.amapvox.gui.CanopyToolsIOFrameController;
+import org.amapvox.gui.HelpButtonController;
+import org.amapvox.gui.SensorPositionsController;
 import org.apache.log4j.Logger;
 import org.controlsfx.validation.ValidationSupport;
 
@@ -57,21 +43,19 @@ public class CanopyAnalyzerFrameController extends ConfigurationController {
 
     // logger
     private final Logger LOGGER = Logger.getLogger(CanopyAnalyzerFrameController.class);
-    // file chooser
-    private FileChooserContext fileChooserSaveCanopyAnalyserOutputFile;
-    //
-    private PositionImporterFrameController positionImporterFrameController;
-    //
-    private ViewCapsSetupFrameController viewCapsSetupFrameController;
+
     // validation support
-    private ValidationSupport lai2xxxSimValidationSupport;
+    private ValidationSupport canopyAnalyzerValidationSupport;
+
     // FXML imports
     @FXML
-    private VoxelFileCanopyController voxelFileCanopyController;
+    private CanopyToolsIOFrameController canopyToolsIOFrameController;
     @FXML
-    private ComboBox<Integer> comboboxChooseCanopyAnalyzerSampling;
+    private SensorPositionsController sensorPositionsController;
     @FXML
-    private TextField textFieldViewCapAngleCanopyAnalyzer;
+    private ComboBox<CanopyAnalyzerCfg.CanopyAnalyzer> comboboxCanopyAnalyzerSensor;
+    @FXML
+    private ComboBox<Integer> comboboxCanopyAnalyzerDirectionCount;
     @FXML
     private ToggleButton toggleButtonCanopyAnalyzerRingMask1;
     @FXML
@@ -82,51 +66,49 @@ public class CanopyAnalyzerFrameController extends ConfigurationController {
     private ToggleButton toggleButtonCanopyAnalyzerRingMask4;
     @FXML
     private ToggleButton toggleButtonCanopyAnalyzerRingMask5;
+    // help buttons
     @FXML
-    private ListView<Point3d> listViewCanopyAnalyzerSensorPositions;
+    private Button helpButtonCanopyAnalzerDevice;
     @FXML
-    private SelectableMenuButton selectorCanopy;
+    private HelpButtonController helpButtonCanopyAnalzerDeviceController;
     @FXML
-    private CheckBox checkboxGenerateCanopyAnalyzerTextFile;
+    private Button helpButtonCanopyAnalzerDirections;
     @FXML
-    private CheckBox checkboxGenerateLAI2xxxFormat;
+    private HelpButtonController helpButtonCanopyAnalzerDirectionsController;
     @FXML
-    private TextField textfieldOutputCanopyAnalyzerTextFile;
+    private Button helpButtonRingMask;
     @FXML
-    private ToggleButton toggleButtonLAI2000Choice;
-    @FXML
-    private ToggleButton toggleButtonLAI2200Choice;
+    private HelpButtonController helpButtonRingMaskController;
 
     @Override
     public void initComponents(ResourceBundle rb) {
+        
+        comboboxCanopyAnalyzerSensor.getItems().setAll(CanopyAnalyzerCfg.CanopyAnalyzer.values());
+        comboboxCanopyAnalyzerSensor.getSelectionModel().select(CanopyAnalyzerCfg.CanopyAnalyzer.LAI2200);
 
-        fileChooserSaveCanopyAnalyserOutputFile = new FileChooserContext();
-        listViewCanopyAnalyzerSensorPositions.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        Util.linkSelectorToList(selectorCanopy, listViewCanopyAnalyzerSensorPositions);
+        comboboxCanopyAnalyzerDirectionCount.getItems().setAll(500, 4000, 10000);
+        comboboxCanopyAnalyzerDirectionCount.getSelectionModel().selectFirst();
 
-        ToggleGroup virtualMeasuresChoiceGroup = new ToggleGroup();
-        toggleButtonLAI2000Choice.setToggleGroup(virtualMeasuresChoiceGroup);
-        toggleButtonLAI2200Choice.setToggleGroup(virtualMeasuresChoiceGroup);
+        helpButtonCanopyAnalzerDevice.setOnAction((ActionEvent event) -> {
+            helpButtonCanopyAnalzerDeviceController.showHelpDialog(rb.getString("help_canopyanalyzer_device"));
+        });
 
-        comboboxChooseCanopyAnalyzerSampling.getItems().setAll(500, 4000, 10000);
-        comboboxChooseCanopyAnalyzerSampling.getSelectionModel().selectFirst();
+        helpButtonCanopyAnalzerDirections.setOnAction((ActionEvent event) -> {
+            helpButtonCanopyAnalzerDirectionsController.showHelpDialog(rb.getString("help_canopyanalyzer_directions"));
+        });
 
-        Util.setDragGestureEvents(textfieldOutputCanopyAnalyzerTextFile);
-
-        viewCapsSetupFrameController = ViewCapsSetupFrameController.newInstance();
-
-        positionImporterFrameController = PositionImporterFrameController.newInstance();
-
+        helpButtonRingMask.setOnAction((ActionEvent event) -> {
+            helpButtonRingMaskController.showHelpDialog(rb.getString("help_canopyanalyzer_ringmask"));
+        });
     }
 
     @Override
     void initValidationSupport() {
 
         //lai2200 simulations validation support
-        lai2xxxSimValidationSupport = new ValidationSupport();
-        lai2xxxSimValidationSupport.registerValidator(textfieldOutputCanopyAnalyzerTextFile, true, Validators.fileValidityValidator("Output file"));
+        canopyAnalyzerValidationSupport = new ValidationSupport();
 
-        voxelFileCanopyController.registerValidators();
+        canopyToolsIOFrameController.registerValidators();
     }
 
     @Override
@@ -136,21 +118,16 @@ public class CanopyAnalyzerFrameController extends ConfigurationController {
 
         properties.addAll(Arrays.asList(
                 new ObservableValue[]{
-                    checkboxGenerateCanopyAnalyzerTextFile.selectedProperty(),
-                    checkboxGenerateLAI2xxxFormat.selectedProperty(),
-                    textfieldOutputCanopyAnalyzerTextFile.textProperty(),
-                    toggleButtonLAI2000Choice.selectedProperty(),
-                    toggleButtonLAI2200Choice.selectedProperty(),
-                    comboboxChooseCanopyAnalyzerSampling.getSelectionModel().selectedItemProperty(),
-                    textFieldViewCapAngleCanopyAnalyzer.textProperty(),
+                    comboboxCanopyAnalyzerSensor.getSelectionModel().selectedItemProperty(),
+                    comboboxCanopyAnalyzerDirectionCount.getSelectionModel().selectedItemProperty(),
                     toggleButtonCanopyAnalyzerRingMask1.selectedProperty(),
                     toggleButtonCanopyAnalyzerRingMask2.selectedProperty(),
                     toggleButtonCanopyAnalyzerRingMask3.selectedProperty(),
                     toggleButtonCanopyAnalyzerRingMask4.selectedProperty(),
-                    toggleButtonCanopyAnalyzerRingMask5.selectedProperty(),
-                    listViewCanopyAnalyzerSensorPositions.itemsProperty()}));
+                    toggleButtonCanopyAnalyzerRingMask5.selectedProperty()}));
 
-        properties.addAll(Arrays.asList(voxelFileCanopyController.getListenedProperties()));
+        properties.addAll(Arrays.asList(canopyToolsIOFrameController.getListenedProperties()));
+        properties.addAll(Arrays.asList(sensorPositionsController.getListenedProperties()));
 
         return properties.toArray(ObservableValue[]::new);
     }
@@ -158,13 +135,15 @@ public class CanopyAnalyzerFrameController extends ConfigurationController {
     @Override
     public void saveConfiguration(File file) throws Exception {
 
+        CanopyAnalyzerCfg cfg = new CanopyAnalyzerCfg();
+
         // validation support
         StringBuilder sb = new StringBuilder();
-        if (lai2xxxSimValidationSupport.isInvalid()) {
-            lai2xxxSimValidationSupport.initInitialDecoration();
-            lai2xxxSimValidationSupport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
+        if (canopyAnalyzerValidationSupport.isInvalid()) {
+            canopyAnalyzerValidationSupport.initInitialDecoration();
+            canopyAnalyzerValidationSupport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
         }
-        ValidationSupport voxelFileValidationSuuport = voxelFileCanopyController.getValidationSupport();
+        ValidationSupport voxelFileValidationSuuport = canopyToolsIOFrameController.getValidationSupport();
         if (voxelFileValidationSuuport.isInvalid()) {
             voxelFileValidationSuuport.initInitialDecoration();
             voxelFileValidationSuuport.getValidationResult().getErrors().forEach(error -> sb.append("> ").append(error.getText()).append('\n'));
@@ -173,17 +152,11 @@ public class CanopyAnalyzerFrameController extends ConfigurationController {
             throw new IOException(sb.toString());
         }
 
-        TransmittanceParameters transmParameters = new TransmittanceParameters();
+        cfg.setDirectionCount(comboboxCanopyAnalyzerDirectionCount.getSelectionModel().getSelectedItem());
 
-        transmParameters.setDirectionsNumber(comboboxChooseCanopyAnalyzerSampling.getSelectionModel().getSelectedItem());
+        cfg.setCanopyAnalyzer(comboboxCanopyAnalyzerSensor.getSelectionModel().getSelectedItem());
 
-        if (toggleButtonLAI2000Choice.isSelected()) {
-            transmParameters.setMode(TransmittanceParameters.Mode.LAI2000);
-        } else {
-            transmParameters.setMode(TransmittanceParameters.Mode.LAI2200);
-        }
-
-        transmParameters.setMasks(new boolean[]{
+        cfg.setMasks(new boolean[]{
             toggleButtonCanopyAnalyzerRingMask1.isSelected(),
             toggleButtonCanopyAnalyzerRingMask2.isSelected(),
             toggleButtonCanopyAnalyzerRingMask3.isSelected(),
@@ -191,99 +164,50 @@ public class CanopyAnalyzerFrameController extends ConfigurationController {
             toggleButtonCanopyAnalyzerRingMask5.isSelected()
         });
 
-        transmParameters.setGenerateLAI2xxxTypeFormat(checkboxGenerateLAI2xxxFormat.isSelected());
+        cfg.setVoxelFile(canopyToolsIOFrameController.getVoxelFile());
+        cfg.setPADVariable(canopyToolsIOFrameController.getPADVariable());
+        cfg.setLeafAngleDistribution(canopyToolsIOFrameController.getLeafAngleDistribution());
+        cfg.setLeafAngleDistributionParameters(canopyToolsIOFrameController.getLeafAngleDistributionParameters());
 
-        transmParameters.setVoxelFile(voxelFileCanopyController.getVoxelFile());
-        transmParameters.setPADVariable(voxelFileCanopyController.getPADVariable());
-        transmParameters.setLeafAngleDistribution(voxelFileCanopyController.getLeafAngleDistribution());
-        transmParameters.setLeafAngleDistributionParameters(voxelFileCanopyController.getLeafAngleDistributionParameters());
-        transmParameters.setGenerateTextFile(checkboxGenerateCanopyAnalyzerTextFile.isSelected());
+        cfg.setOutputDirectory(canopyToolsIOFrameController.getOutputDir());
+        cfg.setOutputPrefix(canopyToolsIOFrameController.getOutputPrefix());
 
-        if (checkboxGenerateCanopyAnalyzerTextFile.isSelected()) {
-            transmParameters.setTextFile(new File(textfieldOutputCanopyAnalyzerTextFile.getText()));
-        }
-        if (comboboxChooseCanopyAnalyzerSampling.isEditable()) {
-            transmParameters.setDirectionsNumber(Integer.parseInt(comboboxChooseCanopyAnalyzerSampling.getEditor().getText()));
+        if (comboboxCanopyAnalyzerDirectionCount.isEditable()) {
+            cfg.setDirectionCount(Integer.parseInt(comboboxCanopyAnalyzerDirectionCount.getEditor().getText()));
         } else {
-            transmParameters.setDirectionsNumber(comboboxChooseCanopyAnalyzerSampling.getSelectionModel().getSelectedItem());
+            cfg.setDirectionCount(comboboxCanopyAnalyzerDirectionCount.getSelectionModel().getSelectedItem());
         }
 
-        transmParameters.setPositions(listViewCanopyAnalyzerSensorPositions.getItems());
+        cfg.setSensorPositions(sensorPositionsController.getPositions());
 
-        CanopyAnalyzerCfg cfg = new CanopyAnalyzerCfg();
-        cfg.setParameters(transmParameters);
         cfg.write(file);
     }
 
     @Override
     public void loadConfiguration(File file) throws Exception {
 
-        Configuration laiCfg = new TransmittanceCfg();
-        laiCfg.read(file);
-        TransmittanceParameters laiParams = ((TransmittanceCfg) laiCfg).getParameters();
+        CanopyAnalyzerCfg cfg = new CanopyAnalyzerCfg();
+        cfg.read(file);
 
-        voxelFileCanopyController.setVoxelFile(laiParams.getVoxelFile(), laiParams.getPADVariable());
-        voxelFileCanopyController.setLeafAngleDistribution(laiParams.getLeafAngleDistribution());
-        voxelFileCanopyController.setLeafAngleDistributionParameters(laiParams.getLeafAngleDistributionParameters());
+        canopyToolsIOFrameController.setVoxelFile(cfg.getVoxelFile(), cfg.getPADVariable());
+        canopyToolsIOFrameController.setLeafAngleDistribution(cfg.getLeafAngleDistribution());
+        canopyToolsIOFrameController.setLeafAngleDistributionParameters(cfg.getLeafAngleDistributionParameters());
+        canopyToolsIOFrameController.setOutputDir(cfg.getOutputDirectory());
+        canopyToolsIOFrameController.setOutputPrefix(cfg.getOutputPrefix());
 
-        if (laiParams.getMode().equals(TransmittanceParameters.Mode.LAI2000)) {
-            toggleButtonLAI2000Choice.setSelected(true);
-        } else if (laiParams.getMode().equals(TransmittanceParameters.Mode.LAI2200)) {
-            toggleButtonLAI2200Choice.setSelected(true);
-        }
-        comboboxChooseCanopyAnalyzerSampling.getSelectionModel().select(Integer.valueOf(laiParams.getDirectionsNumber()));
-        boolean[] masks = laiParams.getMasks();
+        sensorPositionsController.setPositions(cfg.getSensorPositions());
+
+        comboboxCanopyAnalyzerSensor.getSelectionModel().select(cfg.getCanopyAnalyzer());
+       
+        comboboxCanopyAnalyzerDirectionCount.getSelectionModel().select(Integer.valueOf(cfg.getDirectionCount()));
+
+        boolean[] masks = cfg.getMasks();
         if (masks != null && masks.length == 5) {
             toggleButtonCanopyAnalyzerRingMask1.setSelected(masks[0]);
             toggleButtonCanopyAnalyzerRingMask2.setSelected(masks[1]);
             toggleButtonCanopyAnalyzerRingMask3.setSelected(masks[2]);
             toggleButtonCanopyAnalyzerRingMask4.setSelected(masks[3]);
             toggleButtonCanopyAnalyzerRingMask5.setSelected(masks[4]);
-        }
-        checkboxGenerateLAI2xxxFormat.setSelected(laiParams.isGenerateLAI2xxxTypeFormat());
-        List<Point3d> positions = laiParams.getPositions();
-        if (positions != null) {
-            listViewCanopyAnalyzerSensorPositions.getItems().setAll(positions);
-        }
-        checkboxGenerateCanopyAnalyzerTextFile.setSelected(laiParams.isGenerateTextFile());
-        if (laiParams.isGenerateTextFile() && laiParams.getTextFile() != null) {
-            textfieldOutputCanopyAnalyzerTextFile.setText(laiParams.getTextFile().getAbsolutePath());
-        }
-    }
-
-    @FXML
-    private void onActionButtonRemovePositionCanopyAnalyzer(ActionEvent event) {
-        ObservableList<?> selectedItems = listViewCanopyAnalyzerSensorPositions.getSelectionModel().getSelectedItems();
-        listViewCanopyAnalyzerSensorPositions.getItems().removeAll(selectedItems);
-        LOGGER.info("[Canopy analyzer] All sensors position removed.");
-    }
-
-    @FXML
-    private void onActionButtonAddPositionCanopyAnalyzer(ActionEvent event) {
-
-        File voxelFile = voxelFileCanopyController.getVoxelFile();
-        if (null != voxelFile && voxelFile.exists()) {
-            positionImporterFrameController.setInitialVoxelFile(voxelFile);
-        }
-
-        Stage positionImporterFrame = positionImporterFrameController.getStage();
-        positionImporterFrame.show();
-        positionImporterFrame.setOnHidden((WindowEvent event1)
-                -> {
-            listViewCanopyAnalyzerSensorPositions.getItems().addAll(positionImporterFrameController.getPositions());
-            LOGGER.info("[Canopy analyzer] Position(s) added.");
-        });
-    }
-
-    @FXML
-    private void onActionButtonOpenOutputCanopyAnalyzerTextFile(ActionEvent event) {
-
-        File selectedFile = fileChooserSaveCanopyAnalyserOutputFile.showSaveDialog(null);
-
-        if (selectedFile != null) {
-
-            textfieldOutputCanopyAnalyzerTextFile.setText(selectedFile.getAbsolutePath());
-            LOGGER.info("[Canopy analyser] Text file opened.");
         }
     }
 
@@ -312,31 +236,29 @@ public class CanopyAnalyzerFrameController extends ConfigurationController {
 
             if (selectedFile != null) {
 
-                LAI2xxx lAi2xxx = new LAI2200(comboboxChooseCanopyAnalyzerSampling.getSelectionModel().getSelectedItem(),
-                        LAI2xxx.ViewCap.CAP_360, new boolean[]{
-                            false, false, false, false, false
-                        });
+                CanopyAnalyzerSensor canopyAnalyzer = new LAI2200(new boolean[]{
+                    false, false, false, false, false
+                });
 
-                lAi2xxx.computeDirections();
-                Vector3f[] directions = lAi2xxx.getDirections();
+                Direction[] directions = canopyAnalyzer.computeDirections(comboboxCanopyAnalyzerDirectionCount.getSelectionModel().getSelectedItem());
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(selectedFile))) {
 
                     if (csv) {
                         if (cartesian) {
-                            writer.write("X_cartesian Y_cartesian Z_cartesian\n");
+                            writer.write("x y z ring band\n");
                         } else {
-                            writer.write("azimut elevation\n");
+                            writer.write("azimut elevation ring band\n");
                         }
                     }
 
-                    for (Vector3f direction : directions) {
+                    for (Direction direction : directions) {
 
                         if (csv) {
                             if (cartesian) {
-                                writer.write(direction.x + " " + direction.y + " " + direction.z + "\n");
+                                writer.write(direction.x + " " + direction.y + " " + direction.z + " " + direction.ringIndex + " " + direction.bandIndex + "\n");
                             } else {
-                                SphericalCoordinates sc = SphericalCoordinates.fromCartesian(direction);
-                                writer.write(sc.getAzimut() + " " + sc.getZenith() + "\n");
+                                SphericalCoordinates sc = SphericalCoordinates.fromCartesian(direction.x, direction.y, direction.z);
+                                writer.write(sc.getAzimut() + " " + sc.getZenith() + " " + direction.ringIndex + " " + direction.bandIndex + "\n");
                             }
                         } else {
                             writer.write("v " + direction.x + " " + direction.y + " " + direction.z + "\n");
@@ -347,31 +269,9 @@ public class CanopyAnalyzerFrameController extends ConfigurationController {
                     Util.showErrorDialog(null, ex, "[Canopy Analyzer]");
                 }
 
-                LOGGER.info("[Canopy analyzer] Directions saved.");
+                LOGGER.info("[Canopy analyzer] Directions saved to " + selectedFile);
             }
         }
 
     }
-
-    @FXML
-    private void onActionButtonSetupViewCap(ActionEvent event) {
-
-        if (toggleButtonLAI2000Choice.isSelected()) {
-            viewCapsSetupFrameController.setViewCapAngles(ViewCapsSetupFrameController.ViewCaps.LAI_2000);
-        } else if (toggleButtonLAI2200Choice.isSelected()) {
-            viewCapsSetupFrameController.setViewCapAngles(ViewCapsSetupFrameController.ViewCaps.LAI_2200);
-        }
-
-        Stage viewCapsSetupFrame = viewCapsSetupFrameController.getStage();
-        viewCapsSetupFrame.setOnHidden((WindowEvent event1)
-                -> {
-            if (viewCapsSetupFrameController.isConfirmed()) {
-                textFieldViewCapAngleCanopyAnalyzer.setText(df.format(viewCapsSetupFrameController.getAngle()));
-            }
-        });
-
-        viewCapsSetupFrame.show();
-
-    }
-
 }

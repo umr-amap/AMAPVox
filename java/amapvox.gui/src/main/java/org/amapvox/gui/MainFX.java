@@ -14,8 +14,8 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.amapvox.canopy.hemiphoto.HemiPhotoCfg;
-import org.amapvox.canopy.lai2xxx.CanopyAnalyzerCfg;
-import org.amapvox.canopy.transmittance.TransmittanceCfg;
+import org.amapvox.canopy.analyzer.CanopyAnalyzerCfg;
+import org.amapvox.canopy.lightmap.LightMapCfg;
 import org.amapvox.deprecated.ButterflyCfg;
 import org.amapvox.deprecated.CroppingCfg;
 import org.amapvox.gui.chart.ChartConfiguration;
@@ -70,8 +70,8 @@ public class MainFX extends Application {
                 "fxml/configuration/HemiPhotoFrame.fxml",
                 "fxml/icons/hemispherical.png",
                 RepoStatus.ACTIVE);
-        controller.addTaskUI(TransmittanceCfg.class,
-                "fxml/configuration/TransmittanceMapFrame.fxml",
+        controller.addTaskUI(LightMapCfg.class,
+                "fxml/configuration/LightMapFrame.fxml",
                 "fxml/icons/sun.png",
                 RepoStatus.ACTIVE);
         controller.addTaskUI(ChartConfiguration.class,

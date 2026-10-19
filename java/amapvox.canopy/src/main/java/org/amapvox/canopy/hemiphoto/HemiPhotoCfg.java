@@ -13,138 +13,52 @@ For further information, please contact Gregoire Vincent.
  */
 package org.amapvox.canopy.hemiphoto;
 
-import org.amapvox.commons.Configuration;
 import org.amapvox.commons.Matrix;
 import org.amapvox.commons.util.io.file.FileManager;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import javax.vecmath.Point3d;
-import org.amapvox.canopy.LeafAngleDistribution;
+import org.amapvox.canopy.CanopyCfg;
 import org.amapvox.commons.AVoxTask;
 import org.amapvox.commons.Release;
 import org.amapvox.voxelisation.output.OutputVariable;
-import org.jdom2.Attribute;
 import org.jdom2.Element;
 
 /**
  *
  * @author pverley
  */
-public class HemiPhotoCfg extends Configuration {
+public class HemiPhotoCfg extends CanopyCfg {
 
-    // voxel file
-    private File voxelFile;
-    // PAD variable
-    private String padVariable;
-    // leaf angle distribution
-    private LeafAngleDistribution.Type leafAngleDistribution;
-    // leaf angle distribution parameters
-    private double[] leafAngleDistributionParameters = new double[2];
-    // sensor positions
-    private List<Point3d> sensorPositions;
-    // output directory
-    private File outputDir;
-    // output prefix
-    private String outputPrefix;
-    // pixel number
-    private int pixelNumber = 800;
-    // meridian number
-    private int meridianNumber = 36;
-    // parallel number
-    private int parallelNumber = 9;
+    // number of pixels
+    private int pixelCount = 800;
+    // number of meridians
+    private int meridianCount = 36;
+    // number of parallels
+    private int parallelCount = 9;
 
-    public File getVoxelFile() {
-        return voxelFile;
+    public int getPixelCount() {
+        return pixelCount;
     }
 
-    public void setVoxelFile(File voxelFile) {
-        this.voxelFile = voxelFile;
+    public void setPixelCount(int pixelCount) {
+        this.pixelCount = pixelCount;
     }
 
-    public String getPADVariable() {
-        return padVariable;
+    public int getMeridianCount() {
+        return meridianCount;
     }
 
-    public void setPADVariable(String padVariable) {
-        this.padVariable = padVariable;
+    public void setMeridianCount(int meridianCount) {
+        this.meridianCount = meridianCount;
     }
 
-    public List<Point3d> getSensorPositions() {
-        return sensorPositions;
+    public int getParallelCount() {
+        return parallelCount;
     }
 
-    public void setSensorPositions(List<Point3d> sensorPositions) {
-        this.sensorPositions = sensorPositions;
-    }
-
-    public int getPixelNumber() {
-        return pixelNumber;
-    }
-
-    public void setPixelNumber(int pixelNumber) {
-        this.pixelNumber = pixelNumber;
-    }
-
-    public int getMeridianNumber() {
-        return meridianNumber;
-    }
-
-    public void setMeridianNumber(int azimutsNumber) {
-        this.meridianNumber = azimutsNumber;
-    }
-
-    public int getParallelNumber() {
-        return parallelNumber;
-    }
-
-    public void setParallelNumber(int zenithsNumber) {
-        this.parallelNumber = zenithsNumber;
-    }
-
-    public File getOutputDirectory() {
-        return outputDir;
-    }
-
-    public void setOutputDirectory(File directory) {
-        this.outputDir = directory;
-    }
-
-    public String getOutputPrefix() {
-        return outputPrefix;
-    }
-
-    public void setOutputPrefix(String prefix) {
-        this.outputPrefix = prefix;
-    }
-
-    /**
-     * @return the leafAngleDistribution
-     */
-    public LeafAngleDistribution.Type getLeafAngleDistribution() {
-        return leafAngleDistribution;
-    }
-
-    /**
-     * @param leafAngleDistribution the leafAngleDistribution to set
-     */
-    public void setLeafAngleDistribution(LeafAngleDistribution.Type leafAngleDistribution) {
-        this.leafAngleDistribution = leafAngleDistribution;
-    }
-
-    /**
-     * @return the leafAngleDistribution parameters
-     */
-    public double[] getLeafAngleDistributionParameters() {
-        return leafAngleDistributionParameters;
-    }
-
-    /**
-     * @param leafAngleDistributionParameters
-     */
-    public void setLeafAngleDistributionParameters(double[] leafAngleDistributionParameters) {
-        this.leafAngleDistributionParameters = leafAngleDistributionParameters;
+    public void setParallelCount(int parallelCount) {
+        this.parallelCount = parallelCount;
     }
 
     public HemiPhotoCfg() {
@@ -158,142 +72,32 @@ public class HemiPhotoCfg extends Configuration {
     }
 
     @Override
-    public void readProcessElements(Element processElement) throws IOException {
+    public void readParameters(Element parametersElement) throws IOException {
 
-        Element inputElement = processElement.getChild("input");
-        String inputFileSrc = resolve(inputElement.getAttributeValue("src"));
-
-        if (inputFileSrc != null) {
-            setVoxelFile(new File(inputFileSrc));
+        // pixel count
+        if (null != parametersElement.getAttribute("pixel-count")) {
+            setPixelCount(Integer.parseInt(parametersElement.getAttributeValue("pixel-count")));
+        }
+        // meridian count
+        if (null != parametersElement.getAttribute("meridian-count")) {
+            setMeridianCount(Integer.parseInt(parametersElement.getAttributeValue("meridian-count")));
+        }
+        // parallel count
+        if (null != parametersElement.getAttribute("parallel-count")) {
+            setParallelCount(Integer.parseInt(parametersElement.getAttributeValue("parallel-count")));
         }
 
-        if (null != inputElement.getAttribute("variable")) {
-            setPADVariable(inputElement.getAttributeValue("variable"));
-        }
-
-        Element ladElement = processElement.getChild("leaf-angle-distribution");
-        if (ladElement != null) {
-            setLeafAngleDistribution(LeafAngleDistribution.Type.fromString(ladElement.getAttributeValue("type")));
-            double[] ladParams = new double[2];
-            String alphaValue = ladElement.getAttributeValue("alpha");
-            if (alphaValue != null) {
-                ladParams[0] = Double.parseDouble(alphaValue);
-            }
-            String betaValue = ladElement.getAttributeValue("beta");
-            if (betaValue != null) {
-                ladParams[0] = Double.parseDouble(betaValue);
-            }
-            setLeafAngleDistributionParameters(ladParams);
-        } else {
-            throw new IOException("Cannot find leaf-angle-distribution element");
-        }
-
-        List<Point3d> positions = new ArrayList<>();
-        Element sensorPositionsElement = processElement.getChild("sensor-positions");
-        List<Element> children = sensorPositionsElement.getChildren("position");
-        children.forEach((element) -> {
-            positions.add(new Point3d(
-                    Double.parseDouble(element.getAttributeValue("x")),
-                    Double.parseDouble(element.getAttributeValue("y")),
-                    Double.parseDouble(element.getAttributeValue("z"))));
-        });
-        setSensorPositions(positions);
-
-        //output
-        Element outputElement = processElement.getChild("output");
-        if (null != outputElement) {
-            // output directory
-            File output = new File(resolve(outputElement.getAttributeValue("src")));
-            setOutputDirectory(output);
-            // output prefix
-            String prefix = outputElement.getAttributeValue("prefix");
-            setOutputPrefix(prefix);
-
-            Element parametersElement = outputElement.getChild("parameters");
-            if (null != parametersElement) {
-                // pixel number
-                if (null != parametersElement.getAttribute("pixel-number")) {
-                    setPixelNumber(Integer.parseInt(parametersElement.getAttributeValue("pixel-number")));
-                }
-                // number of meridians
-                if (null != parametersElement.getAttribute("meridian-number")) {
-                    setMeridianNumber(Integer.parseInt(parametersElement.getAttributeValue("meridian-number")));
-                }
-                // number of parallels
-                if (null != parametersElement.getAttribute("parallel-number")) {
-                    setParallelNumber(Integer.parseInt(parametersElement.getAttributeValue("parallel-number")));
-                }
-            }
-        }
     }
 
     @Override
-    public void writeProcessElements(Element processElement) {
+    public void writeParameters(Element parametersElement) {
 
-        //input
-        Element inputElement = new Element("input");
-        inputElement.setAttribute("src", getVoxelFile().getAbsolutePath());
-        inputElement.setAttribute("variable", getPADVariable());
-        processElement.addContent(inputElement);
-
-        // leaf angle distribution
-        Element ladElement = new Element("leaf-angle-distribution");
-        ladElement.setAttribute("type", getLeafAngleDistribution().toString());
-        processElement.addContent(ladElement);
-
-        if (getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA
-                || getLeafAngleDistribution() == LeafAngleDistribution.Type.ELLIPSOIDAL) {
-            ladElement.setAttribute("alpha", String.valueOf(getLeafAngleDistributionParameters()[0]));
-
-            if (getLeafAngleDistribution() == LeafAngleDistribution.Type.TWO_PARAMETER_BETA) {
-                ladElement.setAttribute("beta", String.valueOf(getLeafAngleDistributionParameters()[1]));
-            }
-        }
-
-        // sensor positions
-        Element sensorPositionsElement = new Element("sensor-positions");
-
-        getSensorPositions().forEach(position -> {
-            Element positionElement = new Element("position");
-            positionElement.setAttribute("x", String.valueOf(position.x));
-            positionElement.setAttribute("y", String.valueOf(position.y));
-            positionElement.setAttribute("z", String.valueOf(position.z));
-            sensorPositionsElement.addContent(positionElement);
-        });
-
-        processElement.addContent(sensorPositionsElement);
-
-        //common parameters
-        Element pixelNumberElement = new Element("pixel-number");
-        pixelNumberElement.setAttribute("value", String.valueOf(getPixelNumber()));
-        processElement.addContent(pixelNumberElement);
-
-        Element azimutsNumberElement = new Element("azimut-number");
-        azimutsNumberElement.setAttribute("value", String.valueOf(getMeridianNumber()));
-        processElement.addContent(azimutsNumberElement);
-
-        Element zenithNumberElement = new Element("zenith-number");
-        zenithNumberElement.setAttribute("value", String.valueOf(getParallelNumber()));
-        processElement.addContent(zenithNumberElement);
-
-        //output
-        Element outputElement = new Element("output");
-        // output path
-        outputElement.setAttribute(new Attribute("src", getOutputDirectory().getAbsolutePath()));
-        // output prefix
-        outputElement.setAttribute(new Attribute("prefix", getOutputPrefix()));
-        // output parameters
-        Element parametersElement = new Element("parameters");
-        // pixel number
-        parametersElement.setAttribute("pixel-number", String.valueOf(getPixelNumber()));
+        // number of pixels
+        parametersElement.setAttribute("pixel-count", String.valueOf(getPixelCount()));
         // number of meridians
-        parametersElement.setAttribute("meridian-number", String.valueOf(getMeridianNumber()));
+        parametersElement.setAttribute("meridian-count", String.valueOf(getMeridianCount()));
         // number of parallels
-        parametersElement.setAttribute("parallel-number", String.valueOf(getParallelNumber()));
-
-        // add elements
-        outputElement.addContent(parametersElement);
-        processElement.addContent(outputElement);
+        parametersElement.setAttribute("parallel-count", String.valueOf(getParallelCount()));
     }
 
     @Override
@@ -338,11 +142,13 @@ public class HemiPhotoCfg extends Configuration {
                     }
                 }
             },
+            // 2026-10
             new Release("2.5.0") {
                 @Override
                 public void update(Element processElement) {
 
-                    if (Integer.parseInt(processElement.getAttributeValue("type")) == 0) {
+                    if (null != processElement.getAttribute("type")
+                            && Integer.parseInt(processElement.getAttributeValue("type")) == 0) {
                         throw new UnsupportedOperationException("Hemispherical photographs from RSP/RXP scans is deprecated since v2.5.0");
                     }
 
@@ -387,34 +193,34 @@ public class HemiPhotoCfg extends Configuration {
                             : "hemiphoto";
                     outputElement.setAttribute("prefix", prefix);
 
-                    // create output/parameters element
+                    // add paremeters element to output element
+                    processElement.addContent(outputElement);
+
+                    // create parameters element
                     Element parametersElement = new Element("parameters");
 
                     // add pixel-number to output/parameters attribute
                     if (null != processElement.getChild("pixel-number")) {
                         Element pixelNumberElement = processElement.getChild("pixel-number");
-                        parametersElement.setAttribute("pixel-number", pixelNumberElement.getAttributeValue("value"));
+                        parametersElement.setAttribute("pixel-count", pixelNumberElement.getAttributeValue("value"));
                     }
 
                     // add azimut-number to output/paremters attribute
-                    // rename it to meridian-number
+                    // rename it to meridian-count
                     if (null != processElement.getChild("azimut-number")) {
                         Element azimutNumberElement = processElement.getChild("azimut-number");
-                        parametersElement.setAttribute("meridian-number", azimutNumberElement.getAttributeValue("value"));
+                        parametersElement.setAttribute("meridian-count", azimutNumberElement.getAttributeValue("value"));
                     }
 
                     // add zenith-number to output/paremters attribute
-                    // rename it to parallel-number
+                    // rename it to parallel-count
                     if (null != processElement.getChild("zenith-number")) {
                         Element zenithNumberElement = processElement.getChild("zenith-number");
-                        parametersElement.setAttribute("parallel-number", zenithNumberElement.getAttributeValue("value"));
+                        parametersElement.setAttribute("parallel-count", zenithNumberElement.getAttributeValue("value"));
                     }
 
-                    // add paremeters element to output element
-                    outputElement.addContent(parametersElement);
-
-                    // add output element to process element
-                    processElement.addContent(outputElement);
+                    // add paremeters element to process element
+                    processElement.addContent(parametersElement);
 
                     // remove pixel-number element
                     processElement.removeChild("pixel-number");

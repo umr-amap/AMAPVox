@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -143,24 +144,8 @@ public abstract class Configuration {
         if (!initialized) {
             // read invariable content
             initDocument(file);
-            // read version
-            VersionNumber cfgVersion = getConfigurationVersion();
-            VersionNumber jarVersion = getJarVersion();
-            // check whether it needs to update
-            if (null != jarVersion && cfgVersion.compareTo(jarVersion) < 0) {
-                LOGGER.info("Configuration " + file.getName() + " is outdated (version " + cfgVersion.toString() + "). It will be automatically updated to version " + jarVersion.toString());
-                // backup configuration file
-                File backup = getBackupFile(file.getAbsolutePath(), cfgVersion);
-                copyFile(file, backup);
-                LOGGER.info("Outdated configuration " + file.getName() + " saved as " + backup.getAbsolutePath());
-                // update configuration file
-                updateConfiguration(jarVersion, cfgVersion);
-                // write updated configuration file
-                writeDocument(file);
-            } else {
-                LOGGER.debug("Configuration " + file.getName() + " is up to date (version " + cfgVersion.toString() + ")");
-            }
-
+            // update configuration file
+            updateConfiguration();
             // initialization succeeded
             initialized = true;
         }
@@ -200,49 +185,84 @@ public abstract class Configuration {
     /*
      * Upgrade the configuration file to the application version.
      */
-    private void updateConfiguration(VersionNumber jarVersion, VersionNumber cfgVersion) {
+    private void updateConfiguration() throws IOException {
 
-        if (null != getReleases()) {
+        VersionNumber cfgVersion = getConfigurationVersion();
+        VersionNumber jarVersion = getJarVersion();
 
-            // sort available releases by version number
-            Arrays.sort(getReleases(), (r1, r2) -> {
-                return r1.getVersionNumber().compareTo(r2.getVersionNumber());
-            });
+        // check whether it needs to update
+        if (null != jarVersion && cfgVersion.compareTo(jarVersion) < 0) {
+            
+            LOGGER.info("[Update] Configuration " + file.getName() + " is outdated (version " + cfgVersion.toString() + "). It will be automatically updated to version " + jarVersion.toString());
+                
 
-            // Update the configuration file
-            for (Release release : getReleases()) {
-                VersionNumber version = release.getVersionNumber();
-                if ((version.compareTo(jarVersion) <= 0) && (cfgVersion.compareTo(version) < 0)) {
-                    LOGGER.info("Applying update " + version.toString());
-                    try {
-                        release.update(processElement);
-                    } catch (Exception ex) {
-                        LOGGER.warn("Failed to apply update " + version.toString() + ". Moving on to next update", ex);
+            // check whether there is any update to apply
+            if (null != getReleases()) {
+
+                // sort available releases by version number
+                Arrays.sort(getReleases(), Comparator.comparing(Release::getVersionNumber));
+
+                boolean updateFailed = false;
+                File backup = null;
+                VersionNumber currentVersion = cfgVersion;
+
+                // Update the configuration file
+                for (Release release : getReleases()) {
+                    VersionNumber version = release.getVersionNumber();
+                    if ((version.compareTo(jarVersion) <= 0) && (cfgVersion.compareTo(version) < 0)) {
+                        // backup configuration file
+                        backup = getBackupFile(file.getAbsolutePath(), currentVersion);
+                        copyFile(file, backup);
+                        LOGGER.info("[Update]   Backup configuration " + file.getName() + " version " + currentVersion + " as " + backup.getAbsolutePath());
+                        LOGGER.info("[Update]   Applying update " + version.toString());
+                        try {
+                            // update process element
+                            release.update(processElement);
+                            // update header
+                            processElement.setAttribute(new Attribute("mode", getType()));
+                            processElement.setAttribute(new Attribute("classname", getClass().getCanonicalName()));
+                            // update metadata
+                            racine.setAttribute("build-version", version.toString());
+                            racine.setAttribute("update-date", new Date().toString());
+                            // write updated configuration file
+                            writeDocument(file);
+                            currentVersion = version;
+                        } catch (Exception ex) {
+                            LOGGER.error("[Update]   Failed to apply update " + version.toString() + ". Aborting...", ex);
+                            updateFailed = true;
+                            break; // Stop processing further updates
+                        }
                     }
                 }
-            }
-            // Update header
-            processElement.setAttribute(new Attribute("mode", getType()));
-            processElement.setAttribute(new Attribute("classname", getClass().getCanonicalName()));
-        }
 
-        // update cfg number to jar version in case last release is anterior to jar version
-        racine.setAttribute("build-version", jarVersion.toString());
-        racine.setAttribute("update-date", new Date().toString());
-        LOGGER.debug("Updated configuration file to version " + jarVersion.toString());
+                if (updateFailed) {
+                    StringBuilder err = new StringBuilder();
+                    err.append("[Update] Configuration update failed. Check logs for details.");
+                    // restore last valid backup
+                    if (null != backup) {
+                        err.append(" Restoring configuration file from ").append(currentVersion);
+                        copyFile(backup, file);
+                    }
+                    throw new RuntimeException(err.toString());
+                }
+            }
+
+            // update cfg number to jar version in case last release is anterior to jar version
+            racine.setAttribute("build-version", jarVersion.toString());
+            racine.setAttribute("update-date", new Date().toString());
+            LOGGER.debug("[Update] Configuration file updated to version " + jarVersion.toString());
+            // write updated configuration file
+            writeDocument(file);
+        } else {
+            LOGGER.debug("[Update] Configuration " + file.getName() + " is up to date (version " + cfgVersion.toString() + ")");
+        }
     }
 
     private File getBackupFile(String src, VersionNumber srcVersion) {
 
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmm");
-        formatter.setCalendar(calendar);
         StringBuilder bak = new StringBuilder(src);
         bak.append(".backup-");
         bak.append(srcVersion);
-        bak.append('-');
-        bak.append(formatter.format(calendar.getTime()));
         return new File(bak.toString());
     }
 

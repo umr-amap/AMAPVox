@@ -13,7 +13,6 @@ import org.amapvox.commons.javafx.SelectableTitledPane;
 import org.amapvox.commons.javafx.io.TextFileParserFrameController;
 import org.amapvox.commons.javafx.matrix.TransformationFrameController;
 import org.amapvox.commons.math.geometry.BoundingBox3D;
-import org.amapvox.commons.math.util.MatrixFileParser;
 import org.amapvox.commons.spds.PointCloud;
 import org.amapvox.commons.util.filter.Filter;
 import org.amapvox.commons.util.filter.FloatFilter;
@@ -70,6 +69,7 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -134,16 +134,9 @@ public class VoxelizationFrameController extends ConfigurationController {
      * Transformation variables
      */
     private Matrix4d popMatrix;
-
-    private Matrix4d sopMatrix;
     private Matrix4d vopMatrix;
-    private Matrix4d transformationMatrix;
-    private FileChooser fileChooserOpenPopMatrixFile;
-    private FileChooser fileChooserOpenSopMatrixFile;
     private FileChooser fileChooserOpenVopMatrixFile;
-    private File lastFCOpenPopMatrixFile;
-    private File lastFCOpenSopMatrixFile;
-    private TransformationFrameController transformationFrameController;
+    private TransformationFrameController vopMatrixEditController;
 
     /**
      * Filter variables
@@ -241,13 +234,10 @@ public class VoxelizationFrameController extends ConfigurationController {
                     textFieldMaxAttenuation.textProperty(),
                     spinnerAttenuationError.valueProperty(),
                     // Transformation
-                    checkboxUsePopMatrix.selectedProperty(),
                     popMatrixController.changedProperty(),
-                    checkboxUseSopMatrix.selectedProperty(),
                     sopMatrixController.changedProperty(),
-                    checkboxUseVopMatrix.selectedProperty(),
+                    checkboxVopMatrix.selectedProperty(),
                     vopMatrixController.changedProperty(),
-                    transformationMatrixController.changedProperty(),
                     // Voxel Space
                     checkBoxCubicVoxel.selectedProperty(),
                     textFieldVoxelSizeX.textProperty(),
@@ -378,7 +368,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     }
 
     private void initOutputPane(ResourceBundle resourceBundle) {
-        
+
         helpButtonConcurrentPostProcessing.setOnAction((ActionEvent event)
                 -> {
             helpButtonConcurrentPostProcessingController.showHelpDialog(resourceBundle.getString("help_postprocessing_concurrent"));
@@ -392,7 +382,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         helpButtonChunkSizePostProcessing.setOnAction((ActionEvent event)
                 -> {
             helpButtonChunkSizePostProcessingController.showHelpDialog(resourceBundle.getString("help_postprocessing_chunksize"));
-        });  
+        });
 
         BooleanBinding voxelOutputDisabled = checkboxVoxelOutput.selectedProperty().not();
         spinnerFractionDigits.disableProperty().bind(voxelOutputDisabled);
@@ -568,19 +558,12 @@ public class VoxelizationFrameController extends ConfigurationController {
 
     private void initTransformationPane(ResourceBundle resourceBundle) {
 
-        transformationFrameController = TransformationFrameController.newInstance();
+        vopMatrixEditController = TransformationFrameController.newInstance();
 
-        fileChooserOpenPopMatrixFile = new FileChooser();
-        fileChooserOpenPopMatrixFile.setTitle("Choose matrix file");
-        fileChooserOpenPopMatrixFile.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("All Files", "*.*"),
-                new FileChooser.ExtensionFilter("Text Files  (*.txt)", "*.txt"));
-
-        fileChooserOpenSopMatrixFile = new FileChooser();
-        fileChooserOpenSopMatrixFile.setTitle("Choose matrix file");
-        fileChooserOpenSopMatrixFile.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("All Files", "*.*"),
-                new FileChooser.ExtensionFilter("Text Files (*.txt)", "*.txt"));
+        helpButtonTransformationMatrix.setOnAction((ActionEvent event)
+                -> {
+            helpButtonTransformationMatrixController.showHelpDialog(resourceBundle.getString("help_transformation_matrix"));
+        });
 
         fileChooserOpenVopMatrixFile = new FileChooser();
         fileChooserOpenVopMatrixFile.setTitle("Choose matrix file");
@@ -588,46 +571,35 @@ public class VoxelizationFrameController extends ConfigurationController {
                 new FileChooser.ExtensionFilter("All Files", "*.*"),
                 new FileChooser.ExtensionFilter("Text Files (*.txt)", "*.txt"));
 
-        onActionButtonResetToIdentity(null);
-
+        resetTransformationMatrices();
         vopMatrixController.setDisable(true);
-        checkboxUseVopMatrix.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+        sopMatrixController.setDisable(true);
+
+        checkboxVopMatrix.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
                 -> {
             buttonSetVOPMatrix.setDisable(!newValue);
             vopMatrixController.setDisable(!newValue);
         });
 
-        popMatrixController.setDisable(true);
-        checkboxUsePopMatrix.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-                -> {
-            checkBoxUseDefaultPopMatrix.setDisable(!newValue);
-            buttonOpenPopMatrixFile.setDisable(!newValue);
-            popMatrixController.setDisable(!newValue);
-        });
-
-        sopMatrixController.setDisable(true);
-        checkboxUseSopMatrix.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-                -> {
-            checkBoxUseDefaultSopMatrix.setDisable(!newValue);
-            buttonOpenSopMatrixFile.setDisable(!newValue);
-            comboboxSingleScan.setDisable(!newValue);
-            sopMatrixController.setDisable(!newValue);
-            if (!newValue) {
-                comboboxSingleScan.getSelectionModel().clearSelection();
-            }
-        });
-
-        comboboxSingleScan.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends LidarScan> observable, LidarScan oldValue, LidarScan newValue)
+        comboboxSopMatrix.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends LidarScan> observable, LidarScan oldValue, LidarScan newValue)
                 -> {
             if (newValue != null) {
-                sopMatrix = newValue.getMatrix();
-                updateResultMatrix();
+                sopMatrixController.setMatrix(newValue.getMatrix());
             }
         });
-        comboboxSingleScan.itemsProperty().bind(listviewLidarScans.itemsProperty());
-
-        disablePopMatrixChoice(false);
-        disableSopMatrixChoice(false);
+        comboboxSopMatrix.itemsProperty().bind(listviewLidarScans.itemsProperty());
+        // Add a listener to the source list
+        comboboxSopMatrix.getItems().addListener((ListChangeListener<? super LidarScan>) change -> {
+            if (!comboboxSopMatrix.getItems().isEmpty()) {
+                Platform.runLater(() -> comboboxSopMatrix.getSelectionModel().selectFirst());
+            }
+        });
+        comboboxSopMatrix.disableProperty().bind(Bindings.isEmpty(listviewLidarScans.getItems()));
+        comboboxSopMatrix.disableProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+            if (newValue != null) {
+                sopMatrixController.setDisable(newValue);
+            }
+        });
     }
 
     private void initVoxelSpacePane(ResourceBundle resourceBundle) {
@@ -987,7 +959,7 @@ public class VoxelizationFrameController extends ConfigurationController {
             case RXP, RSP -> // false empty shot filter
                 cfg.setEnableEmptyShotsFiltering(checkboxEmptyShotsFilter.isSelected());
         }
-        
+
         // post-processing
         cfg.setConcurrentPostProcessing(checkboxConcurrentPostProcessing.isSelected());
         cfg.setAutomaticChunkSize(rdbtnAutomaticChunkSize.isSelected());
@@ -1002,9 +974,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         setVoxelParametersFromUI(cfg);
 
         // transformation
-        cfg.setUsePopMatrix(checkboxUsePopMatrix.isSelected());
-        cfg.setUseSopMatrix(checkboxUseSopMatrix.isSelected());
-        cfg.setUseVopMatrix(checkboxUseVopMatrix.isSelected());
+        cfg.setUseVopMatrix(checkboxVopMatrix.isSelected());
         cfg.setPopMatrix(popMatrix);
         cfg.setVopMatrix(vopMatrix);
 
@@ -1144,11 +1114,11 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         VoxelizationCfg cfg = new VoxelizationCfg();
         cfg.read(file);
-        
+
         // lidar scans
         labelLidarType.setText(cfg.getLidarType().name());
-        
-         List<LidarScan> scans = cfg.getLidarScans();
+
+        List<LidarScan> scans = cfg.getLidarScans();
         if (scans != null) {
             scanItems = scans;
             listviewLidarScans.getItems().setAll(scanItems);
@@ -1203,9 +1173,6 @@ public class VoxelizationFrameController extends ConfigurationController {
         // sub voxel division
         textFieldSubVoxel.setText(String.valueOf(cfg.getSubVoxelSplit()));
 
-        checkboxUsePopMatrix.setSelected(cfg.isUsePopMatrix());
-        checkboxUseSopMatrix.setSelected(cfg.isUseSopMatrix());
-        checkboxUseVopMatrix.setSelected(cfg.isUseVopMatrix());
         // echo filters
         clearPointcloudFiltersPane();
         checkboxEchoFilterByClass.setSelected(false);
@@ -1235,21 +1202,12 @@ public class VoxelizationFrameController extends ConfigurationController {
 
         // pop
         popMatrix = cfg.getPopMatrix();
-        if (popMatrix == null) {
-            popMatrix = new Matrix4d();
-            popMatrix.setIdentity();
-        }
+        popMatrixController.setMatrix(popMatrix);
         // vop
+        checkboxVopMatrix.setSelected(cfg.isUseVopMatrix());
         vopMatrix = cfg.getVopMatrix();
-        if (vopMatrix == null) {
-            vopMatrix = new Matrix4d();
-            vopMatrix.setIdentity();
-        }
-        // sop
-        sopMatrix = new Matrix4d();
-        sopMatrix.setIdentity();
+        vopMatrixController.setMatrix(vopMatrix);
 
-        updateResultMatrix();
         List<Filter<Shot>> shotFilters = cfg.getShotFilters();
         if (shotFilters != null) {
             listviewShotFilters.getItems().clear();
@@ -1291,7 +1249,7 @@ public class VoxelizationFrameController extends ConfigurationController {
                     if (comboboxRelativeEchoWeightVariable.getItems().contains(cfg.getRelativeEchoWeightVariable())) {
                         comboboxRelativeEchoWeightVariable.getSelectionModel().select(cfg.getRelativeEchoWeightVariable());
                     } else {
-                        logger.warn("Relative echo weight variable: " + cfg.getRelativeEchoWeightVariable() +". Should be one of " + Arrays.toString(comboboxRelativeEchoWeightVariable.getItems().toArray()));
+                        logger.warn("Relative echo weight variable: " + cfg.getRelativeEchoWeightVariable() + ". Should be one of " + Arrays.toString(comboboxRelativeEchoWeightVariable.getItems().toArray()));
                         comboboxRelativeEchoWeightVariable.getSelectionModel().selectFirst();
                     }
                     checkboxNormalizedEchoWeight.setSelected(cfg.isEchoWeightNormalized());
@@ -1424,6 +1382,21 @@ public class VoxelizationFrameController extends ConfigurationController {
                         @Override
                         protected Void call() throws InterruptedException {
 
+                            // compute transformation matrix
+                            Matrix4d transformationMatrix = new Matrix4d();
+                            transformationMatrix.setIdentity();
+                            if (checkboxVopMatrix.isSelected() && vopMatrix != null) {
+                                transformationMatrix.mul(vopMatrix);
+                            }
+                            if (popMatrix != null) {
+                                transformationMatrix.mul(popMatrix);
+                            }
+                            
+                            if (!comboboxSopMatrix.getSelectionModel().isEmpty()) {
+                                Matrix4d sopMatrix = comboboxSopMatrix.getSelectionModel().getSelectedItem().getMatrix();
+                                transformationMatrix.mul(sopMatrix);
+                            }
+
                             final BoundingBox3D boundingBox = org.amapvox.commons.Util.getBoundingBoxOfPoints(file, transformationMatrix, quick, getListOfLASClassificationPointToDiscard());
 
                             Point3d minPoint = boundingBox.min;
@@ -1499,51 +1472,22 @@ public class VoxelizationFrameController extends ConfigurationController {
                 .forEach(node -> ((SelectableTitledPane) node).setSelected(selected));
     }
 
-    private void resetMatrices() {
+    private void resetTransformationMatrices() {
 
+        // POP
         popMatrix = new Matrix4d();
         popMatrix.setIdentity();
-        sopMatrix = new Matrix4d();
+        popMatrixController.setMatrix(popMatrix);
+        popMatrixController.setDisable(true);
+        // SOP
+        Matrix4d sopMatrix = new Matrix4d();
         sopMatrix.setIdentity();
+        sopMatrixController.setMatrix(sopMatrix);
+        // VOP
         vopMatrix = new Matrix4d();
         vopMatrix.setIdentity();
-        transformationMatrix = new Matrix4d();
-        transformationMatrix.setIdentity();
-    }
-
-    private void disableSopMatrixChoice(boolean value) {
-
-        checkboxUseSopMatrix.setSelected(!value);
-        checkboxUseSopMatrix.setDisable(value);
-    }
-
-    private void disablePopMatrixChoice(boolean value) {
-
-        checkboxUsePopMatrix.setSelected(!value);
-        checkboxUsePopMatrix.setDisable(value);
-    }
-
-    private void updateResultMatrix() {
-
-        transformationMatrix = new Matrix4d();
-        transformationMatrix.setIdentity();
-
-        if (checkboxUseVopMatrix.isSelected() && vopMatrix != null) {
-            transformationMatrix.mul(vopMatrix);
-            vopMatrixController.setMatrix(vopMatrix);
-        }
-
-        if (checkboxUsePopMatrix.isSelected() && popMatrix != null) {
-            transformationMatrix.mul(popMatrix);
-            popMatrixController.setMatrix(popMatrix);
-        }
-
-        if (checkboxUseSopMatrix.isSelected() && sopMatrix != null) {
-            transformationMatrix.mul(sopMatrix);
-            sopMatrixController.setMatrix(sopMatrix);
-        }
-
-        transformationMatrixController.setMatrix(transformationMatrix);
+        vopMatrixController.setMatrix(vopMatrix);
+        checkboxVopMatrix.setSelected(false);
     }
 
     private void addPointcloudFilter(PointcloudFilter f) {
@@ -1614,10 +1558,8 @@ public class VoxelizationFrameController extends ConfigurationController {
         lastScanFile = file;
         lastTrajectoryFile = file;
         lastOutputFile = file;
-        lastFCOpenPopMatrixFile = file;
-        lastFCOpenSopMatrixFile = file;
         lastFCOpenDTMFile = file;
-        transformationFrameController.setLastMatrixFile(file);
+        vopMatrixEditController.setLastMatrixFile(file);
     }
 
     public void showMatrixFormatErrorDialog() {
@@ -1678,6 +1620,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         VoxelizationCfg.LidarType lidarType = VoxelizationCfg.LidarType.valueOf(extension);
         lastScanFile = selectedFile;
         LidarProjectExtractor lidarProjectExtractor;
+        resetTransformationMatrices();
 
         if (MultiScanProjectReader.isValid(selectedFile, lidarType.name())) {
             try {
@@ -1709,7 +1652,6 @@ public class VoxelizationFrameController extends ConfigurationController {
                     final List<LidarScan> selectedScans = lidarProjectExtractor.getController().getSelectedScans();
                     if (null != selectedScans && !selectedScans.isEmpty()) {
                         scanItems = new ArrayList(selectedScans);
-                        updateResultMatrix();
                         listviewLidarScans.getItems().setAll(scanItems);
                     }
                 });
@@ -1733,14 +1675,14 @@ public class VoxelizationFrameController extends ConfigurationController {
                         lidarProjectExtractor = new RiscanProjectExtractor();
                         lidarProjectExtractor.read(selectedFile);
                         lidarProjectExtractor.getFrame().show();
-
                         lidarProjectExtractor.getFrame().setOnHidden((WindowEvent event) -> {
                             final List<LidarScan> selectedScans = lidarProjectExtractor.getController().getSelectedScans();
                             if (null != selectedScans && !selectedScans.isEmpty()) {
                                 scanItems = new ArrayList(selectedScans);
-                                popMatrix = new Matrix4d(rsp.getPopMatrix());
-                                updateResultMatrix();
                                 listviewLidarScans.getItems().setAll(scanItems);
+                                popMatrix = new Matrix4d(rsp.getPopMatrix());
+                                popMatrixController.setDisable(false);
+                                popMatrixController.setMatrix(popMatrix);
                             }
                         });
                     } catch (Exception ex) {
@@ -1774,12 +1716,11 @@ public class VoxelizationFrameController extends ConfigurationController {
                         lidarProjectExtractor = new PTXProjectExtractor();
                         lidarProjectExtractor.read(selectedFile);
                         lidarProjectExtractor.getFrame().show();
-
+                        popMatrixController.setDisable(true);
                         lidarProjectExtractor.getFrame().setOnHidden((WindowEvent event) -> {
                             final List<LidarScan> selectedScans = lidarProjectExtractor.getController().getSelectedScans();
                             if (null != selectedScans && !selectedScans.isEmpty()) {
                                 scanItems = new ArrayList(selectedScans);
-                                updateResultMatrix();
                                 listviewLidarScans.getItems().setAll(scanItems);
                             }
                         });
@@ -1939,7 +1880,7 @@ public class VoxelizationFrameController extends ConfigurationController {
     private HelpButtonController helpButtonChunkSizePostProcessingController;
     @FXML
     private Button helpButtonChunkSizePostProcessing;
-    
+
     @FXML
     private TextField textFieldOutputFile;
 
@@ -2037,30 +1978,20 @@ public class VoxelizationFrameController extends ConfigurationController {
     //////////////////////
     //
     @FXML
-    private TransformationMatrixController transformationMatrixController;
+    private Button helpButtonTransformationMatrix;
+    @FXML
+    private HelpButtonController helpButtonTransformationMatrixController;
     // POP matrix
     @FXML
-    private CheckBox checkboxUsePopMatrix;
-    @FXML
     private TransformationMatrixController popMatrixController;
-    @FXML
-    private CheckBox checkBoxUseDefaultPopMatrix;
-    @FXML
-    private Button buttonOpenPopMatrixFile;
     // SOP matrix
-    @FXML
-    private CheckBox checkboxUseSopMatrix;
     @FXML
     private TransformationMatrixController sopMatrixController;
     @FXML
-    private CheckBox checkBoxUseDefaultSopMatrix;
-    @FXML
-    private Button buttonOpenSopMatrixFile;
-    @FXML
-    private ComboBox<LidarScan> comboboxSingleScan;
+    private ComboBox<LidarScan> comboboxSopMatrix;
     // VOP matrix
     @FXML
-    private CheckBox checkboxUseVopMatrix;
+    private CheckBox checkboxVopMatrix;
     @FXML
     private TransformationMatrixController vopMatrixController;
     @FXML
@@ -2374,7 +2305,7 @@ public class VoxelizationFrameController extends ConfigurationController {
         Matrix4d identity = new Matrix4d();
         identity.setIdentity();
 
-        final Matrix4d transfMatrix = (vopMatrix == null && checkboxUseVopMatrix.isSelected()) ? identity : vopMatrix;
+        final Matrix4d transfMatrix = (vopMatrix == null && checkboxVopMatrix.isSelected()) ? identity : vopMatrix;
 
         ObservableList<Node> children = vBoxPointCloudFiltering.getChildren();
 
@@ -2517,123 +2448,6 @@ public class VoxelizationFrameController extends ConfigurationController {
     }
 
     @FXML
-    private void onActionButtonOpenPopMatrixFile(ActionEvent event) {
-
-        if (lastFCOpenPopMatrixFile != null) {
-            fileChooserOpenPopMatrixFile.setInitialDirectory(lastFCOpenPopMatrixFile.getParentFile());
-        }
-
-        File selectedFile = fileChooserOpenPopMatrixFile.showOpenDialog(getStage());
-        if (selectedFile != null) {
-
-            String extension = FileManager.getExtension(selectedFile);
-            Matrix4d mat = null;
-
-            switch (extension) {
-                case ".rsp":
-                    try {
-                        RSPReader tempRsp = new RSPReader(selectedFile);
-                        mat = new Matrix4d(tempRsp.getPopMatrix());
-                    } catch (IOException ex) {
-                        logger.error("Cannot read rsp project file", ex);
-                    }
-                    break;
-                default:
-                    try {
-                        mat = MatrixFileParser.getMatrixFromFile(selectedFile);
-                    } catch (IOException ex) {
-                        logger.error("Cannot read matrix file", ex);
-                    }
-            }
-
-            if (mat != null) {
-                popMatrix = mat;
-            } else {
-                showMatrixFormatErrorDialog();
-            }
-
-            updateResultMatrix();
-
-            lastFCOpenPopMatrixFile = selectedFile;
-        }
-    }
-
-    @FXML
-    private void onActionButtonOpenSopMatrixFile(ActionEvent event) {
-
-        if (lastFCOpenSopMatrixFile != null) {
-            fileChooserOpenSopMatrixFile.setInitialDirectory(lastFCOpenSopMatrixFile.getParentFile());
-        }
-
-        File selectedFile = fileChooserOpenSopMatrixFile.showOpenDialog(getStage());
-        if (selectedFile != null) {
-
-            lastFCOpenSopMatrixFile = selectedFile;
-
-            String extension = FileManager.getExtension(selectedFile);
-            Matrix4d mat;
-
-            switch (extension) {
-                case ".rsp":
-
-                    try {
-                        RSPReader tempRsp = new RSPReader(selectedFile);
-                        //scan unique
-//                    if (comboboxModeTLS.getSelectionModel().getSelectedIndex() == 0) {
-//
-//                        File scanFile;
-//                        if (textFieldInputFileTLS.getText().equals("")) {
-//                            scanFile = null;
-//                        } else {
-//                            scanFile = new File(textFieldInputFileTLS.getText());
-//                        }
-//
-//                        if (scanFile != null && Files.exists(scanFile.toPath())) {
-//                            LidarScan rxpScan = tempRsp.getScan(scanFile.getName());
-//                            if (rxpScan != null) {
-//                                sopMatrix = new Matrix4d(rxpScan.getMatrix());
-//                            } else {
-//                                Alert alert = new Alert(Alert.AlertType.ERROR);
-//                                alert.setTitle("Error");
-//                                alert.setHeaderText("Cannot get sop matrix from rsp file");
-//                                alert.setContentText("Check rsp file!");
-//
-//                                alert.showAndWait();
-//                            }
-//                        } else {
-//                            Alert alert = new Alert(Alert.AlertType.ERROR);
-//                            alert.setTitle("Error");
-//                            alert.setHeaderText("Cannot get sop matrix from rsp file");
-//                            alert.setContentText("TLS input file should be a valid rxp file!");
-//
-//                            alert.showAndWait();
-//                        }
-//                    }
-
-                    } catch (IOException ex) {
-                        logger.error("Cannot read rsp project file", ex);
-                    }
-
-                    break;
-                default:
-                    try {
-                        mat = MatrixFileParser.getMatrixFromFile(selectedFile);
-                        if (mat != null) {
-                            sopMatrix = mat;
-                        } else {
-                            showMatrixFormatErrorDialog();
-                        }
-                    } catch (IOException ex) {
-                        logger.error("Cannot read matrix file", ex);
-                    }
-            }
-
-            updateResultMatrix();
-        }
-
-    }
-
-    @FXML
     private void onActionButtonOpenTrajectoryFileALS(ActionEvent event) {
 
         if (lastTrajectoryFile != null) {
@@ -2662,33 +2476,25 @@ public class VoxelizationFrameController extends ConfigurationController {
     }
 
     @FXML
-    private void onActionButtonResetToIdentity(ActionEvent event) {
-        resetMatrices();
-        updateResultMatrix();
-    }
-
-    @FXML
     private void onActionButtonSetVOPMatrix(ActionEvent event) {
 
-        transformationFrameController.reset();
-        transformationFrameController.fillMatrix(vopMatrix);
+        vopMatrixEditController.reset();
+        vopMatrixEditController.fillMatrix(vopMatrix);
 
-        Stage transformationStage = transformationFrameController.getStage();
-        transformationStage.setOnHidden((WindowEvent event1)
+        Stage vopMatrixEditStage = vopMatrixEditController.getStage();
+        vopMatrixEditStage.setOnHidden((WindowEvent event1)
                 -> {
-            if (transformationFrameController.isConfirmed()) {
+            if (vopMatrixEditController.isConfirmed()) {
 
-                vopMatrix = transformationFrameController.getMatrix();
-
+                vopMatrix = vopMatrixEditController.getMatrix();
                 if (vopMatrix == null) {
                     vopMatrix = new Matrix4d();
                     vopMatrix.setIdentity();
                 }
-
-                updateResultMatrix();
+                vopMatrixController.setMatrix(vopMatrix);
             }
         });
-        transformationStage.show();
+        vopMatrixEditStage.show();
     }
 
     @FXML
@@ -2706,11 +2512,6 @@ public class VoxelizationFrameController extends ConfigurationController {
             textFieldVoxelSizeY.textProperty().unbind();
             textFieldVoxelSizeZ.textProperty().unbind();
         }
-    }
-
-    @FXML
-    private void onActionUpdateTransformationMatrix(ActionEvent event) {
-        updateResultMatrix();
     }
 
 }

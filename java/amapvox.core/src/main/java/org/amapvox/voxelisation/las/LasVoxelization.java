@@ -30,7 +30,7 @@ public class LasVoxelization extends AbstractVoxelization {
     public Object call() throws Exception {
 
         // vop matrix
-        Matrix4d vop = (cfg.isUseVopMatrix() && null != cfg.getVopMatrix())
+        Matrix4d vop = cfg.isUseVopMatrix()
                 ? new Matrix4d(cfg.getVopMatrix())
                 : MatrixUtility.identity4d();
 

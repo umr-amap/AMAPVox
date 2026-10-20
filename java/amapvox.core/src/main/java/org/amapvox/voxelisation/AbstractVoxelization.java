@@ -49,22 +49,18 @@ public abstract class AbstractVoxelization extends CallableTask<Object> {
         logHeader = "[Voxelisation " + (iscan + 1) + "/" + nscan + "]";
 
         // Transformation matrices
-        Matrix4d pop = (cfg.isUsePopMatrix() && null != cfg.getPopMatrix())
-                ? new Matrix4d(cfg.getPopMatrix())
-                : MatrixUtility.identity4d();
-
-        Matrix4d vop = (cfg.isUseVopMatrix() && null != cfg.getVopMatrix())
+        Matrix4d vop = cfg.isUseVopMatrix()
                 ? new Matrix4d(cfg.getVopMatrix())
                 : MatrixUtility.identity4d();
+        
+        Matrix4d pop = new Matrix4d(cfg.getPopMatrix());
 
-        Matrix4d sop = cfg.isUseSopMatrix()
-                ? getLidarScan().getMatrix()
-                : MatrixUtility.identity4d();
+        Matrix4d sop = getLidarScan().getMatrix();
 
         // multiply vop by pop
         transformation = new Matrix4d(vop);
         transformation.mul(pop);
-        // multiply voppop by sop
+        // multiply vop.pop by sop
         transformation.mul(sop);
 
         // echo weight by file

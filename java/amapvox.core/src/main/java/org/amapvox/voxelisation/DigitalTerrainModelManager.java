@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.vecmath.Matrix4d;
+import org.amapvox.commons.math.util.MatrixUtility;
 
 /**
  *
@@ -26,12 +27,9 @@ public class DigitalTerrainModelManager {
     public DigitalTerrainModelManager(File file, Matrix4d vopMatrix) {
 
         this.file = file;
-        if (null != vopMatrix) {
-            this.vopMatrix = vopMatrix;
-        } else {
-            this.vopMatrix = new Matrix4d();
-            this.vopMatrix.setIdentity();
-        }
+        this.vopMatrix = (null != vopMatrix)
+                ? vopMatrix
+                : MatrixUtility.identity4d();
     }
 
     public void init() throws IOException {

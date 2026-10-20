@@ -87,8 +87,6 @@ public class VoxelizationCfg extends Configuration {
     protected File dtmFile;
     protected File outputFile;
     protected VoxelsFormat voxelsFormat = VoxelsFormat.VOXEL;
-    protected boolean usePopMatrix;
-    protected boolean useSopMatrix;
     protected boolean useVopMatrix;
     protected boolean dtmUseVopMatrix;
     protected Matrix4d popMatrix;
@@ -507,8 +505,6 @@ public class VoxelizationCfg extends Configuration {
         Element transformationElement = processElement.getChild("transformation");
 
         if (transformationElement != null) {
-            usePopMatrix = Boolean.parseBoolean(transformationElement.getAttributeValue("use-pop"));
-            useSopMatrix = Boolean.parseBoolean(transformationElement.getAttributeValue("use-sop"));
             useVopMatrix = Boolean.parseBoolean(transformationElement.getAttributeValue("use-vop"));
             List<Element> matrixList = transformationElement.getChildren("matrix");
             for (Element e : matrixList) {
@@ -841,9 +837,7 @@ public class VoxelizationCfg extends Configuration {
 
         // transformation
         Element transformationElement = new Element("transformation");
-
-        transformationElement.setAttribute(new Attribute("use-pop", String.valueOf(usePopMatrix)));
-        transformationElement.setAttribute(new Attribute("use-sop", String.valueOf(useSopMatrix)));
+        
         transformationElement.setAttribute(new Attribute("use-vop", String.valueOf(useVopMatrix)));
 
         Matrix matrix = Matrix.valueOf(popMatrix);
@@ -986,22 +980,6 @@ public class VoxelizationCfg extends Configuration {
 
     public void setVoxelsFormat(VoxelsFormat voxelsFormat) {
         this.voxelsFormat = voxelsFormat;
-    }
-
-    public boolean isUsePopMatrix() {
-        return usePopMatrix;
-    }
-
-    public void setUsePopMatrix(boolean usePopMatrix) {
-        this.usePopMatrix = usePopMatrix;
-    }
-
-    public boolean isUseSopMatrix() {
-        return useSopMatrix;
-    }
-
-    public void setUseSopMatrix(boolean useSopMatrix) {
-        this.useSopMatrix = useSopMatrix;
     }
 
     public boolean isUseVopMatrix() {

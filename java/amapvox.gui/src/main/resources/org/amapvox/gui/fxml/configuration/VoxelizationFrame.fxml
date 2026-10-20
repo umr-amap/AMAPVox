@@ -320,87 +320,36 @@
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
                                             <children>
-                                                <Label text="Transformation matrix = (VOP.POP).SOP" />
-                                                <fx:include fx:id="transformationMatrix" source="../TransformationMatrix.fxml" />
-                                                <Button mnemonicParsing="false" onAction="#onActionButtonResetToIdentity" text="Reset" />
-                                                <TitledPane animated="false" expanded="false" text="POP matrix">
-                                                    <content>
-                                                        <VBox spacing="10.0">
-                                                            <children>
-                                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
-                                                                    <children>
-                                                                        <CheckBox fx:id="checkboxUsePopMatrix" disable="true" mnemonicParsing="false" onAction="#onActionUpdateTransformationMatrix" text="Use POP matrix">
-                                                                            <tooltip>
-                                                                                <Tooltip text="Project Orientation and Position matrix" />
-                                                                            </tooltip>
-                                                                        </CheckBox>
-                                                                        <CheckBox fx:id="checkBoxUseDefaultPopMatrix" disable="true" mnemonicParsing="false" text="Use default" />
-                                                                        <Label alignment="BOTTOM_CENTER" text="or" GridPane.columnIndex="2" />
-                                                                        <Button fx:id="buttonOpenPopMatrixFile" disable="true" mnemonicParsing="false" onAction="#onActionButtonOpenPopMatrixFile" text="Open file" >
-                                                                            <tooltip>
-                                                                                <Tooltip text="Matrix file or Rsp file allowed" />
-                                                                            </tooltip>
-                                                                        </Button>
-                                                                    </children>
-                                                                </HBox>
-                                                                <fx:include fx:id="popMatrix" source="../TransformationMatrix.fxml" />
-                                                            </children>
-                                                        </VBox>
-                                                    </content>
-                                                </TitledPane>
-                                                <TitledPane animated="false" expanded="false" text="SOP matrix">
-                                                    <content>
-                                                        <VBox spacing="10.0">
-                                                            <children>
-                                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
-                                                                    <children>
-                                                                        <CheckBox fx:id="checkboxUseSopMatrix" disable="true" mnemonicParsing="false" onAction="#onActionUpdateTransformationMatrix" text="Use SOP matrix" GridPane.rowIndex="1">
-                                                                            <tooltip>
-                                                                                <Tooltip text="System Orientation and Position matrix" />
-                                                                            </tooltip>
-                                                                        </CheckBox>
-                                                                        <CheckBox fx:id="checkBoxUseDefaultSopMatrix" disable="true" mnemonicParsing="false" text="Use default" />
-                                                                        <Label alignment="BOTTOM_CENTER" text="or" GridPane.columnIndex="2" />
-                                                                        <Button fx:id="buttonOpenSopMatrixFile" disable="true" mnemonicParsing="false" onAction="#onActionButtonOpenSopMatrixFile" text="Open file" >
-                                                                            <tooltip>
-                                                                                <Tooltip text="Matrix file or Rsp file allowed" />
-                                                                            </tooltip>
-                                                                        </Button>
-                                                                    </children>
-                                                                </HBox>
-                                                                <ComboBox fx:id="comboboxSingleScan" disable="true" promptText="Select scan" prefWidth="350.0" />
-                                                                <fx:include fx:id="sopMatrix" source="../TransformationMatrix.fxml" />
-                                                            </children>
-                                                        </VBox>
-                                                    </content>
-                                                </TitledPane>
-                                                <TitledPane animated="false" expanded="false" text="VOP matrix">
-                                                    <content>
-                                                        <VBox spacing="10.0">
-                                                            <children>
-                                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
-                                                                    <children>
-                                                                        <CheckBox fx:id="checkboxUseVopMatrix" mnemonicParsing="false" onAction="#onActionUpdateTransformationMatrix" text="Use VOP matrix" >
-                                                                            <tooltip>
-                                                                                <Tooltip text="Voxel Orientation and Position matrix" />
-                                                                            </tooltip>
-                                                                        </CheckBox>
-                                                                        <Button fx:id="buttonSetVOPMatrix" disable="true" mnemonicParsing="false" onAction="#onActionButtonSetVOPMatrix">
-                                                                            <graphic>
-                                                                                <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                                                                                    <image>
-                                                                                        <Image url="@../icons/Interaction_Transformation.png" />
-                                                                                    </image>
-                                                                                </ImageView>
-                                                                            </graphic>
-                                                                        </Button>
-                                                                    </children>
-                                                                </HBox>
-                                                                <fx:include fx:id="vopMatrix" source="../TransformationMatrix.fxml" />
-                                                            </children>
-                                                        </VBox>
-                                                    </content>
-                                                </TitledPane>
+                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
+                                                    <children>
+                                                        <Label text="Transformation matrix (VOP.POP).SOP" />
+                                                        <fx:include fx:id="helpButtonTransformationMatrix" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
+                                                    <children>
+                                                        <CheckBox fx:id="checkboxVopMatrix" mnemonicParsing="false" text="VOP matrix (Voxel Orientation and Position)" />
+                                                        <Button fx:id="buttonSetVOPMatrix" disable="true" mnemonicParsing="false" onAction="#onActionButtonSetVOPMatrix">
+                                                            <graphic>
+                                                                <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                                                    <image>
+                                                                        <Image url="@../icons/Interaction_Transformation.png" />
+                                                                    </image>
+                                                                </ImageView>
+                                                            </graphic>
+                                                        </Button>
+                                                    </children>
+                                                </HBox>
+                                                <fx:include fx:id="vopMatrix" source="../TransformationMatrix.fxml" />
+                                                <HBox spacing="5.0" alignment="CENTER_LEFT" >
+                                                    <children>
+                                                        <Label text="SOP matrix (System Orientation and Position)" />
+                                                        <ComboBox fx:id="comboboxSopMatrix" disable="true" prefWidth="350.0" />
+                                                    </children>
+                                                </HBox>
+                                                <fx:include fx:id="sopMatrix" source="../TransformationMatrix.fxml" />
+                                                <Label text="POP matrix (Project Orientation and Position)" />
+                                                <fx:include fx:id="popMatrix" source="../TransformationMatrix.fxml" />
                                             </children>                                                                              
                                         </VBox>
                                     </children>

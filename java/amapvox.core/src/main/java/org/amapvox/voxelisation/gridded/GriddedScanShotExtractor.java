@@ -39,7 +39,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  * @author Julien Heurtebize
  */
 public class GriddedScanShotExtractor implements IterableWithException<Shot> {
-    
+
     private final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(GriddedScanShotExtractor.class);
 
     private final GriddedPointScan scan;
@@ -48,8 +48,10 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
     private SimpleSphericalCoordinates[][] angles;
 
-    /*this class contains azimuth and zenith information,
-    light version of SphericalCoordinates */
+    /*
+     * this class contains azimuth and zenith information,
+     * light version of SphericalCoordinates
+     */
     private class SimpleSphericalCoordinates {
 
         final private double azimuth;
@@ -74,10 +76,8 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
     }
 
     private void fillMissingShot() throws Exception {
-        
-        LOGGER.info(logHeader + " Computing missing shots...");
 
-        Logger.getLogger(GriddedScanShotExtractor.class.getName()).info("Computing missing shots...");
+        LOGGER.info(logHeader + " Computing missing shots...");
 
         int nzenith = scan.getHeader().getNZenith();
         int nazimuth = scan.getHeader().getNAzimuth();
@@ -103,7 +103,8 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
 
                 SphericalCoordinates sc = new SphericalCoordinates(new Vector3D(dir.x, dir.y, dir.z));
 
-                angles[point.azimuthIndex][point.zenithIndex] = new SimpleSphericalCoordinates(sc.getTheta(), sc.getPhi());
+                angles[point.azimuthIndex][point.zenithIndex] = new SimpleSphericalCoordinates(sc.getTheta(),
+                        sc.getPhi());
             }
         }
 
@@ -132,12 +133,13 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                             break;
                         }
                     }
-                    // fallback: get averaged azimuthal angle 
+                    // fallback: get averaged azimuthal angle
                     if (Double.isNaN(azimuth)) {
                         azimuth = scan.getAveragedAzimuth()[iazim];
                     }
                 } else {
-                    // look for closest non null averaged azimuth value on neighbooring vertical sweeps and interpolate
+                    // look for closest non null averaged azimuth value on neighbooring vertical
+                    // sweeps and interpolate
                     for (int fw = iazim + 1, bw = iazim - 1; fw < nazimuth || bw >= 0; fw++, bw--) {
                         if (fw < nazimuth) {
                             double azimFw = scan.getAveragedAzimuth()[fw];
@@ -173,7 +175,8 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                         zenith = scan.getAveragedZenith()[izenith];
                     }
                 } else {
-                    // look for closest non null averaged zenith value on neighbooring horizontal rotations and interpolate
+                    // look for closest non null averaged zenith value on neighbooring horizontal
+                    // rotations and interpolate
                     for (int up = izenith + 1, down = izenith - 1; up < nzenith || down >= 0; up++, down--) {
                         if (up < nzenith) {
                             double zenithUp = scan.getAveragedZenith()[up];
@@ -246,7 +249,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                         yDirection = ((LFloatPoint) point).y;
                         zDirection = ((LFloatPoint) point).z;
 
-                        //System.out.println(xDirection+"\t"+yDirection+"\t"+zDirection);
+                        // System.out.println(xDirection+"\t"+yDirection+"\t"+zDirection);
                     }
 
                     Point3d origin = new Point3d(0.d, 0.d, 0.d);
@@ -258,7 +261,7 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                     direction.normalize();
                     transformation.transform(direction);
 
-                    shot = new Shot(index++, origin, direction, new double[]{range});
+                    shot = new Shot(index++, origin, direction, new double[] { range });
                     if (!Float.isNaN(point.intensity)) {
                         shot.getEcho(0).addFloat("intensity", point.intensity);
                     }
@@ -271,13 +274,16 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
                     Point3d origin = new Point3d(0.d, 0.d, 0.d);
                     transformation.transform(origin);
 
-                    SphericalCoordinates sc = new SphericalCoordinates(1, angles[point.azimuthIndex][point.zenithIndex].azimuth, angles[point.azimuthIndex][point.zenithIndex].zenith);
-                    //SphericalCoordinates sc = angles[point.rowIndex][point.columnIndex];
-                    Vector3d direction = new Vector3d(sc.getCartesian().getX(), sc.getCartesian().getY(), sc.getCartesian().getZ());
+                    SphericalCoordinates sc = new SphericalCoordinates(1,
+                            angles[point.azimuthIndex][point.zenithIndex].azimuth,
+                            angles[point.azimuthIndex][point.zenithIndex].zenith);
+                    // SphericalCoordinates sc = angles[point.rowIndex][point.columnIndex];
+                    Vector3d direction = new Vector3d(sc.getCartesian().getX(), sc.getCartesian().getY(),
+                            sc.getCartesian().getZ());
                     direction.normalize();
                     transformation.transform(direction);
 
-                    shot = new Shot(index++, origin, direction, new double[]{});
+                    shot = new Shot(index++, origin, direction, new double[] {});
                     return shot;
                 }
                 return null;
@@ -285,6 +291,10 @@ public class GriddedScanShotExtractor implements IterableWithException<Shot> {
         };
 
         return it;
+    }
+
+    public void releaseMemory() {
+        angles = null;
     }
 
 }

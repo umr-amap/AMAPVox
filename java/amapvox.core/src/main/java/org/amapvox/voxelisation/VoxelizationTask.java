@@ -91,8 +91,7 @@ public class VoxelizationTask extends AVoxTask {
         if (null != mainCfg.getDTMFile()) {
             dtmManager = new DigitalTerrainModelManager(
                     mainCfg.getDTMFile(),
-                    mainCfg.isDTMUseVopMatrix() ? mainCfg.getVopMatrix() : null
-            );
+                    mainCfg.isDTMUseVopMatrix() ? mainCfg.getVopMatrix() : null);
             LOGGER.info("Loading DTM file " + dtmManager.getFile());
             dtmManager.init();
         }
@@ -128,12 +127,13 @@ public class VoxelizationTask extends AVoxTask {
         FinalCounter nDone = new FinalCounter(0);
         int nScan = mainCfg.getLidarScans().size();
         if (0 == nScan) {
-            throw new IOException("There is not any LiDAR scan declared in the configuration file (input>scans>scan element).");
+            throw new IOException(
+                    "There is not any LiDAR scan declared in the configuration file (input>scans>scan element).");
         }
 
         for (int iscan = 0; iscan < nScan; iscan++) {
             // add current scan voxelization to the list of configurations
-            Class<?>[] types = new Class[]{VoxelizationTask.class, VoxelizationCfg.class, int.class};
+            Class<?>[] types = new Class[] { VoxelizationTask.class, VoxelizationCfg.class, int.class };
             AbstractVoxelization voxelisation = (AbstractVoxelization) voxelisationClass
                     .getConstructor(types)
                     .newInstance(this, mainCfg, iscan);
@@ -146,7 +146,7 @@ public class VoxelizationTask extends AVoxTask {
                     VoxelizationTask.this.fireProgress(msg, nDone.getValue(), nScan);
                 }
             });
-            //voxelisation.addProcessingListener(this);
+            // voxelisation.addProcessingListener(this);
             tasks.add(voxelisation);
         }
     }
@@ -170,6 +170,7 @@ public class VoxelizationTask extends AVoxTask {
 
         // list of output files
         ArrayList<File> outputFiles = new ArrayList<>();
+        ExecutorService exec = null;
 
         if (!tasks.isEmpty()) {
             try {
@@ -178,7 +179,7 @@ public class VoxelizationTask extends AVoxTask {
                     tasks.get(0).call();
                 } else {
                     // run batch of voxelisation tasks
-                    ExecutorService exec = Executors.newFixedThreadPool(Math.min(getNCPU(), tasks.size()));
+                    exec = Executors.newFixedThreadPool(Math.min(getNCPU(), tasks.size()));
                     List<Future<Object>> results = exec.invokeAll(tasks);
                     for (Future<Object> result : results) {
                         result.get();
@@ -190,7 +191,7 @@ public class VoxelizationTask extends AVoxTask {
                     return outputFiles.toArray(File[]::new);
                 }
 
-                // post processing 
+                // post processing
                 postProcess();
 
                 if (isCancelled()) {
@@ -210,6 +211,11 @@ public class VoxelizationTask extends AVoxTask {
             } catch (InterruptedException | NullPointerException ex) {
                 fireCancelled();
                 throw ex;
+            } finally {
+                if (exec != null) {
+                    exec.shutdown();
+                }
+                tasks.clear();
             }
         }
 
@@ -252,7 +258,8 @@ public class VoxelizationTask extends AVoxTask {
             int chunkSize = cfg.isAutomaticChunkSize() ? chunkSize(nvoxel) : cfg.getChunkSize();
             AtomicInteger ichunk = new AtomicInteger(0);
             int nchunk = nvoxel / chunkSize;
-            LOGGER.debug("[Voxelization] Post-processing chunk size " + chunkSize + ". Number of chunks: " + nchunk + ". Number of CPUs: " + getNCPU());
+            LOGGER.debug("[Voxelization] Post-processing chunk size " + chunkSize + ". Number of chunks: " + nchunk
+                    + ". Number of CPUs: " + getNCPU());
             ExecutorService executor = Executors.newFixedThreadPool(getNCPU()); // Adjust thread count
 
             for (int chunkStart = 0; chunkStart < nvoxel; chunkStart += chunkSize) {
@@ -300,7 +307,7 @@ public class VoxelizationTask extends AVoxTask {
                     LOGGER.info("[Voxelization] Post-processing cancelled");
                     return;
                 }
-                
+
                 if (ivoxel % 1000 == 0) {
                     fireProgress("[Voxelization] Post-processing...", ivoxel, nvoxel);
                 }
@@ -385,10 +392,12 @@ public class VoxelizationTask extends AVoxTask {
         // attenuation estimator (F. Pimont's method)
         if (attenuation_FPL_MLE_enabled) {
             if (voxel.weightedEffectiveFreepathLength > 0.d) {
-                voxel.attenuation_FPL_biasCorrection *= (voxel.enteringBeamSection / Math.pow(voxel.weightedEffectiveFreepathLength, 2));
-                voxel.attenuation_FPL_biasCorrection /= voxel.npulse; //FP FIX
+                voxel.attenuation_FPL_biasCorrection *= (voxel.enteringBeamSection
+                        / Math.pow(voxel.weightedEffectiveFreepathLength, 2));
+                voxel.attenuation_FPL_biasCorrection /= voxel.npulse; // FP FIX
                 voxel.attenuation_FPL_biasedMLE = voxel.interceptedBeamSection / voxel.weightedEffectiveFreepathLength;
-                voxel.attenuation_FPL_unbiasedMLE = voxel.attenuation_FPL_biasedMLE - voxel.attenuation_FPL_biasCorrection;
+                voxel.attenuation_FPL_unbiasedMLE = voxel.attenuation_FPL_biasedMLE
+                        - voxel.attenuation_FPL_biasCorrection;
             } else {
                 voxel.attenuation_FPL_biasCorrection = Double.NaN;
                 voxel.attenuation_FPL_biasedMLE = Double.NaN;
@@ -442,7 +451,8 @@ public class VoxelizationTask extends AVoxTask {
         while ((err > attenuationError) && makingProgress && (n < 200)) {
             makingProgress = false;
             for (double kTmp = kMin; kTmp <= kMax; kTmp += incr) {
-                double errTmp = errAttenuationEstimate(kTmp, voxel.weightedPathLength, voxel.streamAttenuationRecords());
+                double errTmp = errAttenuationEstimate(kTmp, voxel.weightedPathLength,
+                        voxel.streamAttenuationRecords());
                 n++;
                 if (errTmp < err) {
                     err = errTmp;
@@ -457,7 +467,8 @@ public class VoxelizationTask extends AVoxTask {
         return k;
     }
 
-    private static double errAttenuationEstimate(double k, double wPathLength, Stream<Voxel.FreepathRecord> attenuationRecords) {
+    private static double errAttenuationEstimate(double k, double wPathLength,
+            Stream<Voxel.FreepathRecord> attenuationRecords) {
 
         double wInterceptedPathLength = attenuationRecords.mapToDouble(
                 attenuationRecord -> {

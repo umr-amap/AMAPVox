@@ -31,20 +31,26 @@ import java.io.IOException;
  * <p>
  * This class is dedicated to handle PTX ascii scan file, a Leica gridded point
  * format (see
- * <a href= "http://www.geodetawlkp.nazwa.pl/instrukcje/leica_hds/Baza_wiedzy_HDS/Cyclone/Cyclone_pointcloud_export_format_-_Description_of_ASCII_.ptx_format.pdf">
- * specification</a>)</p>
+ * <a href=
+ * "http://www.geodetawlkp.nazwa.pl/instrukcje/leica_hds/Baza_wiedzy_HDS/Cyclone/Cyclone_pointcloud_export_format_-_Description_of_ASCII_.ptx_format.pdf">
+ * specification</a>)
+ * </p>
  * <p>
- * It provides a simple iterator to get points from the file.</p>
+ * It provides a simple iterator to get points from the file.
+ * </p>
  * As the ptx scan file is a gridded point format, you can select the row,
  * columns you want to read with the following methods :
  * <ul>
  * <li>{@link #setAzimuthIndex(int) setUpColumnToRead(int columnIndex)},</li>
- * <li>{@link #setAzimuthRange(int, int) setUpColumnsToRead(int startColumnIndex, int endColumnIndex)},</li>
+ * <li>{@link #setAzimuthRange(int, int) setUpColumnsToRead(int
+ * startColumnIndex, int endColumnIndex)},</li>
  * <li>{@link #setZenithIndex(int) setUpRowToRead(int rowIndex)},</li>
- * <li>{@link #setZenithRange(int, int) setUpRowsToRead(int startRowIndex, int endRowIndex)}</li>
+ * <li>{@link #setZenithRange(int, int) setUpRowsToRead(int startRowIndex, int
+ * endRowIndex)}</li>
  * </ul>
  * <p>
- * The ptx scan file may contains multiple scans</p>
+ * The ptx scan file may contains multiple scans
+ * </p>
  *
  * @author Julien Heurtebize
  */
@@ -56,7 +62,7 @@ public class PTXScan extends GriddedPointScan {
     /**
      * Initialize a new PTXScan, meaning a single scan into the file
      *
-     * @param file The PTX file
+     * @param file   The PTX file
      * @param header Header of the specific scan
      * @param offset Offset to point data record into the file
      */
@@ -67,8 +73,6 @@ public class PTXScan extends GriddedPointScan {
         this.header = header;
         this.offset = offset;
         this.returnMissingPoint = true;
-
-        points = new LPoint[header.getNAzimuth()][header.getNZenith()];
 
         startZenithIndex = 0;
         endZenithIndex = header.getNAzimuth() - 1;
@@ -83,11 +87,9 @@ public class PTXScan extends GriddedPointScan {
 
     private void skipLines(BufferedReader reader, long nbLinesToSkip) throws IOException {
 
-        int nbLinesSkipped = 0;
+        long nbLinesSkipped = 0L;
 
-        while (nbLinesSkipped < nbLinesToSkip) {
-
-            reader.readLine();
+        while (nbLinesSkipped < nbLinesToSkip && reader.readLine() != null) {
             nbLinesSkipped++;
         }
     }
@@ -99,6 +101,8 @@ public class PTXScan extends GriddedPointScan {
 
     @Override
     public void readPointCloud() throws FileNotFoundException, IOException {
+
+        points = new LPoint[header.getNAzimuth()][header.getNZenith()];
 
         try (BufferedReader reader = new BufferedReader(new FileReader(getFile()))) {
             // skip previous scans and current scan header
@@ -117,11 +121,25 @@ public class PTXScan extends GriddedPointScan {
                     izenith = 0;
                     iazimuth++;
                 }
-                String[] split = line.split(" ");
+
+                String trimmed = line.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+
+                String[] split = trimmed.split("\\s+");
+                if (split.length < 3) {
+                    continue;
+                }
+
                 LDoublePoint point = new LDoublePoint();
-                point.x = Double.parseDouble(split[0]);
-                point.y = Double.parseDouble(split[1]);
-                point.z = Double.parseDouble(split[2]);
+                try {
+                    point.x = Double.parseDouble(split[0]);
+                    point.y = Double.parseDouble(split[1]);
+                    point.z = Double.parseDouble(split[2]);
+                } catch (NumberFormatException ex) {
+                    continue;
+                }
                 point.valid = !(point.x == 0 && point.y == 0 && point.z == 0);
                 // only fill valid points
                 if (point.valid) {
@@ -135,7 +153,10 @@ public class PTXScan extends GriddedPointScan {
                             point.blue = Integer.parseInt(split[6]);
                         }
                     }
-                    points[iazimuth][izenith] = point;
+                    if (iazimuth >= 0 && iazimuth < points.length
+                            && izenith >= 0 && izenith < points[iazimuth].length) {
+                        points[iazimuth][izenith] = point;
+                    }
                 }
             }
         }

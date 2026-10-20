@@ -33,19 +33,30 @@ public abstract class GriddedScanVoxelization extends AbstractVoxelization {
 
         LOGGER.info(logHeader() + " Point cloud extraction started");
 
-        GriddedPointScan gpScan = newGriddedScan(getLidarScan().getFile());
-        gpScan.open();
-        
-        GriddedScanShotExtractor shotExtractor = new GriddedScanShotExtractor(gpScan, transformation, logHeader());
-        shotExtractor.init();
+        GriddedPointScan gpScan = null;
+        GriddedScanShotExtractor shotExtractor = null;
+        try {
+            gpScan = newGriddedScan(getLidarScan().getFile());
+            gpScan.open();
 
-        IteratorWithException<Shot> it = shotExtractor.iterator();
+            shotExtractor = new GriddedScanShotExtractor(gpScan, transformation, logHeader());
+            shotExtractor.init();
 
-        voxelization.voxelization(it, gpScan.getHeader().getNZenith() * gpScan.getHeader().getNAzimuth());
+            IteratorWithException<Shot> it = shotExtractor.iterator();
 
-        fireSucceeded();
+            voxelization.voxelization(it, gpScan.getHeader().getNZenith() * gpScan.getHeader().getNAzimuth());
 
-        return null;
+            fireSucceeded();
+
+            return null;
+        } finally {
+            if (shotExtractor != null) {
+                shotExtractor.releaseMemory();
+            }
+            if (gpScan != null) {
+                gpScan.releaseMemory();
+            }
+        }
 
     }
 

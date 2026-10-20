@@ -128,6 +128,18 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
         resetRange();
     }
 
+    /**
+     * Release in-memory scan structures that are no longer needed once
+     * voxelization has consumed the iterator.
+     */
+    synchronized public void releaseMemory() {
+        points = null;
+        averagedAzimuth = null;
+        averagedZenith = null;
+        azim_delta = Double.NaN;
+        zenith_delta = Double.NaN;
+    }
+
     private void initZenith() {
 
         // averaged zenith angle for every horizontal rotation
@@ -142,10 +154,12 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
                     SphericalCoordinates sc;
                     if (header.isPointInFloatFormat()) {
                         LFloatPoint floatPoint = (LFloatPoint) point;
-                        sc = new SphericalCoordinates(new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
+                        sc = new SphericalCoordinates(
+                                new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
                     } else {
                         LDoublePoint doublePoint = (LDoublePoint) point;
-                        sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
+                        sc = new SphericalCoordinates(
+                                new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
                     }
                     zenithStatistics.addValue(sc.getPhi());
                 }
@@ -154,7 +168,8 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
                     ? zenithStatistics.getMean()
                     : Double.NaN;
 
-//            System.out.println("zenith index " + i + " averaged zenith " + averagedZenith[i]);
+            // System.out.println("zenith index " + i + " averaged zenith " +
+            // averagedZenith[i]);
         }
 
         // zenithal angle delta
@@ -211,12 +226,15 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
                     SphericalCoordinates sc;
                     if (header.isPointInFloatFormat()) {
                         LFloatPoint floatPoint = (LFloatPoint) point;
-                        sc = new SphericalCoordinates(new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
+                        sc = new SphericalCoordinates(
+                                new Vector3D(floatPoint.x, floatPoint.y, floatPoint.z).normalize());
                     } else {
                         LDoublePoint doublePoint = (LDoublePoint) point;
-                        sc = new SphericalCoordinates(new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
+                        sc = new SphericalCoordinates(
+                                new Vector3D(doublePoint.x, doublePoint.y, doublePoint.z).normalize());
                     }
-                    double azimuth = Math.abs(sc.getTheta() +  Math.PI) < 0.1  ? sc.getTheta() + 2 * Math.PI : sc.getTheta();
+                    double azimuth = Math.abs(sc.getTheta() + Math.PI) < 0.1 ? sc.getTheta() + 2 * Math.PI
+                            : sc.getTheta();
                     azimuthStatistics.addValue(azimuth);
                 }
             }
@@ -225,10 +243,11 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
                     ? azimuthStatistics.getMean()
                     : Double.NaN;
 
-//            System.out.println("index azimuth " + i + " averaged azimuth " + averagedAzimuth[i]);
+            // System.out.println("index azimuth " + i + " averaged azimuth " +
+            // averagedAzimuth[i]);
         }
 
-        // 
+        //
         Statistic deltaAzimStatistics = new Statistic();
         for (int i = 0; i < (averagedAzimuth.length - 1); i++) {
             if (!Double.isNaN(averagedAzimuth[i]) && !Double.isNaN(averagedAzimuth[i + 1])) {
@@ -282,7 +301,8 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * Set the azimuth index to read from the file. Others vertical sweeps will
      * be ignored.
      * <p>
-     * You should invoke this method before you get the iterator.</p>
+     * You should invoke this method before you get the iterator.
+     * </p>
      *
      * @param azimuthIndex The azimuth index to read
      */
@@ -294,7 +314,8 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * Set the range (inclusion) of azimuth index to read from the file.
      * Vertical sweeps outside the range will be ignored.
      * <p>
-     * You should invoke this method before you get the iterator.</p>
+     * You should invoke this method before you get the iterator.
+     * </p>
      *
      * @param azimuthIndex1 The first azimuth index of the range
      * @param azimuthIndex2 The last azimuth index of the range
@@ -302,11 +323,13 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     public void setAzimuthRange(int azimuthIndex1, int azimuthIndex2) {
 
         if (azimuthIndex1 < 0 || azimuthIndex1 >= header.getNAzimuth()) {
-            throw new IllegalArgumentException("azimuth index out of range exception (" + azimuthIndex1 + " not in [" + 0 + " " + header.getNAzimuth() + "[)");
+            throw new IllegalArgumentException("azimuth index out of range exception (" + azimuthIndex1 + " not in ["
+                    + 0 + " " + header.getNAzimuth() + "[)");
         }
 
         if (azimuthIndex2 < 0 || azimuthIndex2 >= header.getNAzimuth()) {
-            throw new IllegalArgumentException("azimuth index out of range exception (" + azimuthIndex2 + " not in [" + 0 + " " + header.getNAzimuth() + "[)");
+            throw new IllegalArgumentException("azimuth index out of range exception (" + azimuthIndex2 + " not in ["
+                    + 0 + " " + header.getNAzimuth() + "[)");
         }
 
         if (azimuthIndex1 > azimuthIndex2) {
@@ -321,7 +344,8 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * Set the zenith index to read from the file. Other horizontal slices will
      * be ignored.
      * <p>
-     * You should invoke this method before you get the iterator.</p>
+     * You should invoke this method before you get the iterator.
+     * </p>
      *
      * @param zenithIndex The zenith index to read
      */
@@ -334,7 +358,8 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * Set the range (inclusion) of zenithal index to read from the file.
      * Horizontal slices outside the zenithal range will be ignored.
      * <p>
-     * You should invoke this method before you get the iterator.</p>
+     * You should invoke this method before you get the iterator.
+     * </p>
      *
      * @param zenithIndex1 The first zenithal index of the range
      * @param zenithIndex2 The last zenithal index of the range
@@ -342,11 +367,13 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
     public void setZenithRange(int zenithIndex1, int zenithIndex2) {
 
         if (zenithIndex1 < 0 || zenithIndex1 >= header.getNZenith()) {
-            throw new IllegalArgumentException("zenith index out of range exception (" + zenithIndex1 + " not in [" + 0 + " " + header.getNZenith() + "[)");
+            throw new IllegalArgumentException("zenith index out of range exception (" + zenithIndex1 + " not in [" + 0
+                    + " " + header.getNZenith() + "[)");
         }
 
         if (zenithIndex2 < 0 || zenithIndex2 >= header.getNZenith()) {
-            throw new IllegalArgumentException("zenith index out of range exception (" + zenithIndex2 + " not in [" + 0 + " " + header.getNZenith() + "[)");
+            throw new IllegalArgumentException("zenith index out of range exception (" + zenithIndex2 + " not in [" + 0
+                    + " " + header.getNZenith() + "[)");
         }
 
         if (zenithIndex1 > zenithIndex2) {
@@ -361,7 +388,8 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * Are missing points returned ?
      * <p>
      * A missing point is a point without a position because the laser shot
-     * didn't get a return.</p>
+     * didn't get a return.
+     * </p>
      *
      * @return true if missing points are returned, false otherwise
      */
@@ -373,10 +401,11 @@ public abstract class GriddedPointScan implements Iterable<LPoint> {
      * Set if invalid points are returned or not.
      * <p>
      * A missing point is a point without a position because the laser shot
-     * didn't get a return.</p>
+     * didn't get a return.
+     * </p>
      *
      * @param returnMissingPoint true if missing point should be returned, false
-     * otherwise
+     *                           otherwise
      */
     public void setReturnMisingPoint(boolean returnMissingPoint) {
         this.returnMissingPoint = returnMissingPoint;

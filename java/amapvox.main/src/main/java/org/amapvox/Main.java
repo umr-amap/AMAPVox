@@ -30,8 +30,8 @@ public class Main {
     private final static Logger LOGGER = Logger.getLogger(Main.class.getCanonicalName());
 
     // valid command line arguments
-    private final static String[] ARGS = new String[]{
-        "-v", "--version", "-h", "--help", "--cfg=", "--T=", "--TT="
+    private final static String[] ARGS = new String[] {
+            "-v", "--version", "-h", "--help", "--cfg=", "--T=", "--TT="
     };
 
     public static void main(String[] args) throws Exception {
@@ -55,7 +55,7 @@ public class Main {
                 }
             }
 
-            // args as list 
+            // args as list
             List<String> largs = Arrays.asList(args);
 
             // check for unknown options
@@ -150,7 +150,12 @@ public class Main {
 
         // run task list
         ExecutorService exec = Executors.newFixedThreadPool(nThread);
-        List<Future<File[]>> results = exec.invokeAll(taskList);
+        List<Future<File[]>> results;
+        try {
+            results = exec.invokeAll(taskList);
+        } finally {
+            exec.shutdown();
+        }
 
         // output summary
         LOGGER.info("OUTPUT SUMMARY");
@@ -181,7 +186,7 @@ public class Main {
      * @param file, the XML configuration file.
      * @param ncpu, the number of threads allocated to the task
      * @return the {@link org.amapvox.commons.AVoxTask} associated to the
-     * configuration file.
+     *         configuration file.
      * @throws Exception
      */
     private AVoxTask provideTask(File file, int ncpu) {
@@ -207,7 +212,7 @@ public class Main {
      */
     private AVoxTask createTask(Class<?> className, File file, int ncpu) throws Exception {
 
-        Class<?>[] types = new Class[]{File.class, int.class};
+        Class<?>[] types = new Class[] { File.class, int.class };
         return (AVoxTask) className.getConstructor(types).newInstance(file, ncpu);
     }
 

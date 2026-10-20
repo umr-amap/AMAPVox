@@ -150,7 +150,7 @@ public class Viewer3dFrameController extends ConfigurationController {
             buttonResetTransformationMatrix.setDisable(!newValue);
             transformationMatrixController.setDisable(!newValue);
         });
-        
+
         checkboxFitRasterToVoxelSpace.selectedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
             textfieldRasterFittingMargin.setDisable(!newValue);
         });
@@ -279,10 +279,11 @@ public class Viewer3dFrameController extends ConfigurationController {
 
         cfg.setVoxelFile(currentVoxelFile);
         cfg.setVariableName(comboboxAttributeToView.getSelectionModel().getSelectedItem());
-        File dtmFile = new File(textfieldRasterFilePath.getText());
-        if (dtmFile.exists()) {
-            cfg.setDtmFile(dtmFile);
-        }
+        
+        cfg.setDtmFile(textfieldRasterFilePath.getText().isBlank()
+                ? null
+                : new File(textfieldRasterFilePath.getText()));
+        
         Matrix4d vopMatrix = new Matrix4d(rasterTransfMatrix);
         if (!checkboxUseTransformationMatrix.isSelected()) {
             vopMatrix.setIdentity();
@@ -328,14 +329,12 @@ public class Viewer3dFrameController extends ConfigurationController {
 
         viewer3dValidationSupport = new ValidationSupport();
         viewer3dValidationSupport.registerValidator(textFieldVoxelFile, true, Validators.fileExistValidator("Voxel file"));
-        if (textfieldRasterFilePath.getText().isEmpty()) {
-            viewer3dValidationSupport.registerValidator(textfieldRasterFilePath, false, Validators.unregisterValidator);
-        } else {
-            viewer3dValidationSupport.registerValidator(textfieldRasterFilePath, false, Validators.fileExistValidator("DTM file"));
-        }
+        
+        viewer3dValidationSupport.registerValidator(textfieldRasterFilePath, false, Validators.fileExistValidator("DTM file", true));
+        
         viewer3dValidationSupport.registerValidator(textfieldRasterFittingMargin, true, Validator.createPredicateValidator(positiveInteger(), "Positive integer"));
     }
-    
+
     private Predicate<String> positiveInteger() {
         return (String p) -> {
             try {

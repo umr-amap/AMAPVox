@@ -336,7 +336,7 @@ public class MainFX extends Application {
                              */
                             SceneObject dtmSceneObject = null;
 
-                            if (dtmFile != null && dtmFile.exists()) {
+                            if (dtmFile != null && dtmFile.isFile()) {
 
                                 updateMessage("Loading DTM");
                                 updateProgress(0, 100);

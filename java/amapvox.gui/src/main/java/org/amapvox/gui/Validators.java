@@ -34,7 +34,7 @@ public class Validators {
                 valid = true;
             } catch (NumberFormatException ex) {
             }
-            
+
             return ValidationResult.fromErrorIf(t, "Decimal value expected", !valid);
         }
     };
@@ -49,7 +49,7 @@ public class Validators {
                 valid = (d != 0.d);
             } catch (NumberFormatException ex) {
             }
-            
+
             return ValidationResult.fromErrorIf(t, "Non-zero decimal value expected", !valid);
         }
     };
@@ -67,7 +67,7 @@ public class Validators {
                 valid = true;
             } catch (NumberFormatException ex) {
             }
-            
+
             return ValidationResult.fromErrorIf(t, "Integer value expected", !valid);
         }
     };
@@ -75,17 +75,24 @@ public class Validators {
     /**
      * determines if the file exists
      *
-     * @param name, the name of the control
-     * @return a file exist Validator
+     * @param name, the file path
+     * @param allowEmpty, whether empty file path is accepted
+     * @return a file exist validator
      */
-    public static Validator<String> fileExistValidator(String name) {
+    public static Validator<String> fileExistValidator(String name, boolean allowEmpty) {
         return (Control t, String s) -> {
             if (s.isEmpty()) {
-                return ValidationResult.fromErrorIf(t, name + " cannot be empty", s.isEmpty());
+                return allowEmpty
+                        ? ValidationResult.fromErrorIf(t, name + " can be empty", false)
+                        : ValidationResult.fromErrorIf(t, name + " cannot be empty", s.isEmpty());
             } else {
-                return ValidationResult.fromErrorIf(t, name + " does not exist", !Files.exists(new File(s).toPath()));
+                return ValidationResult.fromErrorIf(t, name + " does not exist", !Files.isRegularFile(new File(s).toPath()));
             }
         };
+    }
+    
+    public static Validator<String> fileExistValidator(String name) {
+        return fileExistValidator(name, false);
     }
 
     /**

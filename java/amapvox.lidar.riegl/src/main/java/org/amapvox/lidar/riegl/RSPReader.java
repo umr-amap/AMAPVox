@@ -25,10 +25,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.vecmath.Matrix4d;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -96,7 +99,14 @@ public class RSPReader extends LidarProjectReader {
 
     private Matrix4d extractMat4D(String matString) {
 
-        String[] matSplit = matString.split(" ");
+        // replace line break by space
+        String cs = matString.replaceAll("\n", " ");
+        // replace coma by space
+        cs = cs.replaceAll(",", " ");
+        // replace 2 or more spaces with single space
+        cs = cs.trim().replaceAll(" +", " ");
+
+        String[] matSplit = cs.split(" ");
         Matrix4d matrix = new Matrix4d();
 
         double[] mat = new double[16];
@@ -128,48 +138,83 @@ public class RSPReader extends LidarProjectReader {
         try {
             document = sxb.build(new FileInputStream(rspFile));
             root = document.getRootElement();
+
+            // project name
             projectName = root.getAttributeValue("name");
-            Element scanPositions = root.getChild("scanpositions");
-            String folderScanPositions = scanPositions.getAttributeValue("fold");
-            List<Element> childrens = scanPositions.getChildren("scanposition");
+
+            // pop matrix
             popMatrix = extractMat4D(root.getChild("pop").getChildText("matrix"));
 
-            childrens.forEach(child -> {
-                String rxpFold = child.getAttributeValue("fold");
-                Element registeredElement = child.getChild("registered");
-                if (registeredElement != null) {
-                    if (Integer.parseInt(registeredElement.getText()) == 1) {
+            // project path name
+            String rspPath = rspFile.getParent();
 
-                        Element singlescans = child.getChild("singlescans");
-                        String singlescansFold = singlescans.getAttributeValue("fold");
+            // <scanpositions> and children <scanposition>
+            Element scanPositionsElement = root.getChild("scanpositions");
+            List<Element> scanPositionElements = scanPositionsElement.getChildren("scanposition");
 
-                        List<Element> scansElement = singlescans.getChildren("scan");
-
-                        Element sop = child.getChild("sop");
-                        Matrix4d sopMatrix = extractMat4D(sop.getChildText("matrix"));
-
-                        scansElement.forEach(scanElement -> {
-//                            String name = scanElement.getAttributeValue("name");
-                            String fileName = scanElement.getChildText("file");
-                            String rspPath = rspFile.getAbsolutePath().substring(0, rspFile.getAbsolutePath().lastIndexOf(File.separator));
-                            StringBuilder filePath = new StringBuilder();
-                            filePath.append(rspPath).append(File.separator)
-                                    .append(folderScanPositions).append(File.separator)
-                                    .append(rxpFold).append(File.separator)
-                                    .append(singlescansFold).append(File.separator)
-                                    .append(fileName);
-                            File rxpFile = new File(filePath.toString());
-                            rxpList.add(new LidarScan(rxpFile, sopMatrix, rxpFold));
+            Element dataSourcesElement = root.getChild("datasources");
+            if (null != dataSourcesElement) {
+                // <app_version> >= 220010000       
+                dataSourcesElement.getChildren("datasource").forEach(datasourceElement -> {
+                    String dataSourceFold = datasourceElement.getChildText("fold").replaceAll("\\\\", File.separator);
+                    scanPositionElements.stream()
+                            .filter(this::isRegistered)
+                            .forEach(scanPositionElement -> {
+                                Element sop = scanPositionElement.getChild("sop");
+                                Matrix4d sopMatrix = extractMat4D(sop.getChildText("matrix"));
+                                String scanPositionName = scanPositionElement.getAttributeValue("name");
+                                Element singleScansElement = scanPositionElement.getChild("singlescans");
+                                singleScansElement.getChildren("scan").forEach(scanElement -> {
+                                    String scanFold = scanElement.getChild("linkdatasource").getChildText("fold").replaceAll("\\\\", File.separator);
+                                    String scanFile = scanElement.getChildText("file");
+                                    String scanName = scanElement.getAttributeValue("name");
+                                    // Default RXP file, warn if missing
+                                    File rxpFile = Path.of(rspPath, dataSourceFold, scanFold, scanFile).toFile();
+                                    if (rxpFile.isFile()) {
+                                        rxpList.add(new LidarScan(rxpFile, sopMatrix, scanPositionName));
+                                    } else {
+                                        Logger.getLogger(RSPReader.class.getCanonicalName()).log(Level.WARNING, "RXP file listed in RSP project does not exist ({0})", rxpFile);
+                                    }
+                                    // Optional MON.RXP file, ignore if missing
+                                    File monFile = Path.of(rspPath, dataSourceFold, scanFold, scanName + ".mon.rxp").toFile();
+                                    if (monFile.isFile()) {
+                                        rxpList.add(new LidarScan(monFile, sopMatrix, scanPositionName));
+                                    }
+                                });
+                            });
+                });
+            } else {
+                // <app_version> < 220010000       
+                String scanPositionsFolder = scanPositionsElement.getAttributeValue("fold");
+                scanPositionElements.stream()
+                        .filter(this::isRegistered)
+                        .forEach(scanPositionElement -> {
+                            String scanPositionFolder = scanPositionElement.getAttributeValue("fold");
+                            Element singlescans = scanPositionElement.getChild("singlescans");
+                            String singlescansFolder = singlescans.getAttributeValue("fold");
+                            Matrix4d sopMatrix = extractMat4D(scanPositionElement.getChild("sop").getChildText("matrix"));
+                            singlescans.getChildren("scan").forEach(scanElement -> {
+                                String fileName = scanElement.getChildText("file");
+                                // Default RXP file, warn if missing
+                                File rxpFile = Path.of(rspPath, scanPositionsFolder, scanPositionFolder, singlescansFolder, fileName).toFile();
+                                if (rxpFile.exists()) {
+                                    rxpList.add(new LidarScan(rxpFile, sopMatrix, scanPositionFolder));
+                                } else {
+                                    Logger.getLogger(RSPReader.class.getCanonicalName()).log(Level.WARNING, "RXP file listed in RSP project does not exist ({0})", rxpFile);
+                                }
+                                // Optional MON.RXP file listed in scan elements
+                            });
                         });
-                        Collections.sort(rxpList, (LidarScan s1, LidarScan s2) -> s1.getFile().compareTo(s2.getFile()));
-                    } else {
-                        //logger.info("Scan "+ rxp.getName() +" skipped cause unregistered");
-                    }
-                }
-            });
+            }
+            Collections.sort(rxpList, (LidarScan s1, LidarScan s2) -> s1.getFile().compareTo(s2.getFile()));
         } catch (JDOMException | IOException ex) {
             throw new IOException("error parsing or reading rsp: " + rspFile.getAbsolutePath(), ex);
         }
     }
 
+    private boolean isRegistered(Element scanPositionElement) {
+        Element registeredElement = scanPositionElement.getChild("registered");
+        // assuming that missing <resistered> element is registered
+        return (null == registeredElement) || (Integer.parseInt(registeredElement.getText()) == 1);
+    }
 }

@@ -22,7 +22,20 @@
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
                                             <children>
-                                                <TitledPane fx:id="inputScanTitledPane" animated="false" expanded="false" text="Scans">
+                                                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                                    <children>
+                                                        <Button contentDisplay="CENTER" mnemonicParsing="false" onAction="#onActionButtonSetScans" text="Set scan(s)" />
+                                                        <fx:include fx:id="buttonHelpScans" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <HBox spacing="5.0">
+                                                    <children>
+                                                        <Label text="Lidar type:" />
+                                                        <Label fx:id="labelLidarType" text="NULL" />
+                                                    </children>
+                                                </HBox>
+                                                <ListView fx:id="listviewLidarScans" prefHeight="150.0" prefWidth="300.0" />
+                                                <TitledPane fx:id="lasTitledPane" animated="false" expanded="false" text="LAS/LAZ">
                                                     <content>
                                                         <AnchorPane minHeight="0.0" minWidth="0.0">
                                                             <children>
@@ -30,99 +43,74 @@
                                                                     <children>
                                                                         <HBox spacing="10.0" alignment="CENTER_LEFT">
                                                                             <children>
-                                                                                <Button contentDisplay="CENTER" mnemonicParsing="false" onAction="#onActionButtonSetScans" text="Set scan(s)" />
-                                                                                <fx:include fx:id="buttonHelpScans" source="../HelpButton.fxml" />
+                                                                                <Label text="Scanner position" />
+                                                                                <fx:include fx:id="buttonHelpScannerPosition" source="../HelpButton.fxml" />
                                                                             </children>
                                                                         </HBox>
-                                                                        <HBox spacing="5.0">
+                                                                        <VBox spacing="15.0" >
                                                                             <children>
-                                                                                <Label text="Lidar type:" />
-                                                                                <Label fx:id="labelLidarType" text="NULL" />
+                                                                                <HBox spacing="5.0" fx:id="hboxLasTrajectory" alignment="CENTER_LEFT">
+                                                                                    <children>
+                                                                                        <RadioButton fx:id="rdbtnLasTrajectory" mnemonicParsing="false" selected="true" text="Trajectory"/>
+                                                                                        <TextField fx:id="textFieldLasTrajectoryFile" prefHeight="25.0" HBox.hgrow="ALWAYS" />
+                                                                                        <Button mnemonicParsing="false" onAction="#onActionButtonOpenTrajectoryFileALS" text="..." />
+                                                                                    </children>
+                                                                                </HBox>
+                                                                                <HBox spacing="5.0" fx:id="hboxLasPosition" alignment="CENTER_LEFT">
+                                                                                    <children>
+                                                                                        <RadioButton fx:id="rdbtnLasPosition" mnemonicParsing="false" selected="false" text="Scanner position"/>
+                                                                                        <Label text="x" />
+                                                                                        <TextField fx:id="textFieldLasPositionX" prefWidth="90.0" text="0.0" />
+                                                                                        <Label text="y" />
+                                                                                        <TextField fx:id="textFieldLasPositionY" prefWidth="90.0" text="0.0" />
+                                                                                        <Label text="z" />
+                                                                                        <TextField fx:id="textFieldLasPositionZ" prefWidth="90.0" text="0.0" />
+                                                                                    </children>
+                                                                                </HBox>
+                                                                            </children>
+                                                                            <padding>
+                                                                                <Insets left="25.0" />
+                                                                            </padding>
+                                                                        </VBox>
+                                                                        <HBox spacing="15.0" alignment="CENTER_LEFT">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxLasTimeRange" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Time range" />
+                                                                                <fx:include fx:id="buttonHelpLasTimeRange" source="../HelpButton.fxml" />
+                                                                                <HBox fx:id="hboxLasTimeRange" spacing="5.0" alignment="CENTER_LEFT" disable="true" >
+                                                                                    <children>
+                                                                                        <Label text="min:" />
+                                                                                        <TextField fx:id="textFieldLasTimeMin" prefWidth="90.0" text="0" />
+                                                                                        <Label text="max:" />
+                                                                                        <TextField fx:id="textFieldLasTimeMax" prefWidth="90.0" text="0" />
+                                                                                    </children>
+                                                                                </HBox>
                                                                             </children>
                                                                         </HBox>
-                                                                        <ListView fx:id="listviewLidarScans" prefHeight="150.0" prefWidth="300.0" />
-                                                                        <TitledPane fx:id="lasTitledPane" animated="false" expanded="false" text="LAS/LAZ">
-                                                                            <content>
-                                                                                <AnchorPane minHeight="0.0" minWidth="0.0">
-                                                                                    <children>
-                                                                                        <VBox spacing="15.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                                                            <children>
-                                                                                                <HBox spacing="10.0" alignment="CENTER_LEFT">
-                                                                                                    <children>
-                                                                                                        <Label text="Scanner position" />
-                                                                                                        <fx:include fx:id="buttonHelpScannerPosition" source="../HelpButton.fxml" />
-                                                                                                    </children>
-                                                                                                </HBox>
-                                                                                                <VBox spacing="15.0" >
-                                                                                                    <children>
-                                                                                                        <HBox spacing="5.0" fx:id="hboxLasTrajectory" alignment="CENTER_LEFT">
-                                                                                                            <children>
-                                                                                                                <RadioButton fx:id="rdbtnLasTrajectory" mnemonicParsing="false" selected="true" text="Trajectory"/>
-                                                                                                                <TextField fx:id="textFieldLasTrajectoryFile" prefHeight="25.0" HBox.hgrow="ALWAYS" />
-                                                                                                                <Button mnemonicParsing="false" onAction="#onActionButtonOpenTrajectoryFileALS" text="..." />
-                                                                                                            </children>
-                                                                                                        </HBox>
-                                                                                                        <HBox spacing="5.0" fx:id="hboxLasPosition" alignment="CENTER_LEFT">
-                                                                                                            <children>
-                                                                                                                <RadioButton fx:id="rdbtnLasPosition" mnemonicParsing="false" selected="false" text="Scanner position"/>
-                                                                                                                <Label text="x" />
-                                                                                                                <TextField fx:id="textFieldLasPositionX" prefWidth="90.0" text="0.0" />
-                                                                                                                <Label text="y" />
-                                                                                                                <TextField fx:id="textFieldLasPositionY" prefWidth="90.0" text="0.0" />
-                                                                                                                <Label text="z" />
-                                                                                                                <TextField fx:id="textFieldLasPositionZ" prefWidth="90.0" text="0.0" />
-                                                                                                            </children>
-                                                                                                        </HBox>
-                                                                                                    </children>
-                                                                                                    <padding>
-                                                                                                        <Insets left="25.0" />
-                                                                                                    </padding>
-                                                                                                </VBox>
-                                                                                                <HBox spacing="15.0" alignment="CENTER_LEFT">
-                                                                                                    <children>
-                                                                                                        <CheckBox fx:id="checkboxLasTimeRange" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Time range" />
-                                                                                                        <fx:include fx:id="buttonHelpLasTimeRange" source="../HelpButton.fxml" />
-                                                                                                        <HBox fx:id="hboxLasTimeRange" spacing="5.0" alignment="CENTER_LEFT" disable="true" >
-                                                                                                            <children>
-                                                                                                                <Label text="min:" />
-                                                                                                                <TextField fx:id="textFieldLasTimeMin" prefWidth="90.0" text="0" />
-                                                                                                                <Label text="max:" />
-                                                                                                                <TextField fx:id="textFieldLasTimeMax" prefWidth="90.0" text="0" />
-                                                                                                            </children>
-                                                                                                        </HBox>
-                                                                                                    </children>
-                                                                                                </HBox>
-                                                                                                <HBox fx:id="hboxLasConsistency" spacing="10.0" alignment="CENTER_LEFT">
-                                                                                                    <children>
-                                                                                                        <CheckBox fx:id="checkboxLasConsistency" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Discard shots with inconsistent number of echoes or ranks." />
-                                                                                                        <fx:include fx:id="buttonHelpLasConsistency" source="../HelpButton.fxml" />
-                                                                                                        <RadioButton fx:id="rdbtnLasConsistencyWarn" mnemonicParsing="false" selected="true" text="Warn" />
-                                                                                                        <RadioButton fx:id="rdbtnLasConsistencySilent" mnemonicParsing="false" text="Silent" />
-                                                                                                    </children>
-                                                                                                </HBox>
-                                                                                                <HBox fx:id="hboxLasCollinearity" spacing="10.0" alignment="CENTER_LEFT">
-                                                                                                    <children>
-                                                                                                        <CheckBox fx:id="checkboxLasCollinearity" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Discard shots whose echoes are not collinear." />
-                                                                                                        <fx:include fx:id="buttonHelpLasCollinearity" source="../HelpButton.fxml" />
-                                                                                                        <Label text="Maximal deviation (degree)" />
-                                                                                                        <TextField fx:id="textfieldMaxDeviation" prefHeight="26.0" prefWidth="60.0" text="5" />
-                                                                                                        <RadioButton fx:id="rdbtnLasCollinearityWarn" mnemonicParsing="false" selected="true" text="Warn" />
-                                                                                                        <RadioButton fx:id="rdbtnLasCollinearitySilent" mnemonicParsing="false" text="Silent" />
-                                                                                                    </children>
-                                                                                                </HBox>
-                                                                                            </children>
-                                                                                        </VBox>
-                                                                                    </children>
-                                                                                </AnchorPane>
-                                                                            </content>
-                                                                        </TitledPane>
+                                                                        <HBox fx:id="hboxLasConsistency" spacing="10.0" alignment="CENTER_LEFT">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxLasConsistency" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Discard shots with inconsistent number of echoes or ranks." />
+                                                                                <fx:include fx:id="buttonHelpLasConsistency" source="../HelpButton.fxml" />
+                                                                                <RadioButton fx:id="rdbtnLasConsistencyWarn" mnemonicParsing="false" selected="true" text="Warn" />
+                                                                                <RadioButton fx:id="rdbtnLasConsistencySilent" mnemonicParsing="false" text="Silent" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox fx:id="hboxLasCollinearity" spacing="10.0" alignment="CENTER_LEFT">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxLasCollinearity" contentDisplay="RIGHT" disable="false" mnemonicParsing="false" selected="false" text="Discard shots whose echoes are not collinear." />
+                                                                                <fx:include fx:id="buttonHelpLasCollinearity" source="../HelpButton.fxml" />
+                                                                                <Label text="Maximal deviation (degree)" />
+                                                                                <TextField fx:id="textfieldMaxDeviation" prefHeight="26.0" prefWidth="60.0" text="5" />
+                                                                                <RadioButton fx:id="rdbtnLasCollinearityWarn" mnemonicParsing="false" selected="true" text="Warn" />
+                                                                                <RadioButton fx:id="rdbtnLasCollinearitySilent" mnemonicParsing="false" text="Silent" />
+                                                                            </children>
+                                                                        </HBox>
                                                                     </children>
                                                                 </VBox>
                                                             </children>
                                                         </AnchorPane>
                                                     </content>
                                                 </TitledPane>
-                                                <TitledPane fx:id="titledPaneDTM" animated="false" expanded="false" text="DTM">
+                                                <TitledPane fx:id="titledPaneDTM" animated="false" expanded="false" text="DTM (optional)">
                                                     <content>
                                                         <AnchorPane minHeight="0.0" minWidth="0.0">
                                                             <children>
@@ -159,73 +147,14 @@
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
                                             <children>
-                                                <TitledPane animated="false" expanded="false" text="Post-processing">
-                                                    <content>
-                                                        <AnchorPane minHeight="0.0" minWidth="0.0">
-                                                            <children>
-                                                                <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                                    <children>
-                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                                                            <children>
-                                                                                <CheckBox fx:id="checkboxConcurrentPostProcessing" selected="true" text="Multi-threaded post-processing " />
-                                                                                <fx:include fx:id="helpButtonConcurrentPostProcessing" source="../HelpButton.fxml" />
-                                                                            </children>
-                                                                        </HBox>
-                                                                        <HBox fx:id="hboxChunkSize" alignment="CENTER_LEFT" spacing="10.0">
-                                                                            <children>
-                                                                                <Label text="Chunk size" />
-                                                                                <RadioButton fx:id="rdbtnAutomaticChunkSize" mnemonicParsing="false" selected="true" text="Automatic" />
-                                                                                <RadioButton fx:id="rdbtnCustomChunkSize" mnemonicParsing="false" selected="false" text="Custom" />
-                                                                                <TextField fx:id="textFieldChunkSize" prefHeight="26.0" prefWidth="100.0" text="5" />
-                                                                                <fx:include fx:id="helpButtonChunkSizePostProcessing" source="../HelpButton.fxml" />
-                                                                            </children>
-                                                                        </HBox>
-                                                                    </children>
-                                                                </VBox>
-                                                            </children>
-                                                        </AnchorPane>
-                                                    </content>
-                                                </TitledPane>
-                                                <TitledPane animated="false" expanded="true" text="Output File">
-                                                    <content>
-                                                        <AnchorPane minHeight="0.0" minWidth="0.0">
-                                                            <children>
-                                                                <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                                    <children>
-                                                                        <CheckBox fx:id="checkboxVoxelOutput" disable="false" selected="true" text="Generate voxel file(s)" />
-                                                                        <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                                                            <children>
-                                                                                <Label text="Voxel file" />
-                                                                                <TextField fx:id="textFieldOutputFile" prefHeight="25.0" prefWidth="280.0" HBox.hgrow="ALWAYS" />
-                                                                                <Button mnemonicParsing="false" onAction="#onActionButtonOpenOutputFile" text="..." />
-                                                                            </children>
-                                                                        </HBox>
-                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                                                            <children>
-                                                                                <CheckBox fx:id="checkboxSkipEmptyVoxel" text="Skip empty voxel" />
-                                                                                <fx:include fx:id="helpButtonSkipEmptyVoxel" source="../HelpButton.fxml" />
-                                                                            </children>
-                                                                        </HBox>
-                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0" >
-                                                                            <children>
-                                                                                <Label text="Fraction digits:" />
-                                                                                <Spinner fx:id="spinnerFractionDigits" prefWidth="72.0" BorderPane.alignment="CENTER" />
-                                                                                <fx:include fx:id="helpButtonFractionDigits" source="../HelpButton.fxml" />
-                                                                            </children>
-                                                                        </HBox>
-                                                                        <HBox fx:id="hboxOutputFormat" alignment="CENTER_LEFT" spacing="10.0" >
-                                                                            <children>
-                                                                                <Label text="Voxel file format" wrapText="true" />
-                                                                                <ComboBox fx:id="comboboxVoxOutputFormat" promptText="Choose format" />
-                                                                                <fx:include fx:id="helpButtonOutputFormat" source="../HelpButton.fxml" />
-                                                                            </children>
-                                                                        </HBox>
-                                                                    </children>
-                                                                </VBox>
-                                                            </children>
-                                                        </AnchorPane>
-                                                    </content>
-                                                </TitledPane>    
+                                                <CheckBox fx:id="checkboxVoxelOutput" disable="false" selected="true" text="Generate voxel file(s)" />
+                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                    <children>
+                                                        <Label text="Voxel file" />
+                                                        <TextField fx:id="textFieldOutputFile" prefHeight="25.0" prefWidth="280.0" HBox.hgrow="ALWAYS" />
+                                                        <Button mnemonicParsing="false" onAction="#onActionButtonOpenOutputFile" text="..." />
+                                                    </children>
+                                                </HBox>
                                                 <TitledPane animated="false" expanded="false" text="Output variables">
                                                     <content>
                                                         <AnchorPane minHeight="0.0" minWidth="0.0">
@@ -308,6 +237,54 @@
                                                         </AnchorPane>
                                                     </content>
                                                 </TitledPane>  
+                                                <TitledPane animated="false" expanded="false" text="Advanced output parameters">
+                                                    <content>
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0">
+                                                            <children>
+                                                                <VBox spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                    <children>
+                                                                        
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxSkipEmptyVoxel" text="Skip empty voxel" />
+                                                                                <fx:include fx:id="helpButtonSkipEmptyVoxel" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0" >
+                                                                            <children>
+                                                                                <Label text="Fraction digits:" />
+                                                                                <Spinner fx:id="spinnerFractionDigits" prefWidth="72.0" BorderPane.alignment="CENTER" />
+                                                                                <fx:include fx:id="helpButtonFractionDigits" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox fx:id="hboxOutputFormat" alignment="CENTER_LEFT" spacing="10.0" >
+                                                                            <children>
+                                                                                <Label text="Voxel file format" wrapText="true" />
+                                                                                <ComboBox fx:id="comboboxVoxOutputFormat" promptText="Choose format" />
+                                                                                <fx:include fx:id="helpButtonOutputFormat" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <CheckBox fx:id="checkboxConcurrentPostProcessing" selected="true" text="Multi-threaded post-processing " />
+                                                                                <fx:include fx:id="helpButtonConcurrentPostProcessing" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                        <HBox fx:id="hboxChunkSize" alignment="CENTER_LEFT" spacing="10.0">
+                                                                            <children>
+                                                                                <Label text="Chunk size" />
+                                                                                <RadioButton fx:id="rdbtnAutomaticChunkSize" mnemonicParsing="false" selected="true" text="Automatic" />
+                                                                                <RadioButton fx:id="rdbtnCustomChunkSize" mnemonicParsing="false" selected="false" text="Custom" />
+                                                                                <TextField fx:id="textFieldChunkSize" prefHeight="26.0" prefWidth="100.0" text="5" />
+                                                                                <fx:include fx:id="helpButtonChunkSizePostProcessing" source="../HelpButton.fxml" />
+                                                                            </children>
+                                                                        </HBox>
+                                                                    </children>
+                                                                </VBox>
+                                                            </children>
+                                                        </AnchorPane>
+                                                    </content>
+                                                </TitledPane>
                                             </children>
                                         </VBox>                                                       
                                     </children>
@@ -362,59 +339,38 @@
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
                                             <children>
-                                                <TitledPane animated="false" expanded="false" text="Voxel size">
-                                                    <content>
-                                                        <VBox spacing="10.0">
-                                                            <children>
-                                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                                                    <children>
-                                                                        <Label text="Voxel size " />
-                                                                        <CheckBox fx:id="checkBoxCubicVoxel" text="Cubic" selected="false" onAction="#onActionCheckBoxCubicVoxel" mnemonicParsing="false" />
-                                                                        <fx:include fx:id="helpButtonCubicVoxel" source="../HelpButton.fxml" />
-                                                                    </children>
-                                                                </HBox>
-                                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                                                    <children>
-                                                                        <Label fx:id="labelVoxelSizeX" text="vx (m)" />
-                                                                        <TextField fx:id="textFieldVoxelSizeX" prefHeight="25.0" prefWidth="70.0" text="1" />
-                                                                        <Label fx:id="labelVoxelSizeY" text="vy (m)" />
-                                                                        <TextField fx:id="textFieldVoxelSizeY" prefHeight="25.0" prefWidth="70.0" text="1" />
-                                                                        <Label fx:id="labelVoxelSizeZ" text="vz (m)" />
-                                                                        <TextField fx:id="textFieldVoxelSizeZ" prefHeight="25.0" prefWidth="70.0" text="1" />
-                                                                    </children>
-                                                                    <padding>
-                                                                        <Insets left="25.0" />
-                                                                    </padding>
-                                                                </HBox>
-                                                            </children>
-                                                            <padding>
-                                                                <Insets left="10.0" top="10.0" bottom="10.0" />
-                                                            </padding>
-                                                        </VBox>
-                                                    </content>
-                                                </TitledPane>
-                                                <TitledPane animated="false" expanded="false" text="Bounding box">
-                                                    <content>
-                                                        <VBox spacing="10.0" >
-                                                            <children>
-                                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                                                    <children>
-                                                                        <Button fx:id="buttonBoundingBox" mnemonicParsing="false" text="Automatic" onAction="#onActionButtonBoundingBox" />
-                                                                        <fx:include fx:id="helpButtonBoundingBox" source="../HelpButton.fxml" />
-                                                                    </children>
-                                                                </HBox>
-                                                                <AnchorPane>
-                                                                    <children>
-                                                                        <fx:include fx:id="voxelSpace" source="../VoxelSpacePanel.fxml" />
-                                                                    </children>
-                                                                </AnchorPane>
-                                                            </children>
-                                                            <padding>
-                                                                <Insets left="10.0" top="10.0" bottom="10.0" />
-                                                            </padding>
-                                                        </VBox> 
-                                                    </content>
-                                                </TitledPane>
+                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                    <children>
+                                                        <Label text="Voxel size " />
+                                                        <CheckBox fx:id="checkBoxCubicVoxel" text="Cubic" selected="true" onAction="#onActionCheckBoxCubicVoxel" mnemonicParsing="false" />
+                                                        <fx:include fx:id="helpButtonCubicVoxel" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                    <children>
+                                                        <Label fx:id="labelVoxelSizeX" text="vx (m)" />
+                                                        <TextField fx:id="textFieldVoxelSizeX" prefHeight="25.0" prefWidth="70.0" text="1" />
+                                                        <Label fx:id="labelVoxelSizeY" text="vy (m)" />
+                                                        <TextField fx:id="textFieldVoxelSizeY" prefHeight="25.0" prefWidth="70.0" text="1" />
+                                                        <Label fx:id="labelVoxelSizeZ" text="vz (m)" />
+                                                        <TextField fx:id="textFieldVoxelSizeZ" prefHeight="25.0" prefWidth="70.0" text="1" />
+                                                    </children>
+                                                    <padding>
+                                                        <Insets left="25.0" />
+                                                    </padding>
+                                                </HBox>
+                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                    <children>
+                                                        <Label text="Bounding box" />
+                                                        <Button fx:id="buttonBoundingBox" mnemonicParsing="false" text="Automatic" onAction="#onActionButtonBoundingBox" />
+                                                        <fx:include fx:id="helpButtonBoundingBox" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>
+                                                <AnchorPane>
+                                                    <children>
+                                                        <fx:include fx:id="voxelSpace" source="../VoxelSpacePanel.fxml" />
+                                                    </children>
+                                                </AnchorPane>
                                             </children>
                                         </VBox>
                                     </children>

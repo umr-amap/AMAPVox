@@ -51,7 +51,6 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -508,9 +507,9 @@ public class VoxelizationFrameController extends ConfigurationController {
             helpButtonOutputVariablesController.showHelpDialog(resourceBundle.getString("help_output_variables"));
         });
 
-        helpButtonAutoBBox.setOnAction((ActionEvent event)
+        helpButtonBoundingBox.setOnAction((ActionEvent event)
                 -> {
-            helpButtonAutoBBoxController.showHelpDialog(resourceBundle.getString("help_bbox"));
+            helpButtonBoundingBoxController.showHelpDialog(resourceBundle.getString("help_boundingbox"));
         });
 
         buttonHelpEmptyShotsFilter.setOnAction((ActionEvent event)
@@ -533,20 +532,12 @@ public class VoxelizationFrameController extends ConfigurationController {
             helpButtonSubVoxelController.showHelpDialog(resourceBundle.getString("help_subvoxel_division"));
         });
 
-        hboxAutomaticBBox.disableProperty().bind(
-                labelLidarType.textProperty().isNotEqualTo(VoxelizationCfg.LidarType.LAS.name())
-                        .and(labelLidarType.textProperty().isNotEqualTo(VoxelizationCfg.LidarType.LAZ.name())));
+        buttonBoundingBox.disableProperty().bind(
+                labelLidarType.textProperty().isEqualTo(VoxelizationCfg.LidarType.XYB.name())
+                        .or(labelLidarType.textProperty().isEqualTo(VoxelizationCfg.LidarType.SHT.name()))
+                        .or(Bindings.isEmpty(listviewLidarScans.getItems())));
 
         listviewLidarScans.disableProperty().bind(Bindings.isEmpty(listviewLidarScans.getItems()));
-//        listviewLidarScans.setCellFactory((ListView<LidarScan> p) -> new ListCell<LidarScan>() {
-//            @Override
-//            protected void updateItem(LidarScan value, boolean empty) {
-//                super.updateItem(value, empty);
-//                if (null != value) {
-//                    setText(value.getName() + " (" + value.getFile().getAbsolutePath() + ")");
-//                }
-//            }
-//        });
 
         fileChooserOutputFile = new FileChooser();
         fileChooserOutputFile.getExtensionFilters().addAll(
@@ -1355,83 +1346,13 @@ public class VoxelizationFrameController extends ConfigurationController {
         return stp;
     }
 
-    private void guessLasBoundingBox(File file, boolean quick) {
+    private void guessBoundingBox() {
 
-        if (!Files.exists(file.toPath(), LinkOption.NOFOLLOW_LINKS)) {
+        BoundingBox3D boundingBox = org.amapvox.commons.Util.getBoundingBox(scanItems, popMatrix, vopMatrix);
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Error");
-            alert.setHeaderText("File not found");
-            alert.setContentText("The file " + file.getAbsolutePath() + " cannot be found.");
-
-            alert.showAndWait();
-
-        } else if (FileManager.getExtension(file).equals(".las") || FileManager.getExtension(file).equals(".laz")) {
-
-            Matrix4d identityMatrix = new Matrix4d();
-            identityMatrix.setIdentity();
-
-            ProgressDialog d;
-
-            Service<Void> service = new Service<Void>() {
-
-                @Override
-                protected Task<Void> createTask() {
-
-                    return new Task<Void>() {
-                        @Override
-                        protected Void call() throws InterruptedException {
-
-                            // compute transformation matrix
-                            Matrix4d transformationMatrix = new Matrix4d();
-                            transformationMatrix.setIdentity();
-                            if (checkboxVopMatrix.isSelected() && vopMatrix != null) {
-                                transformationMatrix.mul(vopMatrix);
-                            }
-                            if (popMatrix != null) {
-                                transformationMatrix.mul(popMatrix);
-                            }
-                            
-                            if (!comboboxSopMatrix.getSelectionModel().isEmpty()) {
-                                Matrix4d sopMatrix = comboboxSopMatrix.getSelectionModel().getSelectedItem().getMatrix();
-                                transformationMatrix.mul(sopMatrix);
-                            }
-
-                            final BoundingBox3D boundingBox = org.amapvox.commons.Util.getBoundingBoxOfPoints(file, transformationMatrix, quick, getListOfLASClassificationPointToDiscard());
-
-                            Point3d minPoint = boundingBox.min;
-                            Point3d maxPoint = boundingBox.max;
-
-                            Platform.runLater(()
-                                    -> {
-                                voxelSpaceController.getTextFieldEnterXMin().setText(df.format(minPoint.x));
-                                voxelSpaceController.getTextFieldEnterYMin().setText(df.format(minPoint.y));
-                                voxelSpaceController.getTextFieldEnterZMin().setText(df.format(minPoint.z));
-
-                                voxelSpaceController.getTextFieldEnterXMax().setText(df.format(maxPoint.x));
-                                voxelSpaceController.getTextFieldEnterYMax().setText(df.format(maxPoint.y));
-                                voxelSpaceController.getTextFieldEnterZMax().setText(df.format(maxPoint.z));
-                            });
-
-                            return null;
-                        }
-                    };
-
-                }
-            ;
-            };
-                
-                d = new ProgressDialog(service);
-            d.initOwner(getStage());
-            d.setHeaderText("Please wait...");
-            d.setResizable(true);
-
-            d.show();
-
-            service.start();
-
-        }
-
+        Platform.runLater(() -> {
+            voxelSpaceController.setBoundingBox(boundingBox, df);
+        });
     }
 
     private Predicate<String> isIntegerBiggerThanOne() {
@@ -2023,11 +1944,11 @@ public class VoxelizationFrameController extends ConfigurationController {
 //    private Label labelVoxelSizeZ;
     // Bounding box
     @FXML
-    private HBox hboxAutomaticBBox;
+    private Button buttonBoundingBox;
     @FXML
-    private Button helpButtonAutoBBox;
+    private Button helpButtonBoundingBox;
     @FXML
-    private HelpButtonController helpButtonAutoBBoxController;
+    private HelpButtonController helpButtonBoundingBoxController;
     @FXML
     private VoxelSpacePanelController voxelSpaceController;
 
@@ -2236,14 +2157,10 @@ public class VoxelizationFrameController extends ConfigurationController {
     }
 
     @FXML
-    private void onActionButtonAutomatic(ActionEvent event) {
+    private void onActionButtonBoundingBox(ActionEvent event) {
 
-        guessLasBoundingBox(scanItems.get(0).getFile(), true);
-    }
-
-    @FXML
-    private void onActionButtonAutomaticDeepSearch(ActionEvent event) {
-        guessLasBoundingBox(scanItems.get(0).getFile(), false);
+        //guessLasBoundingBox(scanItems.get(0).getFile());
+        guessBoundingBox();
     }
 
     @FXML

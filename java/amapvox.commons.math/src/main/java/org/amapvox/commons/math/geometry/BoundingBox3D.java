@@ -12,24 +12,21 @@ Authors:
 
 For further information, please contact Gregoire Vincent.
  */
-
 package org.amapvox.commons.math.geometry;
 
+import java.util.stream.Stream;
 import javax.vecmath.Point3d;
-
 
 /**
  *
  * @author Julien Heurtebize (julienhtbe@gmail.com)
  */
-
-
 public class BoundingBox3D {
-    
+
     public Point3d min;
     public Point3d max;
-    
-    public BoundingBox3D(){
+
+    public BoundingBox3D() {
         min = new Point3d();
         max = new Point3d();
     }
@@ -38,49 +35,82 @@ public class BoundingBox3D {
         this.min = min;
         this.max = max;
     }
-    
-    public void keepLargest(BoundingBox3D boundingBox3D){
-        
+
+    public static BoundingBox3D from(Point3d... points) {
+
+        Point3d min = new Point3d(
+                Stream.of(points).mapToDouble(point -> point.x).min().getAsDouble(),
+                Stream.of(points).mapToDouble(point -> point.y).min().getAsDouble(),
+                Stream.of(points).mapToDouble(point -> point.z).min().getAsDouble()
+        );
+
+        Point3d max = new Point3d(
+                Stream.of(points).mapToDouble(point -> point.x).max().getAsDouble(),
+                Stream.of(points).mapToDouble(point -> point.y).max().getAsDouble(),
+                Stream.of(points).mapToDouble(point -> point.z).max().getAsDouble()
+        );
+
+        return new BoundingBox3D(min, max);
+    }
+
+    public void keepLargest(BoundingBox3D boundingBox3D) {
+
         double xMin, yMin, zMin;
         double xMax, yMax, zMax;
-        
-        if(boundingBox3D.min.x < min.x){
+
+        if (boundingBox3D.min.x < min.x) {
             xMin = boundingBox3D.min.x;
-        }else{
+        } else {
             xMin = min.x;
         }
-        
-        if(boundingBox3D.min.y < min.y){
+
+        if (boundingBox3D.min.y < min.y) {
             yMin = boundingBox3D.min.y;
-        }else{
+        } else {
             yMin = min.y;
         }
-        
-        if(boundingBox3D.min.z < min.z){
+
+        if (boundingBox3D.min.z < min.z) {
             zMin = boundingBox3D.min.z;
-        }else{
+        } else {
             zMin = min.z;
         }
-        
-        if(boundingBox3D.max.x > max.x){
+
+        if (boundingBox3D.max.x > max.x) {
             xMax = boundingBox3D.max.x;
-        }else{
+        } else {
             xMax = max.x;
         }
-        
-        if(boundingBox3D.max.y > max.y){
+
+        if (boundingBox3D.max.y > max.y) {
             yMax = boundingBox3D.max.y;
-        }else{
+        } else {
             yMax = max.y;
         }
-        
-        if(boundingBox3D.max.z > max.z){
+
+        if (boundingBox3D.max.z > max.z) {
             zMax = boundingBox3D.max.z;
-        }else{
+        } else {
             zMax = max.z;
         }
-        
+
         this.min = new Point3d(xMin, yMin, zMin);
         this.max = new Point3d(xMax, yMax, zMax);
+    }
+
+    public void round() {
+
+        min.x = Math.floor(min.x);
+        min.y = Math.floor(min.y);
+        min.z = Math.floor(min.z);
+        max.x = Math.ceil(max.x);
+        max.y = Math.ceil(max.y);
+        max.z = Math.ceil(max.z);
+    }
+
+    @Override
+    public String toString() {
+
+        return "min: " + min + " max: " + max;
     }
 }

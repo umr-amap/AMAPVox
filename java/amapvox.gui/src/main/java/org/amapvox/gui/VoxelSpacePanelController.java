@@ -6,6 +6,7 @@ package org.amapvox.gui;
  * and open the template in the editor.
  */
 import java.net.URL;
+import java.text.NumberFormat;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -13,6 +14,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
 import javax.vecmath.Point3f;
+import org.amapvox.commons.math.geometry.BoundingBox3D;
 
 /**
  * FXML Controller class
@@ -81,6 +83,18 @@ public class VoxelSpacePanelController implements Initializable {
         textfieldEnterXMax.textProperty().addListener(changeListener);
         textfieldEnterYMax.textProperty().addListener(changeListener);
         textfieldEnterZMax.textProperty().addListener(changeListener);
+    }
+
+    public void setBoundingBox(BoundingBox3D boundingBox, NumberFormat df) {
+
+        textfieldEnterXMin.setText(df.format(boundingBox.min.x));
+        textfieldEnterYMin.setText(df.format(boundingBox.min.y));
+        textfieldEnterZMin.setText(df.format(boundingBox.min.z));
+
+        textfieldEnterXMax.setText(df.format(boundingBox.max.x));
+        textfieldEnterYMax.setText(df.format(boundingBox.max.y));
+        textfieldEnterZMax.setText(df.format(boundingBox.max.z));
+
     }
 
     public ChangeListener getChangeListener() {

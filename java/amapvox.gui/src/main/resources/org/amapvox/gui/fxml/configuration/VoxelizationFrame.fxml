@@ -675,7 +675,12 @@
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="5.0">
                                             <children>
-                                                <Label text="Predefined specifications:" />
+                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                                                    <children>
+                                                        <Label text="Predefined specifications:" />
+                                                        <fx:include fx:id="buttonHelpScanner" source="../HelpButton.fxml" />
+                                                    </children>
+                                                </HBox>                                     
                                                 <ComboBox fx:id="comboboxLaserSpecification" prefHeight="26.0" prefWidth="400.0" />
                                                 <CheckBox fx:id="checkboxCustomLaserSpecification" mnemonicParsing="false" text="Custom specifications:" />
                                                 <VBox spacing="10.0">

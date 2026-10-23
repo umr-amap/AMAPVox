@@ -769,6 +769,11 @@ public class VoxelizationFrameController extends ConfigurationController {
     }
 
     private void initScannerPane(ResourceBundle resourceBundle) {
+        
+        buttonHelpScanner.setOnAction((ActionEvent event)
+                -> {
+            buttonHelpScannerController.showHelpDialog(resourceBundle.getString("help_scanner"));
+        });
 
         comboboxLaserSpecification.getItems().addAll(LaserSpecification.getPresets());
 
@@ -778,7 +783,7 @@ public class VoxelizationFrameController extends ConfigurationController {
             textFieldBeamDivergence.setText(df.format(newValue.getBeamDivergence()));
         });
 
-        comboboxLaserSpecification.getSelectionModel().select(LaserSpecification.LMS_Q560);
+        comboboxLaserSpecification.getSelectionModel().select(LaserSpecification.UNITARY_BEAM_SECTION);
 
         comboboxLaserSpecification.disableProperty().bind(checkboxCustomLaserSpecification.selectedProperty());
         textFieldBeamDiameterAtExit.disableProperty().bind(checkboxCustomLaserSpecification.selectedProperty().not());
@@ -2097,6 +2102,10 @@ public class VoxelizationFrameController extends ConfigurationController {
     // SCANNER PANE
     ///////////////
     //
+    @FXML
+    private Button buttonHelpScanner;
+    @FXML
+    private HelpButtonController buttonHelpScannerController;
     @FXML
     private ComboBox<LaserSpecification> comboboxLaserSpecification;
     @FXML

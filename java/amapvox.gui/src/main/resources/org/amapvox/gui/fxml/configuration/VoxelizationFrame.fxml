@@ -397,18 +397,13 @@
                                                     <content>
                                                         <VBox spacing="10.0" >
                                                             <children>
-                                                                <HBox fx:id="hboxAutomaticBBox" alignment="CENTER_LEFT" spacing="5.0">
+                                                                <HBox alignment="CENTER_LEFT" spacing="5.0">
                                                                     <children>
-                                                                        <MenuButton mnemonicParsing="false" text="Automatic">
-                                                                            <items>
-                                                                                <MenuItem mnemonicParsing="false" onAction="#onActionButtonAutomatic" text="Fast" />
-                                                                                <MenuItem mnemonicParsing="false" onAction="#onActionButtonAutomaticDeepSearch" text="Deep search" />
-                                                                            </items>
-                                                                        </MenuButton>
-                                                                        <fx:include fx:id="helpButtonAutoBBox" source="../HelpButton.fxml" />
+                                                                        <Button fx:id="buttonBoundingBox" mnemonicParsing="false" text="Automatic" onAction="#onActionButtonBoundingBox" />
+                                                                        <fx:include fx:id="helpButtonBoundingBox" source="../HelpButton.fxml" />
                                                                     </children>
                                                                 </HBox>
-                                                                <AnchorPane fx:id="anchorpaneBoundingBoxParameters">
+                                                                <AnchorPane>
                                                                     <children>
                                                                         <fx:include fx:id="voxelSpace" source="../VoxelSpacePanel.fxml" />
                                                                     </children>

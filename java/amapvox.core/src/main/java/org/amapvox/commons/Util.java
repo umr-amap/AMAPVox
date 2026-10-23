@@ -10,13 +10,18 @@ import org.amapvox.commons.spds.Octree;
 import org.amapvox.commons.spds.OctreeFactory;
 import org.amapvox.commons.util.io.file.CSVFile;
 import com.github.mreutegg.laszip4j.LASHeader;
-import com.github.mreutegg.laszip4j.LASPoint;
 import com.github.mreutegg.laszip4j.LASReader;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
+import org.amapvox.commons.math.util.MatrixUtility;
+import org.amapvox.commons.util.io.file.FileManager;
+import org.amapvox.lidar.commons.LidarScan;
+import org.amapvox.lidar.faro.XYBIterator;
+import org.amapvox.voxelisation.VoxelizationCfg;
 import org.apache.log4j.Logger;
 
 /**
@@ -49,15 +54,6 @@ public class Util {
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
-    public static BoundingBox3D getALSMinAndMax(File file) {
-
-        LASReader lasReader = new LASReader(file);
-        LASHeader header = lasReader.getHeader();
-        return new BoundingBox3D(
-                new Point3d(header.getMinX(), header.getMinY(), header.getMinZ()),
-                new Point3d(header.getMaxX(), header.getMaxY(), header.getMaxZ()));
-    }
-
     public static Octree loadOctree(CSVFile pointcloudFile, Matrix4d vopMatrix) {
 
         Octree octree = null;
@@ -78,92 +74,91 @@ public class Util {
         return octree;
     }
 
-    /**
-     *
-     * @param pointFile
-     * @param transformationMatrix
-     * @param quick don't use classification filters
-     * @param classificationsToDiscard list of point classification to skip
-     * during getting bounding box process
-     * @return
-     */
-    public static BoundingBox3D getBoundingBoxOfPoints(File pointFile, Matrix4d transformationMatrix, boolean quick, List<Integer> classificationsToDiscard) {
+    private static List<Point3d> getScanPositions(List<LidarScan> scans, VoxelizationCfg.LidarType lidarType) {
 
-        BoundingBox3D boundingBox = new BoundingBox3D();
-
-        Matrix4d identityMatrix = new Matrix4d();
-        identityMatrix.setIdentity();
-
-        if (transformationMatrix.equals(identityMatrix) && quick) {
-
-            LASReader lasReader = new LASReader(pointFile);
-            LASHeader header = lasReader.getHeader();
-            boundingBox.min = new Point3d(header.getMinX(), header.getMinY(), header.getMinZ());
-            boundingBox.max = new Point3d(header.getMaxX(), header.getMaxY(), header.getMaxZ());
-
-        } else {
-
-            int count = 0;
-            double xMin = 0, yMin = 0, zMin = 0;
-            double xMax = 0, yMax = 0, zMax = 0;
-
-            LASReader lasReader = new LASReader(pointFile);
-            LASHeader lasHeader = lasReader.getHeader();
-            // scale factors and offsets
-            double x_offset = lasHeader.getXOffset();
-            double x_scale_factor = lasHeader.getXScaleFactor();
-            double y_offset = lasHeader.getYOffset();
-            double y_scale_factor = lasHeader.getYScaleFactor();
-            double z_offset = lasHeader.getZOffset();
-            double z_scale_factor = lasHeader.getZScaleFactor();
-            for (LASPoint p : lasReader.getPoints()) {
-
-                if (!classificationsToDiscard.contains((int) p.getClassification())) {
-                    //skip those
-                    Point3d pt = new Point3d(
-                            (p.getX() * x_scale_factor) + x_offset,
-                            (p.getY() * y_scale_factor) + y_offset,
-                            (p.getZ() * z_scale_factor) + z_offset);
-                    transformationMatrix.transform(pt);
-
-                    if (count != 0) {
-
-                        if (pt.x < xMin) {
-                            xMin = pt.x;
-                        } else if (pt.x > xMax) {
-                            xMax = pt.x;
-                        }
-
-                        if (pt.y < yMin) {
-                            yMin = pt.y;
-                        } else if (pt.y > yMax) {
-                            yMax = pt.y;
-                        }
-
-                        if (pt.z < zMin) {
-                            zMin = pt.z;
-                        } else if (pt.z > zMax) {
-                            zMax = pt.z;
-                        }
-
-                    } else {
-
-                        xMin = pt.x;
-                        yMin = pt.y;
-                        zMin = pt.z;
-
-                        xMax = pt.x;
-                        yMax = pt.y;
-                        zMax = pt.z;
-
-                        count++;
+        return switch (lidarType) {
+            case XYB -> {
+                yield scans.stream()
+                .map((LidarScan scan) -> {
+                    Point3d scannerPosition = new Point3d();
+                    try {
+                        scannerPosition = new XYBIterator(scan.getFile()).getHeader().getScannerPosition();
+                    } catch (IOException ex) {
+                        System.getLogger(Util.class.getName()).log(System.Logger.Level.WARNING, "Failed to read scanner position from XYB file {0}", scan.getFile());
                     }
-                }
+                    return scannerPosition;
+                }).toList();
             }
+            case RXP, RSP, PTX, PTG -> {
+                yield scans.stream()
+                .map(scan -> {
+                    Matrix4d sopMatrix = scan.getMatrix();
+                    return new Point3d(sopMatrix.m03, sopMatrix.m13, sopMatrix.m23);
+                })
+                // return as a list of scan positions
+                .toList();
+            }
+            case LAS, LAZ -> {
+                yield scans.stream()
+                .map((LidarScan scan) -> {
+                    LASReader lasReader = new LASReader(scan.getFile());
+                    LASHeader header = lasReader.getHeader();
+                    return List.of(
+                            new Point3d(header.getMinX(), header.getMinY(), header.getMinZ()),
+                            new Point3d(header.getMaxX(), header.getMaxY(), header.getMaxZ()));
+                })
+                .flatMap(List::stream)
+                .toList();
+            }
+            default ->
+                List.of(new Point3d());
+        };
+    }
 
-            boundingBox.min = new Point3d(xMin, yMin, zMin);
-            boundingBox.max = new Point3d(xMax, yMax, zMax);
+    public static BoundingBox3D getBoundingBox(List<LidarScan> scans, Matrix4d popMatrix, Matrix4d vopMatrix) {
+
+        String extension = FileManager.getExtension(scans.getFirst().getFile()).substring(1).toUpperCase();
+        VoxelizationCfg.LidarType lidarType = VoxelizationCfg.LidarType.valueOf(extension);
+
+        Point3d[] scanPositions = getScanPositions(scans, lidarType).stream()
+                .peek(scanPosition -> {
+                    Matrix4d transformationMatrix = MatrixUtility.identity4d();
+                    if (vopMatrix != null) {
+                        transformationMatrix.mul(vopMatrix);
+                    }
+                    if (popMatrix != null) {
+                        transformationMatrix.mul(popMatrix);
+                    }
+                    transformationMatrix.transform(scanPosition);
+                })
+                // return as an array of scan positions
+                .toArray(Point3d[]::new);
+
+        // get bounding box from scan positions
+        BoundingBox3D boundingBox = BoundingBox3D.from(scanPositions);
+
+        // default 10m buffer except for LAS/LAZ scan
+        double buffer = switch (lidarType) {
+            case LAZ, LAS -> {
+                yield boundingBox.min.distance(boundingBox.max) < 10.0 ? 10.d : 0.d;
+            }
+            default -> {
+                yield 10.d;
+            }
+        };
+
+        if (buffer > 0.d) {
+            // add buffer
+            Point3d buffer3d = new Point3d(buffer, buffer, buffer);
+            boundingBox.max.add(buffer3d);
+            boundingBox.min.sub(buffer3d);
         }
+
+        // rounding
+        boundingBox.round();
+        
+        // z >= 0
+        boundingBox.min.z = Math.max(boundingBox.min.z, 0.d);
 
         return boundingBox;
     }
